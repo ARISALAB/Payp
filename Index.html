@@ -13,22 +13,10 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             background-color: #f9f9f9;
             min-height: 100vh;
         }
-        
-        /* Επικεφαλίδα που καλύπτει όλο το πλάτος της οθόνης */
-        h1 {
-            width: 100vw;
-            background-color: #0056b3;
-            color: #fff;
-            padding: 20px;
-            margin: 0;
-            text-align: center;
-        }
-
-        /* Κύριο περιεχόμενο */
         .container {
             max-width: 800px;
             width: 95%;
@@ -39,28 +27,33 @@
             border-radius: 8px;
             text-align: center;
         }
-        
+        h1 {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 15px;
+            margin: 0;
+            width: 100vw; /* Απλώνεται σε όλο το πλάτος */
+            text-align: center;
+            box-sizing: border-box;
+        }
         h2 {
             color: #0056b3;
             margin-top: 20px;
         }
-
         .section {
             margin: 20px 0;
         }
-        
         .section img {
             width: 96%;
             height: auto;
             border-radius: 8px;
             margin-top: 10px;
         }
-        
         .paypal-button {
             text-align: center;
             margin-top: 30px;
         }
-
+        
         /* Προσαρμογή για κινητές συσκευές */
         @media (max-width: 768px) {
             .container {
@@ -69,7 +62,6 @@
             }
             h1 {
                 font-size: 1.8em;
-                padding: 15px;
             }
             h2 {
                 font-size: 1.5em;
@@ -89,11 +81,10 @@
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
 </head>
 <body>
-    <!-- Χαιρετισμός -->
-    <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
-
     <div class="container">
+        <!-- Χαιρετισμός -->
         <section class="section">
+            <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
             <p>Εδώ θα βρείτε τις πληροφορίες που χρειάζεστε για να προχωρήσετε σε ασφαλή πληρωμή μέσω PayPal.</p>
         </section>
 
@@ -101,6 +92,7 @@
         <section class="section">
             <h2>Τι Θα Συναντήσετε Εδώ</h2>
             <p>Στη σελίδα μας μπορείτε να δείτε όλες τις λεπτομέρειες για την υπηρεσία που προσφέρουμε. Παρακάτω ακολουθεί ένα σύντομο βίντεο που εξηγεί πώς λειτουργεί η διαδικασία πληρωμής και τι πρέπει να γνωρίζετε πριν προχωρήσετε.</p>
+            <!-- Νέο βίντεο -->
             <iframe width="100%" height="315" src="https://www.youtube.com/embed/jl5yQsj5duI?start=8" frameborder="0" allowfullscreen></iframe>
         </section>
 
@@ -108,8 +100,9 @@
         <section class="section">
             <h2>Ποιοι Είμαστε</h2>
             <p>Η ομάδα μας αποτελείται από ειδικούς που εργάζονται για να σας παρέχουν τις καλύτερες δυνατές υπηρεσίες. Παρακάτω μπορείτε να δείτε μερικές φωτογραφίες της ομάδας μας και του χώρου μας.</p>
-            <img src="https://cdn.pixabay.com/photo/2016/11/29/12/54/team-1868038_960_720.jpg" alt="Φωτογραφία Ομάδας">
-            <img src="https://cdn.pixabay.com/photo/2016/03/09/09/17/office-1245776_960_720.jpg" alt="Φωτογραφία Γραφείου">
+            <!-- Εικόνες από το Pixabay -->
+            <img src="cash-register-377039_1280.jpg" alt="Φωτογραφία Ομάδας">
+            <img src="finger-3389914_1280.jpg" alt="Φωτογραφία Γραφείου">
         </section>
 
         <!-- Κουμπί PayPal -->
