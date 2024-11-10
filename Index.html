@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Καλώς Ήρθατε - Πληρωμή PayPal</title>
+    <style>
+        /* Βασικό στυλ για ευχάριστη εμφάνιση */
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: white;
+            margin: 20px;
+            border-radius: 8px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #0056b3;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .section img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .paypal-button {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Χαιρετισμός -->
+        <section class="section">
+            <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
+            <p>Εδώ θα βρείτε τις πληροφορίες που χρειάζεστε για να προχωρήσετε σε ασφαλή πληρωμή μέσω PayPal.</p>
+        </section>
+
+        <!-- Περιγραφή Υπηρεσίας -->
+        <section class="section">
+            <h2>Τι Θα Συναντήσετε Εδώ</h2>
+            <p>Στη σελίδα μας μπορείτε να δείτε όλες τις λεπτομέρειες για την υπηρεσία που προσφέρουμε. Παρακάτω ακολουθεί ένα σύντομο βίντεο που εξηγεί πώς λειτουργεί η διαδικασία πληρωμής και τι πρέπει να γνωρίζετε πριν προχωρήσετε.</p>
+            <!-- Placeholder Video -->
+            <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+        </section>
+
+        <!-- Ποιοι Είμαστε -->
+        <section class="section">
+            <h2>Ποιοι Είμαστε</h2>
+            <p>Η ομάδα μας αποτελείται από ειδικούς που εργάζονται για να σας παρέχουν τις καλύτερες δυνατές υπηρεσίες. Παρακάτω μπορείτε να δείτε μερικές φωτογραφίες της ομάδας μας και του χώρου μας.</p>
+            <!-- Random εικόνες με την ομάδα -->
+            <img src="https://via.placeholder.com/600x300?text=Our+Team+Photo" alt="Φωτογραφία Ομάδας">
+            <img src="https://via.placeholder.com/600x300?text=Our+Office+Space" alt="Φωτογραφία Γραφείου">
+        </section>
+
+        <!-- Κουμπί PayPal -->
+        <div class="paypal-button" id="paypal-button-container"></div>
+    </div>
+
+    <!-- PayPal Script -->
+    <script>
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '10.00'  // Προσαρμόστε το ποσό ανάλογα
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε από ' + details.payer.name.given_name);
+                    window.location.href = 'https://myaris.netlify.app/';  // Ανακατεύθυνση σε επιθυμητή σελίδα
+                });
+            }
+        }).render('#paypal-button-container');
+    </script>
+</body>
+</html>
