@@ -55,31 +55,8 @@
             margin-top: 30px;
         }
 
-        /* Προσαρμογή για κινητές συσκευές */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-                box-shadow: none;
-            }
-            h1 {
-                font-size: 1.8em;
-            }
-            h2 {
-                font-size: 1.5em;
-            }
-            .section p {
-                font-size: 1em;
-            }
-            iframe {
-                width: 95%;
-                height: 200px;
-            }
-            .paypal-button {
-                margin-top: 20px;
-            }
-        }
-        /* Στυλ για το κουμπί σύνδεσης */
-        .google-button {
+        /* Στυλ για τα κουμπιά εγγραφής και σύνδεσης */
+        .google-button, .email-signup-button {
             background-color: #4285F4;
             color: white;
             border: none;
@@ -88,8 +65,21 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .google-button:hover {
+        .google-button:hover, .email-signup-button:hover {
             background-color: #357ae8;
+        }
+
+        /* Στυλ για τη φόρμα εγγραφής */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .form-container input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
     </style>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
@@ -110,21 +100,6 @@
             <iframe width="100%" height="315" src="https://www.youtube.com/embed/jl5yQsj5duI?start=8" frameborder="0" allowfullscreen></iframe>
         </section>
 
-        <!-- Ποιοι Είμαστε -->
-        <section class="section">
-            <h2>Ποιοι Είμαστε</h2>
-            <p>Η ομάδα μας αποτελείται από ειδικούς που εργάζονται για να σας παρέχουν τις καλύτερες δυνατές υπηρεσίες. Παρακάτω μπορείτε να δείτε μερικές φωτογραφίες της ομάδας μας και του χώρου μας.</p>
-            <!-- Εικόνες και Περιγραφές -->
-            <div>
-                <img src="cash-register-377039_1280.jpg" alt="Φωτογραφία Ομάδας">
-                <p><em>Θα μείνετε κολλημένοι στο παρελθόν; Οι παλιές ταμειακές μηχανές είναι η υπενθύμιση μιας εποχής που έχει περάσει. Ήρθε η ώρα να αφήσουμε πίσω τις παραδοσιακές πρακτικές και να προχωρήσουμε μπροστά.</em></p>
-            </div>
-            <div>
-                <img src="finger-3389914_1280.jpg" alt="Φωτογραφία Γραφείου">
-                <p><em>Το μέλλον είναι εδώ! Σημασία δεν έχει πια η απλή ταμειακή μηχανή, αλλά ο τρόπος που διαχειριζόμαστε τις επιχειρήσεις μας. Επενδύστε στην ανάπτυξη, με τη δύναμη της τεχνολογίας δίπλα σας.</em></p>
-            </div>
-        </section>
-
         <!-- Εδώ προστίθεται η εικόνα του χρήστη -->
         <div id="userInfo" style="display: none; text-align: center;">
             <h2>Καλώς Ήρθες!</h2>
@@ -134,14 +109,29 @@
 
         <!-- Κουμπί PayPal -->
         <div class="paypal-button" id="paypal-button-container"></div>
+
+        <!-- Εγγραφή και Σύνδεση -->
+        <div id="auth-section" style="margin-top: 20px;">
+            <h2>Σύνδεση ή Εγγραφή</h2>
+            <!-- Κουμπί Google Sign-In -->
+            <button class="google-button" id="googleSignIn">Σύνδεση με Google</button>
+
+            <!-- Εγγραφή με email -->
+            <div id="signup-section" style="margin-top: 20px;">
+                <h3>Ή Εγγραφείτε με Email</h3>
+                <div class="form-container">
+                    <input type="email" id="email" placeholder="Ηλεκτρονικό Ταχυδρομείο" required>
+                    <input type="password" id="password" placeholder="Κωδικός Πρόσβασης" required>
+                    <button class="email-signup-button" id="emailSignUp">Εγγραφή</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <h2>Καλωσήρθατε! Συνδεθείτε μέσω Google</h2>
-    <button class="google-button" id="googleSignIn">Σύνδεση με Google</button>
 
     <script type="module">
         // Import the functions you need from the SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
 
         // Firebase configuration
@@ -162,7 +152,8 @@
 
         // Google Sign-In logic
         const provider = new GoogleAuthProvider();
-        
+
+        // Σύνδεση με Google
         document.getElementById('googleSignIn').addEventListener('click', () => {
             signInWithPopup(auth, provider)
                 .then((result) => {
@@ -183,11 +174,35 @@
                 });
         });
 
+        // Εγγραφή με email και κωδικό
+        document.getElementById('emailSignUp').addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    alert(`Εγγραφή ολοκληρώθηκε για τον χρήστη: ${user.email}`);
+                    
+                    // Αποθηκεύουμε το χρήστη στη μνήμη για αυτόματη σύνδεση
+                    localStorage.setItem("user", JSON.stringify(user));
+                    
+                    // Ενημερώνουμε την εικόνα και το όνομα χρήστη
+                    document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+                    document.getElementById('userName').innerText = `Όνομα: ${user.email}`;
+                    document.getElementById('userInfo').style.display = 'block';
+                })
+                .catch((error) => {
+                    console.log(error);
+                    alert('Σφάλμα στην εγγραφή!');
+                });
+        });
+
         // Αυτόματος έλεγχος σύνδεσης χρήστη
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('userImage').src = user.photoURL;
-                document.getElementById('userName').innerText = `Όνομα: ${user.displayName}`;
+                document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+                document.getElementById('userName').innerText = `Όνομα: ${user.email}`;
                 document.getElementById('userInfo').style.display = 'block';
             } else {
                 document.getElementById('userInfo').style.display = 'none';
