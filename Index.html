@@ -168,6 +168,25 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
+    const checkPaymentStatus = async (user) => {
+        if (user) {
+            const userPaymentDoc = doc(db, "users", user.uid);
+            const docSnap = await getDoc(userPaymentDoc);
+
+            if (docSnap.exists() && docSnap.data().isPaid) {
+                document.getElementById('paypal-button-container').style.display = 'none';
+                document.getElementById('accessAppButton').style.display = 'inline-block';
+                alert('Η εφαρμογή είναι διαθέσιμη για πάντα. Ευχαριστούμε για την πληρωμή σας!');
+            } else {
+                document.getElementById('paypal-button-container').style.display = 'block';
+                document.getElementById('accessAppButton').style.display = 'none';
+            }
+        } else {
+            document.getElementById('paypal-button-container').style.display = 'block';
+            document.getElementById('accessAppButton').style.display = 'none';
+        }
+    };
+
     document.getElementById('googleSignIn').addEventListener('click', () => {
         signInWithPopup(auth, provider)
             .then((result) => {
@@ -177,6 +196,8 @@
                 document.getElementById('userName').innerText = `Όνομα: ${user.displayName}`;
                 document.getElementById('userInfo').style.display = 'block';
                 document.getElementById('googleSignOut').style.display = 'inline-block';
+
+                checkPaymentStatus(user);
             })
             .catch((error) => {
                 console.log(error);
@@ -196,6 +217,8 @@
                 document.getElementById('userName').innerText = `Όνομα: ${user.email}`;
                 document.getElementById('userInfo').style.display = 'block';
                 document.getElementById('googleSignOut').style.display = 'inline-block';
+
+                checkPaymentStatus(user);
             })
             .catch((error) => {
                 console.log(error);
@@ -224,16 +247,7 @@
             document.getElementById('userName').innerText = `Όνομα: ${user.displayName || user.email}`;
             document.getElementById('userInfo').style.display = 'block';
 
-            const userPaymentDoc = doc(db, "users", user.uid);
-            const docSnap = await getDoc(userPaymentDoc);
-
-            if (docSnap.exists() && docSnap.data().isPaid) {
-                document.getElementById('paypal-button-container').style.display = 'none';
-                document.getElementById('accessAppButton').style.display = 'inline-block';
-            } else {
-                document.getElementById('paypal-button-container').style.display = 'block';
-                document.getElementById('accessAppButton').style.display = 'none';
-            }
+            await checkPaymentStatus(user);
         } else {
             document.getElementById('googleSignIn').style.display = 'inline-block';
             document.getElementById('googleSignOut').style.display = 'none';
@@ -255,14 +269,14 @@
         onApprove: function(data, actions) {
             return actions.order.capture().then(async function(details) {
                 alert('Η πληρωμή ολοκληρώθηκε από τον ' + details.payer.name.given_name);
-                
+
                 const user = auth.currentUser;
                 if (user) {
                     const userPaymentDoc = doc(db, "users", user.uid);
                     await setDoc(userPaymentDoc, { isPaid: true }, { merge: true });
 
-                    document.getElementById('paypal-button-container').style.display = 'none';
-                    document.getElementById('accessAppButton').style.display = 'inline-block';
+                    // Επανεμφανίζουμε το κουμπί και το μήνυμα μετά την πληρωμή
+                    await checkPaymentStatus(user);
                 } else {
                     alert('Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!');
                 }
@@ -274,5 +288,6 @@
         window.location.href = 'https://myaris.netlify.app/';
     });
 </script>
+
 </body>
 </html>
