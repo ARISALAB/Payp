@@ -211,16 +211,44 @@
                 });
         });
 
-        // Αυτόματος έλεγχος σύνδεσης χρήστη
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
-                document.getElementById('userName').innerText = `Όνομα: ${user.email}`;
-                document.getElementById('userInfo').style.display = 'block';
-            } else {
-                document.getElementById('userInfo').style.display = 'none';
-            }
-        });
+     // Λογική αποσύνδεσης
+document.getElementById('googleSignOut').addEventListener('click', () => {
+    auth.signOut().then(() => {
+        alert('Αποσυνδεθήκατε επιτυχώς!');
+        
+        // Καθαρισμός αποθηκευμένων δεδομένων χρήστη
+        localStorage.removeItem("user");
+
+        // Απόκρυψη του κουμπιού αποσύνδεσης και των πληροφοριών χρήστη
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('googleSignOut').style.display = 'none';
+
+        // Εμφάνιση του κουμπιού σύνδεσης
+        document.getElementById('googleSignIn').style.display = 'inline-block';
+    }).catch((error) => {
+        console.log(error);
+        alert('Σφάλμα στην αποσύνδεση!');
+    });
+});
+
+// Αυτόματος έλεγχος σύνδεσης χρήστη και ενημέρωση εμφάνισης
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Ο χρήστης είναι συνδεδεμένος - εμφάνιση του κουμπιού αποσύνδεσης και των πληροφοριών του χρήστη
+        document.getElementById('googleSignOut').style.display = 'inline-block';
+        document.getElementById('googleSignIn').style.display = 'none';
+        
+        document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+        document.getElementById('userName').innerText = `Όνομα: ${user.displayName || user.email}`;
+        document.getElementById('userInfo').style.display = 'block';
+    } else {
+        // Ο χρήστης δεν είναι συνδεδεμένος - εμφάνιση του κουμπιού σύνδεσης
+        document.getElementById('googleSignOut').style.display = 'none';
+        document.getElementById('googleSignIn').style.display = 'inline-block';
+        document.getElementById('userInfo').style.display = 'none';
+    }
+});
+
 
         // Δημιουργία κουμπιού PayPal
         paypal.Buttons({
