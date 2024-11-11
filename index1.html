@@ -117,6 +117,11 @@
             <img id="userImage" src="" alt="Εικόνα Χρήστη" style="border-radius: 50%; width: 100px; height: 100px;">
             <p id="userName"></p>
         </div>
+        <!-- Κουμπί για πρόσβαση στην εφαρμογή, αρχικά κρυφό -->
+<button id="accessAppButton" style="display: none; background-color: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+    Μετάβαση στην Εφαρμογή
+</button>
+
 <!-- Κουμπί αποσύνδεσης -->
 <button class="google-button" id="googleSignOut" style="display: none;">Αποσύνδεση</button>
 
@@ -250,13 +255,17 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-      // Έλεγχος κατά την εκκίνηση της σελίδας αν ο χρήστης έχει πληρώσει
+  // Έλεγχος κατά την εκκίνηση της σελίδας αν ο χρήστης έχει πληρώσει
 document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('isPaid') === 'true') {
         alert('Η εφαρμογή είναι διαθέσιμη για πάντα. Ευχαριστούμε για την πληρωμή σας!');
         
-        // Απόκρυψη του κουμπιού PayPal αν η πληρωμή έχει ήδη ολοκληρωθεί
+        // Απόκρυψη του κουμπιού PayPal και εμφάνιση του κουμπιού για πρόσβαση στην εφαρμογή
         document.getElementById('paypal-button-container').style.display = 'none';
+        document.getElementById('accessAppButton').style.display = 'inline-block';
+    } else {
+        // Απόκρυψη του κουμπιού "Μετάβαση στην Εφαρμογή" αν δεν έχει γίνει πληρωμή
+        document.getElementById('accessAppButton').style.display = 'none';
     }
 });
 
@@ -278,11 +287,43 @@ paypal.Buttons({
             // Αποθήκευση στο localStorage ότι ο χρήστης έχει πληρώσει
             localStorage.setItem('isPaid', 'true');
             
+            // Απόκρυψη του κουμπιού PayPal και εμφάνιση του κουμπιού για πρόσβαση στην εφαρμογή
+            document.getElementById('paypal-button-container').style.display = 'none';
+            document.getElementById('accessAppButton').style.display = 'inline-block';
+
             // Ανακατεύθυνση στη σελίδα
             window.location.href = 'https://myaris.netlify.app/';
         });
     }
 }).render('#paypal-button-container');
+
+// Προσθήκη λογικής στο κουμπί πρόσβασης στην εφαρμογή
+document.getElementById('accessAppButton').addEventListener('click', () => {
+    window.location.href = 'https://myaris.netlify.app/';
+});
+
+// Λογική εγγραφής χωρίς πληρωμή
+document.getElementById('emailSignUp').addEventListener('click', () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            alert(`Εγγραφή ολοκληρώθηκε για τον χρήστη: ${user.email}`);
+            
+            // Αποθήκευση στο localStorage για μελλοντικό έλεγχο πληρωμής
+            localStorage.setItem("user", JSON.stringify(user));
+            
+            // Ενημέρωση εμφάνισης - αποκρύπτουμε το κουμπί πρόσβασης στην εφαρμογή
+            document.getElementById('accessAppButton').style.display = 'none';
+        })
+        .catch((error) => {
+            console.log(error);
+            alert('Σφάλμα στην εγγραφή!');
+        });
+});
+
 
     </script>
 </body>
