@@ -216,17 +216,18 @@
                 });
         });
 
-     // Λογική αποσύνδεσης
+   // Λογική αποσύνδεσης
 document.getElementById('googleSignOut').addEventListener('click', () => {
     auth.signOut().then(() => {
         alert('Αποσυνδεθήκατε επιτυχώς!');
-        
+
         // Καθαρισμός αποθηκευμένων δεδομένων χρήστη
         localStorage.removeItem("user");
 
-        // Απόκρυψη του κουμπιού αποσύνδεσης και των πληροφοριών χρήστη
+        // Απόκρυψη του κουμπιού αποσύνδεσης, των πληροφοριών χρήστη και του κουμπιού μετάβασης στην εφαρμογή
         document.getElementById('userInfo').style.display = 'none';
         document.getElementById('googleSignOut').style.display = 'none';
+        document.getElementById('accessAppButton').style.display = 'none';
 
         // Εμφάνιση του κουμπιού σύνδεσης
         document.getElementById('googleSignIn').style.display = 'inline-block';
@@ -235,6 +236,7 @@ document.getElementById('googleSignOut').addEventListener('click', () => {
         alert('Σφάλμα στην αποσύνδεση!');
     });
 });
+
 
 // Αυτόματος έλεγχος σύνδεσης χρήστη και ενημέρωση εμφάνισης
 onAuthStateChanged(auth, (user) => {
