@@ -127,11 +127,8 @@
     </div>
 
     <!-- Firebase Initialization -->
-    <script>
-        // Import and configure Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-
+      <script>
+        // Αρχικοποίηση Firebase με απευθείας πρόσβαση στις συναρτήσεις χωρίς imports
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
             authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -143,13 +140,13 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
 
-        // Google Sign-In Function
+        // Λειτουργία Σύνδεσης με Google
         document.getElementById("login-button").addEventListener("click", () => {
-            signInWithPopup(auth, provider)
+            auth.signInWithPopup(provider)
                 .then((result) => {
                     const user = result.user;
                     document.getElementById("user-info").innerText = `Καλώς ήρθες, ${user.displayName}`;
@@ -159,13 +156,14 @@
                 });
         });
 
-        // Check for active user session
-        onAuthStateChanged(auth, (user) => {
+        // Έλεγχος ενεργού χρήστη
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 document.getElementById("user-info").innerText = `Καλώς ήρθες, ${user.displayName}`;
             }
         });
     </script>
+
 
     <!-- PayPal Script -->
     <script>
