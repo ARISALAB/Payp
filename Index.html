@@ -36,7 +36,6 @@
             text-align: center;
             box-sizing: border-box;
         }
-
         h2 {
             color: #0056b3;
             margin-top: 20px;
@@ -44,18 +43,10 @@
         .section {
             margin: 20px 0;
         }
-        .section img {
-            width: 96%;
-            height: auto;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
         .paypal-button {
             text-align: center;
             margin-top: 30px;
         }
-
-        /* Στυλ για τα κουμπιά εγγραφής και σύνδεσης */
         .google-button, .email-signup-button {
             background-color: #4285F4;
             color: white;
@@ -68,8 +59,6 @@
         .google-button:hover, .email-signup-button:hover {
             background-color: #357ae8;
         }
-
-        /* Στυλ για τη φόρμα εγγραφής */
         .form-container {
             display: flex;
             flex-direction: column;
@@ -81,49 +70,46 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+        .user-info {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .user-info img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+        }
     </style>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
 </head>
 <body>
     <div class="container">
-        <!-- Χαιρετισμός -->
-        <section class="section">
-            <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
-            <p>Εδώ θα βρείτε τις πληροφορίες που χρειάζεστε για να προχωρήσετε σε ασφαλή πληρωμή μέσω PayPal.</p>
-        </section>
+        <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
+        <p>Εδώ θα βρείτε τις πληροφορίες που χρειάζεστε για να προχωρήσετε σε ασφαλή πληρωμή μέσω PayPal.</p>
 
-        <!-- Κουμπί για πρόσβαση στην εφαρμογή, αρχικά κρυφό -->
+        <div class="user-info" id="userInfo">
+            <img id="userImage" src="" alt="Εικόνα Χρήστη">
+            <p id="userName"></p>
+            <button id="googleSignOut" class="google-button">Αποσύνδεση</button>
+        </div>
+
+        <div class="paypal-button" id="paypal-button-container"></div>
+
         <button id="accessAppButton" style="display: none; background-color: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
             Μετάβαση στην Εφαρμογή
         </button>
 
-        <!-- Κουμπί αποσύνδεσης -->
-        <button class="google-button" id="googleSignOut" style="display: none;">Αποσύνδεση</button>
-
-        <!-- Κουμπί PayPal -->
-        <div class="paypal-button" id="paypal-button-container"></div>
-
-        <!-- Εγγραφή και Σύνδεση -->
         <div id="auth-section" style="margin-top: 20px;">
             <h2>Σύνδεση ή Εγγραφή</h2>
-            <!-- Κουμπί Google Sign-In -->
-            <button class="google-button" id="googleSignIn">Σύνδεση με Google</button>
-
-            <!-- Εγγραφή με email -->
-            <div id="signup-section" style="margin-top: 20px;">
-                <h3>Ή Εγγραφείτε με Email</h3>
-                <div class="form-container">
-                    <input type="email" id="email" placeholder="Ηλεκτρονικό Ταχυδρομείο" required>
-                    <input type="password" id="password" placeholder="Κωδικός Πρόσβασης" required>
-                    <button class="email-signup-button" id="emailSignUp">Εγγραφή</button>
-                </div>
-            </div>
+            <button id="googleSignIn" class="google-button">Σύνδεση με Google</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -138,14 +124,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth();
-
         const provider = new GoogleAuthProvider();
 
         document.getElementById('googleSignIn').addEventListener('click', () => {
             signInWithPopup(auth, provider)
                 .then((result) => {
                     const user = result.user;
-                    alert(`Καλωσήρθες, ${user.displayName}!`);
+                    displayUserInfo(user);
                 })
                 .catch((error) => {
                     console.log(error);
@@ -153,19 +138,42 @@
                 });
         });
 
+        document.getElementById('googleSignOut').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('auth-section').style.display = 'block';
+                document.getElementById('accessAppButton').style.display = 'none';
+                document.getElementById('paypal-button-container').style.display = 'inline-block';
+            }).catch((error) => {
+                console.log(error);
+                alert('Σφάλμα στην αποσύνδεση!');
+            });
+        });
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                displayUserInfo(user);
+
                 const userRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userRef);
 
                 if (userSnap.exists() && userSnap.data().isPaid) {
                     document.getElementById('paypal-button-container').style.display = 'none';
                     document.getElementById('accessAppButton').style.display = 'inline-block';
-                } else {
-                    document.getElementById('paypal-button-container').style.display = 'inline-block';
                 }
+            } else {
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('auth-section').style.display = 'block';
+                document.getElementById('accessAppButton').style.display = 'none';
             }
         });
+
+        function displayUserInfo(user) {
+            document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+            document.getElementById('userName').innerText = `Όνομα: ${user.displayName || user.email}`;
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('auth-section').style.display = 'none';
+        }
 
         paypal.Buttons({
             createOrder: function(data, actions) {
@@ -183,7 +191,7 @@
                         await setDoc(doc(db, "users", user.uid), { isPaid: true }, { merge: true });
                         document.getElementById('paypal-button-container').style.display = 'none';
                         document.getElementById('accessAppButton').style.display = 'inline-block';
-                        window.location.href = 'https://myaris.netlify.app/';
+                        alert('Η πληρωμή ολοκληρώθηκε επιτυχώς!');
                     } else {
                         alert('Παρακαλούμε συνδεθείτε πρώτα.');
                     }
