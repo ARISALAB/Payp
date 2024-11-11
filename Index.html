@@ -255,7 +255,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-     // Έλεγχος κατά την εκκίνηση της σελίδας αν ο χρήστης έχει πληρώσει
+  // Έλεγχος κατά την εκκίνηση της σελίδας αν ο χρήστης έχει πληρώσει
 document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('isPaid') === 'true') {
         alert('Η εφαρμογή είναι διαθέσιμη για πάντα. Ευχαριστούμε για την πληρωμή σας!');
@@ -263,6 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Απόκρυψη του κουμπιού PayPal και εμφάνιση του κουμπιού για πρόσβαση στην εφαρμογή
         document.getElementById('paypal-button-container').style.display = 'none';
         document.getElementById('accessAppButton').style.display = 'inline-block';
+    } else {
+        // Απόκρυψη του κουμπιού "Μετάβαση στην Εφαρμογή" αν δεν έχει γίνει πληρωμή
+        document.getElementById('accessAppButton').style.display = 'none';
     }
 });
 
@@ -297,6 +300,28 @@ paypal.Buttons({
 // Προσθήκη λογικής στο κουμπί πρόσβασης στην εφαρμογή
 document.getElementById('accessAppButton').addEventListener('click', () => {
     window.location.href = 'https://myaris.netlify.app/';
+});
+
+// Λογική εγγραφής χωρίς πληρωμή
+document.getElementById('emailSignUp').addEventListener('click', () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            alert(`Εγγραφή ολοκληρώθηκε για τον χρήστη: ${user.email}`);
+            
+            // Αποθήκευση στο localStorage για μελλοντικό έλεγχο πληρωμής
+            localStorage.setItem("user", JSON.stringify(user));
+            
+            // Ενημέρωση εμφάνισης - αποκρύπτουμε το κουμπί πρόσβασης στην εφαρμογή
+            document.getElementById('accessAppButton').style.display = 'none';
+        })
+        .catch((error) => {
+            console.log(error);
+            alert('Σφάλμα στην εγγραφή!');
+        });
 });
 
 
