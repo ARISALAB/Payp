@@ -147,13 +147,11 @@
     </div>
 
 <script type="module">
-    // Import the functions you need from the SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
 
-    // Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
         authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -164,26 +162,21 @@
         measurementId: "G-NGZHWDY6S5"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const auth = getAuth();
     const db = getFirestore(app);
-
-    // Google Sign-In logic
     const provider = new GoogleAuthProvider();
 
-    // Σύνδεση με Google
     document.getElementById('googleSignIn').addEventListener('click', () => {
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
                 alert(`Καλωσήρθες, ${user.displayName}!`);
-
-                // Ενημερώνουμε την εικόνα και το όνομα χρήστη
                 document.getElementById('userImage').src = user.photoURL;
                 document.getElementById('userName').innerText = `Όνομα: ${user.displayName}`;
                 document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('googleSignOut').style.display = 'inline-block';
             })
             .catch((error) => {
                 console.log(error);
@@ -191,7 +184,6 @@
             });
     });
 
-    // Εγγραφή με email και κωδικό
     document.getElementById('emailSignUp').addEventListener('click', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -200,11 +192,10 @@
             .then((userCredential) => {
                 const user = userCredential.user;
                 alert(`Εγγραφή ολοκληρώθηκε για τον χρήστη: ${user.email}`);
-
-                // Ενημερώνουμε την εικόνα και το όνομα χρήστη
                 document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
                 document.getElementById('userName').innerText = `Όνομα: ${user.email}`;
                 document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('googleSignOut').style.display = 'inline-block';
             })
             .catch((error) => {
                 console.log(error);
@@ -212,17 +203,12 @@
             });
     });
 
-    // Λογική αποσύνδεσης
     document.getElementById('googleSignOut').addEventListener('click', () => {
         auth.signOut().then(() => {
             alert('Αποσυνδεθήκατε επιτυχώς!');
-
-            // Απόκρυψη του κουμπιού αποσύνδεσης και των πληροφοριών χρήστη
             document.getElementById('userInfo').style.display = 'none';
             document.getElementById('googleSignOut').style.display = 'none';
             document.getElementById('accessAppButton').style.display = 'none';
-
-            // Εμφάνιση του κουμπιού σύνδεσης
             document.getElementById('googleSignIn').style.display = 'inline-block';
         }).catch((error) => {
             console.log(error);
@@ -230,25 +216,32 @@
         });
     });
 
-    // Έλεγχος κατά την εκκίνηση της σελίδας αν ο χρήστης έχει πληρώσει
-    document.addEventListener('DOMContentLoaded', async () => {
-        const user = auth.currentUser;
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
+            document.getElementById('googleSignOut').style.display = 'inline-block';
+            document.getElementById('googleSignIn').style.display = 'none';
+            document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+            document.getElementById('userName').innerText = `Όνομα: ${user.displayName || user.email}`;
+            document.getElementById('userInfo').style.display = 'block';
+
             const userPaymentDoc = doc(db, "users", user.uid);
             const docSnap = await getDoc(userPaymentDoc);
 
             if (docSnap.exists() && docSnap.data().isPaid) {
-                alert('Η εφαρμογή είναι διαθέσιμη για πάντα. Ευχαριστούμε για την πληρωμή σας!');
-                
                 document.getElementById('paypal-button-container').style.display = 'none';
                 document.getElementById('accessAppButton').style.display = 'inline-block';
             } else {
+                document.getElementById('paypal-button-container').style.display = 'block';
                 document.getElementById('accessAppButton').style.display = 'none';
             }
+        } else {
+            document.getElementById('googleSignIn').style.display = 'inline-block';
+            document.getElementById('googleSignOut').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('accessAppButton').style.display = 'none';
         }
     });
 
-    // Δημιουργία κουμπιού PayPal
     paypal.Buttons({
         createOrder: function(data, actions) {
             return actions.order.create({
@@ -265,14 +258,11 @@
                 
                 const user = auth.currentUser;
                 if (user) {
-                    // Αποθήκευση της κατάστασης πληρωμής στο Firestore
                     const userPaymentDoc = doc(db, "users", user.uid);
                     await setDoc(userPaymentDoc, { isPaid: true }, { merge: true });
 
                     document.getElementById('paypal-button-container').style.display = 'none';
                     document.getElementById('accessAppButton').style.display = 'inline-block';
-
-                    window.location.href = 'https://myaris.netlify.app/';
                 } else {
                     alert('Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!');
                 }
@@ -280,11 +270,9 @@
         }
     }).render('#paypal-button-container');
 
-    // Προσθήκη λογικής στο κουμπί πρόσβασης στην εφαρμογή
     document.getElementById('accessAppButton').addEventListener('click', () => {
         window.location.href = 'https://myaris.netlify.app/';
     });
 </script>
-
 </body>
 </html>
