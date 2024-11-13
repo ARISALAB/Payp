@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Επιλογές Συνδρομής</title>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&components=buttons"></script>
-    <!-- Firebase and Google Sign-In -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
 
     <style>
         body {
@@ -90,11 +90,32 @@
         .card.basic button { background-color: #4CAF50; }
         .card.standard button { background-color: #FF6347; }
         .card.premium button { background-color: #FFD700; }
+
+        /* Media Queries for Mobile */
+        @media (max-width: 668px) {
+            .card {
+                width: 80%;
+                margin: 10px 0;
+            }
+            .pricing-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
     <h1>Το κατάλληλο πρόγραμμα για την επιχείρησή σας</h1>
     <p>Επιλέξτε το πρόγραμμα που ταιριάζει καλύτερα σε εσάς και την ομάδα σας</p>
+
+    <!-- Google Sign In Button -->
+    <div id="google-signin">
+        <button id="google-signin-button">Σύνδεση με Google</button>
+    </div>
+    <div id="user-info" style="display: none;">
+        <p>Καλώς ήρθατε, <span id="user-name"></span></p>
+        <img id="user-photo" src="" alt="User Photo" style="width: 50px; height: 50px; border-radius: 50%;"/>
+    </div>
 
     <div class="pricing-container">
         <!-- Basic Plan -->
@@ -134,11 +155,8 @@
         </div>
     </div>
 
-    <!-- Google Sign-In Button -->
-    <div id="google-sign-in-container"></div>
-
     <script>
-        // Firebase Config
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
             authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -152,38 +170,36 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
-        // Google Sign-In Configuration
-        const provider = new firebase.auth.GoogleAuthProvider();
+        const auth = firebase.auth();
 
-        function signInWithGoogle() {
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    var user = result.user;
-                    alert('Είσαι συνδεδεμένος ως: ' + user.displayName);
+        // Google Sign-In
+        const googleSignInButton = document.getElementById('google-signin-button');
+        const userInfoDiv = document.getElementById('user-info');
+        const userNameSpan = document.getElementById('user-name');
+        const userPhotoImg = document.getElementById('user-photo');
+
+        googleSignInButton.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(result => {
+                    const user = result.user;
+                    userNameSpan.textContent = user.displayName;
+                    userPhotoImg.src = user.photoURL;
+                    userInfoDiv.style.display = 'block';
+                    googleSignInButton.style.display = 'none';
                 })
-                .catch((error) => {
-                    console.log(error.message);
-                    alert("Σφάλμα κατά τη σύνδεση");
+                .catch(error => {
+                    console.error(error.message);
                 });
-        }
-
-        // Render Google Sign-In button
-        gapi.signin2.render('google-sign-in-container', {
-            'scope': 'profile',
-            'width': 200,
-            'height': 50,
-            'longtitle': true,
-            'theme': 'dark',
-            'onsuccess': signInWithGoogle
         });
 
-        // PayPal Button for Basic Plan
+        // PayPal Buttons for Plans
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '5.00'
+                            value: '5.00' // Price for Basic Plan
                         }
                     }]
                 });
@@ -195,13 +211,12 @@
             }
         }).render('#paypal-button-container-basic');
 
-        // PayPal Button for Standard Plan
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '39.00'
+                            value: '39.00' // Price for Standard Plan
                         }
                     }]
                 });
@@ -213,13 +228,12 @@
             }
         }).render('#paypal-button-container-standard');
 
-        // PayPal Button for Premium Plan
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '45.00'
+                            value: '45.00' // Price for Premium Plan
                         }
                     }]
                 });
