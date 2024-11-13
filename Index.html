@@ -3,94 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Καλώς Ήρθατε - Πληρωμή PayPal</title>
+    <title>Επιλογές Συνδρομής</title>
     <style>
-        /* Στυλ */
-        body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background-color: #f9f9f9; min-height: 100vh; }
-        .container { max-width: 800px; width: 95%; padding: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); background-color: white; margin: 20px 0; border-radius: 8px; text-align: center; }
-        h1 { background-color: #0056b3; color: #fff; padding: 20px; margin: 0; border-radius: 8px; text-align: center; box-sizing: border-box; }
-        h2 { color: #0056b3; margin-top: 20px; }
-        .paypal-button { text-align: center; margin-top: 30px; }
-        .google-button, .email-signup-button { background-color: #4285F4; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; }
-        .google-button:hover, .email-signup-button:hover { background-color: #357ae8; }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .pricing-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .card {
+            width: 30%;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+        .card.basic { border-top: 5px solid #4CAF50; }
+        .card.standard { border-top: 5px solid #FF6347; }
+        .card.premium { border-top: 5px solid #FFD700; }
+        .card h3 {
+            color: #333;
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+        .card .price {
+            font-size: 2em;
+            color: #333;
+            margin: 10px 0;
+        }
+        .card .per-month {
+            font-size: 0.8em;
+            color: #666;
+        }
+        .card ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .card ul li {
+            margin: 10px 0;
+        }
+        .card button {
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .card.basic button { background-color: #4CAF50; }
+        .card.standard button { background-color: #FF6347; }
+        .card.premium button { background-color: #FFD700; }
     </style>
-    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
-        <h2>Επιλέξτε Επίπεδο Συνδρομής</h2>
+    <h1>Το κατάλληλο πρόγραμμα για την επιχείρησή σας</h1>
+    <p>Επιλέξτε το πρόγραμμα που ταιριάζει καλύτερα σε εσάς και την ομάδα σας</p>
 
-        <!-- Dropdown επιλογής επιπέδου -->
-        <select id="subscriptionLevel" style="padding: 10px; font-size: 16px; border-radius: 4px;">
-            <option value="basic" data-amount="5.00">Basic - 5.00€</option>
-            <option value="plus" data-amount="10.00">Plus - 10.00€</option>
-            <option value="premium" data-amount="15.00">Premium - 15.00€</option>
-        </select>
+    <div class="pricing-container">
+        <!-- Basic Plan -->
+        <div class="card basic">
+            <h3>Basic</h3>
+            <div class="price">5€ <span class="per-month">/ μήνα</span></div>
+            <ul>
+                <li>Όλα τα βασικά χαρακτηριστικά</li>
+                <li>Πρόσβαση σε analytics</li>
+                <li>Υποστήριξη πελατών</li>
+            </ul>
+            <button>Επιλέξτε Πρόγραμμα</button>
+        </div>
 
-        <!-- Κουμπί PayPal για όλες τις επιλογές -->
-        <div class="paypal-button" id="paypal-button-container"></div>
+        <!-- Standard Plan -->
+        <div class="card standard">
+            <h3>Standard</h3>
+            <div class="price">39€ <span class="per-month">/ μήνα</span></div>
+            <ul>
+                <li>Όλα τα βασικά χαρακτηριστικά</li>
+                <li>Βελτιστοποίηση hashtag</li>
+                <li>Υποστήριξη πελατών</li>
+            </ul>
+            <button>Επιλέξτε Πρόγραμμα</button>
+        </div>
+
+        <!-- Premium Plan -->
+        <div class="card premium">
+            <h3>Premium</h3>
+            <div class="price">45€ <span class="per-month">/ μήνα</span></div>
+            <ul>
+                <li>Όλα τα χαρακτηριστικά</li>
+                <li>Απεριόριστα links</li>
+                <li>Προτεραιότητα στην υποστήριξη</li>
+            </ul>
+            <button>Επιλέξτε Πρόγραμμα</button>
+        </div>
     </div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-        authDomain: "speedy-bazaar-411110.firebaseapp.com",
-        projectId: "speedy-bazaar-411110",
-        storageBucket: "speedy-bazaar-411110.appspot.com",
-        messagingSenderId: "752456596300",
-        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-        measurementId: "G-NGZHWDY6S5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore(app);
-
-    // Σύνδεση PayPal κουμπιού
-    paypal.Buttons({
-        createOrder: function(data, actions) {
-            // Επιλογή ποσού και επιπέδου από το dropdown
-            const subscriptionDropdown = document.getElementById('subscriptionLevel');
-            const selectedOption = subscriptionDropdown.options[subscriptionDropdown.selectedIndex];
-            const amount = selectedOption.getAttribute('data-amount');
-            const level = selectedOption.value;
-
-            return actions.order.create({
-                purchase_units: [{
-                    amount: { value: amount }
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(async function(details) {
-                const subscriptionDropdown = document.getElementById('subscriptionLevel');
-                const level = subscriptionDropdown.value;
-
-                const user = auth.currentUser;
-                if (user) {
-                    // Καταχωρούμε το επίπεδο συνδρομής στο Firestore
-                    await setDoc(doc(db, "users", user.uid), { subscriptionLevel: level }, { merge: true });
-                    alert(`Η πληρωμή για το πρόγραμμα ${level} ολοκληρώθηκε επιτυχώς!`);
-                } else {
-                    alert("Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!");
-                }
-            });
-        }
-    }).render('#paypal-button-container');
-
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            document.getElementById('userInfo').style.display = 'block';
-        } else {
-            document.getElementById('userInfo').style.display = 'none';
-        }
-    });
-</script>
-
 </body>
 </html>
