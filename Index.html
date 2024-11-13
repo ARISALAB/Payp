@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Επιλογές Συνδρομής</title>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&components=buttons"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,7 +38,7 @@
             justify-content: center;
             width: 100%;
             max-width: 1000px;
-            flex-wrap: wrap; /* Προσθήκη για το wrapping */
+            flex-wrap: wrap;
         }
         .card {
             width: 30%;
@@ -43,7 +48,7 @@
             text-align: center;
             padding: 20px;
             position: relative;
-            margin-bottom: 20px; /* Προσθήκη περιθωρίου */
+            margin-bottom: 20px;
         }
         .card.basic { border-top: 5px solid #4CAF50; }
         .card.standard { border-top: 5px solid #FF6347; }
@@ -89,11 +94,11 @@
         /* Media Queries για Κινητές Συσκευές */
         @media (max-width: 668px) {
             .card {
-                width: 80%; /* Κάνει τις κάρτες μεγαλύτερες σε μικρότερες οθόνες */
-                margin: 10px 0; /* Προσθήκη περιθωρίου */
+                width: 80%;
+                margin: 10px 0;
             }
             .pricing-container {
-                flex-direction: column; /* Κατακόρυφη διάταξη των καρτών */
+                flex-direction: column;
                 align-items: center;
             }
             h1 {
@@ -106,22 +111,21 @@
                 font-size: 1.3em;
             }
             .card ul li {
-                font-size: 0.85em; /* Μειώνει το μέγεθος της γραμματοσειράς στις λίστες */
+                font-size: 0.85em;
             }
             .card button {
-                padding: 12px 25px; /* Κάνει το κουμπί πιο ευανάγνωστο σε κινητές */
-                font-size: 1.1em; 
+                padding: 12px 25px;
+                font-size: 1.1em;
             }
         }
 
-        /* Όταν η οθόνη είναι μεγαλύτερη από 768px, οι κάρτες επανέρχονται δίπλα-δίπλα */
         @media (min-width: 669px) {
             .card {
-                width: 30%; /* Επαναφορά στο 30% για μεγαλύτερες οθόνες */
-                margin: 10px; /* Ρύθμιση περιθωρίου */
+                width: 30%;
+                margin: 10px;
             }
             .pricing-container {
-                flex-direction: row; /* Οριζόντια διάταξη των καρτών */
+                flex-direction: row;
             }
         }
     </style>
@@ -168,7 +172,37 @@
         </div>
     </div>
 
+    <button id="google-sign-in">Σύνδεση με Google</button>
+
     <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
+        };
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        // Google Sign-In
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        document.getElementById('google-sign-in').addEventListener('click', function() {
+            auth.signInWithPopup(provider).then((result) => {
+                const user = result.user;
+                console.log('User Signed In:', user.displayName);
+                alert('Καλωσήρθατε ' + user.displayName);
+                // Εγγραφή χρήστη στο Firebase ή άλλες ενέργειες
+            }).catch((error) => {
+                console.error('Error during sign-in:', error.message);
+            });
+        });
+
         // PayPal Button for Basic Plan
         paypal.Buttons({
             createOrder: function(data, actions) {
