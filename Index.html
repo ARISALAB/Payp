@@ -258,16 +258,38 @@
         }
     });
 
+    // Λειτουργία για δημιουργία κουμπιού PayPal για κάθε επίπεδο συνδρομής
+function setupPaypalButton(level, amount) {
     paypal.Buttons({
         createOrder: function(data, actions) {
             return actions.order.create({
                 purchase_units: [{
-                    amount: {
-                        value: '10.00'
-                    }
+                    amount: { value: amount }
                 }]
             });
         },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(async function(details) {
+                alert(`Η πληρωμή για το πρόγραμμα ${level} ολοκληρώθηκε από τον ${details.payer.name.given_name}.`);
+
+                const user = auth.currentUser;
+                if (user) {
+                    // Καταχωρούμε το επίπεδο συνδρομής στο Firestore
+                    await setDoc(doc(db, "users", user.uid), { subscriptionLevel: level }, { merge: true });
+                    checkSubscriptionStatus(user);
+                } else {
+                    alert("Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!");
+                }
+            });
+        }
+    }).render(`#paypal-button-container-${level}`);
+}
+
+// Δημιουργία κουμπιών για κάθε συνδρομή
+setupPaypalButton('basic', '5.00');
+setupPaypalButton('plus', '10.00');
+setupPaypalButton('premium', '15.00');
+    
         onApprove: function(data, actions) {
             return actions.order.capture().then(async function(details) {
                 alert('Η πληρωμή ολοκληρώθηκε από τον ' + details.payer.name.given_name);
