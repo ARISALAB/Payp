@@ -166,151 +166,102 @@
         </div>
     </div>
 
-<script>
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-        authDomain: "speedy-bazaar-411110.firebaseapp.com",
-        projectId: "speedy-bazaar-411110",
-        storageBucket: "speedy-bazaar-411110.appspot.com",
-        messagingSenderId: "752456596300",
-        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-        measurementId: "G-NGZHWDY6S5"
-    };
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
+        };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
 
-    // Google Login
-    function googleLogin() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup(provider).then(result => {
-            const user = result.user;
-            displayUserInfo(user);
-            checkIfUserPaid(user.uid); // Έλεγχος πληρωμής
-        }).catch(error => {
-            console.error("Σφάλμα κατά τη σύνδεση:", error);
-        });
-    }
+        // Google Login
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then(result => {
+                const user = result.user;
+                displayUserInfo(user);
+            }).catch(error => {
+                console.error("Σφάλμα κατά τη σύνδεση:", error);
+            });
+        }
 
-    // Display User Information
-    function displayUserInfo(user) {
-        document.getElementById('user-info').style.display = 'block';
-        document.getElementById('user-photo').src = user.photoURL;
-        document.getElementById('user-name').innerText = `Καλωσήρθες, ${user.displayName}`;
-    }
+        // Display User Information
+        function displayUserInfo(user) {
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('user-photo').src = user.photoURL;
+            document.getElementById('user-name').innerText = `Καλωσήρθες, ${user.displayName}`;
+        }
 
-    // Logout
-    function logout() {
-        firebase.auth().signOut().then(() => {
-            document.getElementById('user-info').style.display = 'none';
-        }).catch(error => {
-            console.error("Σφάλμα κατά την αποσύνδεση:", error);
-        });
-    }
+        // Logout
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                document.getElementById('user-info').style.display = 'none';
+            }).catch(error => {
+                console.error("Σφάλμα κατά την αποσύνδεση:", error);
+            });
+        }
 
-    // Check if user has already paid
-    function checkIfUserPaid(userId) {
-        db.collection('payments').doc(userId).get().then(doc => {
-            if (doc.exists) {
-                alert("Ευχαριστούμε που είστε μαζί μας για πάντα!");
+        // Show logged-in user info on page load
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                displayUserInfo(user);
             }
-        }).catch(error => {
-            console.error("Σφάλμα κατά τον έλεγχο πληρωμής:", error);
         });
-    }
 
-    // Save payment to Firestore
-    function savePayment(userId, plan, amount) {
-        db.collection('payments').doc(userId).set({
-            plan: plan,
-            amount: amount,
-            date: new Date()
-        }).then(() => {
-            alert("Η πληρωμή καταχωρήθηκε επιτυχώς! Ευχαριστούμε για την υποστήριξή σας.");
-        }).catch(error => {
-            console.error("Σφάλμα κατά την αποθήκευση πληρωμής:", error);
-        });
-    }
+        // PayPal Button for Basic Plan
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: '5.00' }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε με επιτυχία! Ευχαριστούμε, ' + details.payer.name.given_name);
+                });
+            }
+        }).render('#paypal-button-container-basic');
 
-    // Show logged-in user info on page load
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            displayUserInfo(user);
-            checkIfUserPaid(user.uid);
-        }
-    });
+        // PayPal Button for Standard Plan
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: '39.00' }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε με επιτυχία! Ευχαριστούμε, ' + details.payer.name.given_name);
+                });
+            }
+        }).render('#paypal-button-container-standard');
 
-    // PayPal Button for Basic Plan
-    paypal.Buttons({
-        createOrder: function(data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: { value: '5.00' }
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-                const user = firebase.auth().currentUser;
-                if (user) {
-                    savePayment(user.uid, "Basic", "5.00");
-                } else {
-                    alert("Παρακαλώ συνδεθείτε πρώτα.");
-                }
-            });
-        }
-    }).render('#paypal-button-container-basic');
-
-    // PayPal Button for Standard Plan
-    paypal.Buttons({
-        createOrder: function(data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: { value: '39.00' }
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-                const user = firebase.auth().currentUser;
-                if (user) {
-                    savePayment(user.uid, "Standard", "39.00");
-                } else {
-                    alert("Παρακαλώ συνδεθείτε πρώτα.");
-                }
-            });
-        }
-    }).render('#paypal-button-container-standard');
-
-    // PayPal Button for Premium Plan
-    paypal.Buttons({
-        createOrder: function(data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: { value: '45.00' }
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-                const user = firebase.auth().currentUser;
-                if (user) {
-                    savePayment(user.uid, "Premium", "45.00");
-                } else {
-                    alert("Παρακαλώ συνδεθείτε πρώτα.");
-                }
-            });
-        }
-    }).render('#paypal-button-container-premium');
-</script>
-    
-
-
-
-
-    
-     
+        // PayPal Button for Premium Plan
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: '45.00' }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε με επιτυχία! Ευχαριστούμε, ' + details.payer.name.given_name);
+                });
+            }
+        }).render('#paypal-button-container-premium');
+    </script>
 </body>
 </html>
