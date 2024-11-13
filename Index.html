@@ -13,129 +13,80 @@
         .paypal-button { text-align: center; margin-top: 30px; }
         .google-button, .email-signup-button { background-color: #4285F4; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; }
         .google-button:hover, .email-signup-button:hover { background-color: #357ae8; }
-        .form-container { display: flex; flex-direction: column; gap: 15px; }
-        .form-container input { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
     </style>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
 </head>
 <body>
     <div class="container">
         <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
-        <section class="section"><h2>Τι Θα Συναντήσετε Εδώ</h2></section>
-        
-        <div id="userInfo" style="display: none;">
-            <h2>Καλώς Ήρθες!</h2>
-            <img id="userImage" style="border-radius: 50%; width: 100px; height: 100px;">
-            <p id="userName"></p>
-        </div>
-        
-        <button id="accessAppButton" style="display: none; background-color: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Μετάβαση στην Εφαρμογή</button>
-        
-        <button class="google-button" id="googleSignOut" style="display: none;">Αποσύνδεση</button>
-        
-        <div class="paypal-button" id="paypal-button-container-basic"></div>
-        <div class="paypal-button" id="paypal-button-container-plus"></div>
-        <div class="paypal-button" id="paypal-button-container-premium"></div>
-        
-        <div id="auth-section" style="margin-top: 20px;">
-            <h2>Σύνδεση ή Εγγραφή</h2>
-            <button class="google-button" id="googleSignIn">Σύνδεση με Google</button>
-            
-            <div id="signup-section" style="margin-top: 20px;">
-                <h3>Ή Εγγραφείτε με Email</h3>
-                <div class="form-container">
-                    <input type="email" id="email" placeholder="Ηλεκτρονικό Ταχυδρομείο" required>
-                    <input type="password" id="password" placeholder="Κωδικός Πρόσβασης" required>
-                    <button class="email-signup-button" id="emailSignUp">Εγγραφή</button>
-                </div>
-            </div>
-        </div>
+        <h2>Επιλέξτε Επίπεδο Συνδρομής</h2>
+
+        <!-- Dropdown επιλογής επιπέδου -->
+        <select id="subscriptionLevel" style="padding: 10px; font-size: 16px; border-radius: 4px;">
+            <option value="basic" data-amount="5.00">Basic - 5.00€</option>
+            <option value="plus" data-amount="10.00">Plus - 10.00€</option>
+            <option value="premium" data-amount="15.00">Premium - 15.00€</option>
+        </select>
+
+        <!-- Κουμπί PayPal για όλες τις επιλογές -->
+        <div class="paypal-button" id="paypal-button-container"></div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-    
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+
     const firebaseConfig = {
-        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-        authDomain: "speedy-bazaar-411110.firebaseapp.com",
-        projectId: "speedy-bazaar-411110",
-        storageBucket: "speedy-bazaar-411110.appspot.com",
-        messagingSenderId: "752456596300",
-        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-        measurementId: "G-NGZHWDY6S5"
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
     const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
 
-    // Έλεγχος συνδρομής
-    const checkSubscriptionStatus = async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-                const subscriptionLevel = userDoc.data().subscriptionLevel;
-                if (subscriptionLevel) {
-                    document.getElementById('accessAppButton').style.display = 'inline-block';
-                    document.getElementById('paypal-button-container-basic').style.display = 'none';
-                    document.getElementById('paypal-button-container-plus').style.display = 'none';
-                    document.getElementById('paypal-button-container-premium').style.display = 'none';
-                } else {
-                    alert("Δεν έχετε ενεργή συνδρομή.");
-                }
-            }
-        }
-    };
+    // Σύνδεση PayPal κουμπιού
+    paypal.Buttons({
+        createOrder: function(data, actions) {
+            // Επιλογή ποσού και επιπέδου από το dropdown
+            const subscriptionDropdown = document.getElementById('subscriptionLevel');
+            const selectedOption = subscriptionDropdown.options[subscriptionDropdown.selectedIndex];
+            const amount = selectedOption.getAttribute('data-amount');
+            const level = selectedOption.value;
 
-    // Ρύθμιση PayPal κουμπιών
-    function setupPaypalButton(level, amount) {
-        paypal.Buttons({
-            createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: amount } }] }),
-            onApprove: (data, actions) => actions.order.capture().then(async () => {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: { value: amount }
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(async function(details) {
+                const subscriptionDropdown = document.getElementById('subscriptionLevel');
+                const level = subscriptionDropdown.value;
+
                 const user = auth.currentUser;
                 if (user) {
+                    // Καταχωρούμε το επίπεδο συνδρομής στο Firestore
                     await setDoc(doc(db, "users", user.uid), { subscriptionLevel: level }, { merge: true });
-                    checkSubscriptionStatus(user);
+                    alert(`Η πληρωμή για το πρόγραμμα ${level} ολοκληρώθηκε επιτυχώς!`);
                 } else {
                     alert("Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!");
                 }
-            })
-        }).render(`#paypal-button-container-${level}`);
-    }
+            });
+        }
+    }).render('#paypal-button-container');
 
-    setupPaypalButton('basic', '5.00');
-    setupPaypalButton('plus', '10.00');
-    setupPaypalButton('premium', '15.00');
-
-    // Σύνδεση Google
-    document.getElementById('googleSignIn').addEventListener('click', () => {
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                const user = result.user;
-                document.getElementById('userImage').src = user.photoURL;
-                document.getElementById('userName').innerText = `Όνομα: ${user.displayName}`;
-                document.getElementById('userInfo').style.display = 'block';
-                checkSubscriptionStatus(user);
-            }).catch((error) => console.error(error));
-    });
-
-    document.getElementById('googleSignOut').addEventListener('click', () => {
-        auth.signOut().then(() => {
-            document.getElementById('userInfo').style.display = 'none';
-            document.getElementById('accessAppButton').style.display = 'none';
-            document.getElementById('googleSignIn').style.display = 'inline-block';
-        });
-    });
-
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
-            document.getElementById('googleSignOut').style.display = 'inline-block';
-            checkSubscriptionStatus(user);
+            document.getElementById('userInfo').style.display = 'block';
         } else {
-            document.getElementById('googleSignIn').style.display = 'inline-block';
+            document.getElementById('userInfo').style.display = 'none';
         }
     });
 </script>
