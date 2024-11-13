@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Επιλογές Συνδρομής</title>
+    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&components=buttons"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -86,7 +87,7 @@
         .card.premium button { background-color: #FFD700; }
 
         /* Media Queries για Κινητές Συσκευές */
-        @media (max-width: 668px) {
+        @media (max-width: 768px) {
             .card {
                 width: 80%; /* Κάνει τις κάρτες μεγαλύτερες σε μικρότερες οθόνες */
                 margin: 10px 0; /* Προσθήκη περιθωρίου */
@@ -114,7 +115,7 @@
         }
 
         /* Όταν η οθόνη είναι μεγαλύτερη από 768px, οι κάρτες επανέρχονται δίπλα-δίπλα */
-        @media (min-width: 669px) {
+        @media (min-width: 769px) {
             .card {
                 width: 30%; /* Επαναφορά στο 30% για μεγαλύτερες οθόνες */
                 margin: 10px; /* Ρύθμιση περιθωρίου */
@@ -139,7 +140,7 @@
                 <li>Πρόσβαση σε analytics</li>
                 <li>Υποστήριξη πελατών</li>
             </ul>
-            <button>Επιλέξτε Πρόγραμμα</button>
+            <div id="paypal-button-container-basic"></div>
         </div>
 
         <!-- Standard Plan -->
@@ -151,7 +152,7 @@
                 <li>Βελτιστοποίηση hashtag</li>
                 <li>Υποστήριξη πελατών</li>
             </ul>
-            <button>Επιλέξτε Πρόγραμμα</button>
+            <div id="paypal-button-container-standard"></div>
         </div>
 
         <!-- Premium Plan -->
@@ -163,8 +164,64 @@
                 <li>Απεριόριστα links</li>
                 <li>Προτεραιότητα στην υποστήριξη</li>
             </ul>
-            <button>Επιλέξτε Πρόγραμμα</button>
+            <div id="paypal-button-container-premium"></div>
         </div>
     </div>
+
+    <script>
+        // PayPal Button for Basic Plan
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '5.00' // Τιμή του Basic Plan
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε με επιτυχία! Ευχαριστούμε, ' + details.payer.name.given_name);
+                });
+            }
+        }).render('#paypal-button-container-basic');
+
+        // PayPal Button for Standard Plan
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '39.00' // Τιμή του Standard Plan
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε με επιτυχία! Ευχαριστούμε, ' + details.payer.name.given_name);
+                });
+            }
+        }).render('#paypal-button-container-standard');
+
+        // PayPal Button for Premium Plan
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '45.00' // Τιμή του Premium Plan
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε με επιτυχία! Ευχαριστούμε, ' + details.payer.name.given_name);
+                });
+            }
+        }).render('#paypal-button-container-premium');
+    </script>
 </body>
 </html>
