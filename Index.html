@@ -145,7 +145,57 @@
             </div>
         </div>
     </div>
+<div class="paypal-button-container">
+    <h3>Επιλέξτε Πακέτο</h3>
+    <button id="basic-plan">Basic - $5/μήνα</button>
+    <button id="standard-plan">Standard - $39/μήνα</button>
+    <button id="premium-plan">Premium - $45/μήνα</button>
+</div>
 
+<script>
+    // Λογική για το Basic Plan
+    document.getElementById('basic-plan').addEventListener('click', function() {
+        createPaypalButton('5.00');
+    });
+
+    // Λογική για το Standard Plan
+    document.getElementById('standard-plan').addEventListener('click', function() {
+        createPaypalButton('39.00');
+    });
+
+    // Λογική για το Premium Plan
+    document.getElementById('premium-plan').addEventListener('click', function() {
+        createPaypalButton('45.00');
+    });
+
+    function createPaypalButton(amount) {
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: amount
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(async function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε από τον ' + details.payer.name.given_name);
+                    const user = auth.currentUser;
+                    if (user) {
+                        const userPaymentDoc = doc(db, "users", user.uid);
+                        await setDoc(userPaymentDoc, { isPaid: true, plan: amount }, { merge: true });
+                        await checkPaymentStatus(user);
+                    } else {
+                        alert('Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!');
+                    }
+                });
+            }
+        }).render('#paypal-button-container');
+    }
+</script>
+    
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
