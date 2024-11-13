@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Επιλογές Συνδρομής</title>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&components=buttons"></script>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -38,7 +32,7 @@
             justify-content: center;
             width: 100%;
             max-width: 1000px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Προσθήκη για το wrapping */
         }
         .card {
             width: 30%;
@@ -48,7 +42,7 @@
             text-align: center;
             padding: 20px;
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* Προσθήκη περιθωρίου */
         }
         .card.basic { border-top: 5px solid #4CAF50; }
         .card.standard { border-top: 5px solid #FF6347; }
@@ -91,15 +85,24 @@
         .card.standard button { background-color: #FF6347; }
         .card.premium button { background-color: #FFD700; }
 
-        /* Media Queries for Mobile */
+        /* Media Queries για Κινητές Συσκευές */
+        @media (max-width: 768px) {
         @media (max-width: 668px) {
             .card {
-                width: 80%;
-                margin: 10px 0;
+                width: 80%; /* Κάνει τις κάρτες μεγαλύτερες σε μικρότερες οθόνες */
+                margin: 10px 0; /* Προσθήκη περιθωρίου */
+@@ -115,112 +115,112 @@
+        }
+
+        /* Όταν η οθόνη είναι μεγαλύτερη από 768px, οι κάρτες επανέρχονται δίπλα-δίπλα */
+        @media (min-width: 769px) {
+        @media (min-width: 669px) {
+            .card {
+                width: 30%; /* Επαναφορά στο 30% για μεγαλύτερες οθόνες */
+                margin: 10px; /* Ρύθμιση περιθωρίου */
             }
             .pricing-container {
-                flex-direction: column;
-                align-items: center;
+                flex-direction: row; /* Οριζόντια διάταξη των καρτών */
             }
         }
     </style>
@@ -107,15 +110,6 @@
 <body>
     <h1>Το κατάλληλο πρόγραμμα για την επιχείρησή σας</h1>
     <p>Επιλέξτε το πρόγραμμα που ταιριάζει καλύτερα σε εσάς και την ομάδα σας</p>
-
-    <!-- Google Sign In Button -->
-    <div id="google-signin">
-        <button id="google-signin-button">Σύνδεση με Google</button>
-    </div>
-    <div id="user-info" style="display: none;">
-        <p>Καλώς ήρθατε, <span id="user-name"></span></p>
-        <img id="user-photo" src="" alt="User Photo" style="width: 50px; height: 50px; border-radius: 50%;"/>
-    </div>
 
     <div class="pricing-container">
         <!-- Basic Plan -->
@@ -156,50 +150,13 @@
     </div>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-            authDomain: "speedy-bazaar-411110.firebaseapp.com",
-            projectId: "speedy-bazaar-411110",
-            storageBucket: "speedy-bazaar-411110.appspot.com",
-            messagingSenderId: "752456596300",
-            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-            measurementId: "G-NGZHWDY6S5"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        const auth = firebase.auth();
-
-        // Google Sign-In
-        const googleSignInButton = document.getElementById('google-signin-button');
-        const userInfoDiv = document.getElementById('user-info');
-        const userNameSpan = document.getElementById('user-name');
-        const userPhotoImg = document.getElementById('user-photo');
-
-        googleSignInButton.addEventListener('click', () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then(result => {
-                    const user = result.user;
-                    userNameSpan.textContent = user.displayName;
-                    userPhotoImg.src = user.photoURL;
-                    userInfoDiv.style.display = 'block';
-                    googleSignInButton.style.display = 'none';
-                })
-                .catch(error => {
-                    console.error(error.message);
-                });
-        });
-
-        // PayPal Buttons for Plans
+        // PayPal Button for Basic Plan
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '5.00' // Price for Basic Plan
+                            value: '5.00' // Τιμή του Basic Plan
                         }
                     }]
                 });
@@ -211,12 +168,13 @@
             }
         }).render('#paypal-button-container-basic');
 
+        // PayPal Button for Standard Plan
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '39.00' // Price for Standard Plan
+                            value: '39.00' // Τιμή του Standard Plan
                         }
                     }]
                 });
@@ -228,12 +186,13 @@
             }
         }).render('#paypal-button-container-standard');
 
+        // PayPal Button for Premium Plan
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '45.00' // Price for Premium Plan
+                            value: '45.00' // Τιμή του Premium Plan
                         }
                     }]
                 });
