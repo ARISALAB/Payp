@@ -363,32 +363,21 @@ ul li {
     });
 
     paypal.Buttons({
-        createOrder: function(data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: {
-                        value: '10.00'
-                    }
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(async function(details) {
-                alert('Η πληρωμή ολοκληρώθηκε από τον ' + details.payer.name.given_name);
+    // Κουμπί Basic
+paypal.Buttons({
+    createOrder: function(data, actions) {
+        return actions.order.create({
+            purchase_units: [{ amount: { value: '5.00' } }]
+        });
+    },
+    onApprove: function(data, actions) {
+        return actions.order.capture().then(async function(details) {
+            alert('Η πληρωμή ολοκληρώθηκε για το Basic πλάνο από τον ' + details.payer.name.given_name);
+            // Περισσότερες ενέργειες μετά την πληρωμή
+        });
+    }
+}).render('#paypal-button-basic');
 
-                const user = auth.currentUser;
-                if (user) {
-                    const userPaymentDoc = doc(db, "users", user.uid);
-                    await setDoc(userPaymentDoc, { isPaid: true }, { merge: true });
-
-                    // Επανεμφανίζουμε το κουμπί και το μήνυμα μετά την πληρωμή
-                    await checkPaymentStatus(user);
-                } else {
-                    alert('Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!');
-                }
-            });
-        }
-    }).render('#paypal-button-container');
 
     document.getElementById('accessAppButton').addEventListener('click', () => {
         window.location.href = 'https://myaris.netlify.app/';
