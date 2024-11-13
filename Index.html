@@ -170,24 +170,42 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    const checkPaymentStatus = async (user) => {
-        if (user) {
-            const userPaymentDoc = doc(db, "users", user.uid);
-            const docSnap = await getDoc(userPaymentDoc);
+    const checkSubscriptionStatus = async (user) => {
+    if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
 
-            if (docSnap.exists() && docSnap.data().isPaid) {
-                document.getElementById('paypal-button-container').style.display = 'none';
+        if (userDoc.exists()) {
+            const subscriptionLevel = userDoc.data().subscriptionLevel;
+
+            // Εμφανίζουμε την αντίστοιχη πρόσβαση με βάση το επίπεδο συνδρομής
+            if (subscriptionLevel === "basic") {
+                alert("Έχετε πρόσβαση στο πρόγραμμα Basic.");
                 document.getElementById('accessAppButton').style.display = 'inline-block';
-                alert('Η εφαρμογή είναι διαθέσιμη για πάντα. Ευχαριστούμε για την πληρωμή σας!');
+            } else if (subscriptionLevel === "plus") {
+                alert("Έχετε πρόσβαση στο πρόγραμμα Plus.");
+                document.getElementById('accessAppButton').style.display = 'inline-block';
+            } else if (subscriptionLevel === "premium") {
+                alert("Έχετε πρόσβαση στο πρόγραμμα Premium.");
+                document.getElementById('accessAppButton').style.display = 'inline-block';
             } else {
-                document.getElementById('paypal-button-container').style.display = 'block';
-                document.getElementById('accessAppButton').style.display = 'none';
+                alert("Δεν έχετε ενεργή συνδρομή. Παρακαλώ πραγματοποιήστε πληρωμή.");
             }
+
+            // Απόκρυψη κουμπιών πληρωμής αν έχει συνδρομή
+            document.getElementById('paypal-button-container-basic').style.display = 'none';
+            document.getElementById('paypal-button-container-plus').style.display = 'none';
+            document.getElementById('paypal-button-container-premium').style.display = 'none';
         } else {
-            document.getElementById('paypal-button-container').style.display = 'block';
-            document.getElementById('accessAppButton').style.display = 'none';
+            // Εμφάνιση κουμπιών αν δεν υπάρχει συνδρομή
+            document.getElementById('paypal-button-container-basic').style.display = 'block';
+            document.getElementById('paypal-button-container-plus').style.display = 'block';
+            document.getElementById('paypal-button-container-premium').style.display = 'block';
         }
-    };
+    } else {
+        alert("Πρέπει να συνδεθείτε για να αποκτήσετε πρόσβαση.");
+    }
+};
+    
 
     document.getElementById('googleSignIn').addEventListener('click', () => {
         signInWithPopup(auth, provider)
