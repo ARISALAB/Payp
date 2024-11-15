@@ -10,47 +10,68 @@
     <!-- Firebase CDN Compatibility Mode -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&currency=EUR"></script>
+
+    <style>
+        .plans-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .plan {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 30%;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            background-color: #f9f9f9;
+        }
+        .plan-header {
+            color: #fff;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+        }
+        .basic { background-color: #4caf50; }
+        .plus { background-color: #2196f3; }
+        .premium { background-color: #ff9800; }
+        .paypal-button { margin-top: 20px; }
+    </style>
 </head>
 <body>
 
 <div id="auth-container">
-    <div id="auth-options">
-        <h2>Συνδεθείτε ή Εγγραφείτε</h2>
-        <form id="email-auth-form" onsubmit="signInWithEmail(event)">
-            <label for="email">Email:</label>
-            <input type="email" id="email" required>
-            <label for="password">Κωδικός:</label>
-            <input type="password" id="password" required>
-            <button type="submit">Σύνδεση</button>
-        </form>
-        <form id="email-signup-form" onsubmit="signUpWithEmail(event)">
-            <label for="signup-email">Εγγραφή Email:</label>
-            <input type="email" id="signup-email" required>
-            <label for="signup-password">Κωδικός:</label>
-            <input type="password" id="signup-password" required>
-            <button type="submit">Εγγραφή</button>
-        </form>
-        <p>Ή</p>
-        <button onclick="signInWithGoogle()">Σύνδεση με Google</button>
-    </div>
+    <!-- Authentication Forms -->
 </div>
 
-<!-- Περιοχή εμφάνισης πληροφοριών χρήστη -->
 <div id="user-info" style="display: none;">
     <h2>Καλωσήρθες, <span id="user-name"></span>!</h2>
     <img id="user-photo" src="" alt="Φωτογραφία Χρήστη" style="width: 100px; height: 100px; border-radius: 50%;"/>
     <button onclick="signOut()">Αποσύνδεση</button>
 </div>
 
-<nav>
-    <img src="./11.png" alt="Logo" class="logo">
-    <button class="menu-toggle">
-        &#9776;<br>Menu
-    </button>
-    <div class="menu-items">
-        <a href="index.html">Αρχική Σελίδα</a>
+<!-- Πλάνα Πληρωμών -->
+<div class="plans-container" id="plans-container">
+    <div class="plan">
+        <div class="plan-header basic">Βασικό</div>
+        <p>Τιμή: €10</p>
+        <div id="paypal-basic" class="paypal-button"></div>
     </div>
-</nav>
+    <div class="plan">
+        <div class="plan-header plus">Plus</div>
+        <p>Τιμή: €20</p>
+        <div id="paypal-plus" class="paypal-button"></div>
+    </div>
+    <div class="plan">
+        <div class="plan-header premium">Premium</div>
+        <p>Τιμή: €30</p>
+        <div id="paypal-premium" class="paypal-button"></div>
+    </div>
+</div>
 
 <script>
     // Ρύθμιση Firebase με Compatibility Mode
@@ -67,60 +88,70 @@
     // Αρχικοποίηση Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const database = firebase.database();
 
-    function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                const user = result.user;
-                displayUserInfo(user);
-            })
-            .catch((error) => {
-                console.error("Σφάλμα κατά τη σύνδεση με Google:", error);
-            });
+    let currentUser = null;
+
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
+            document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
+        } else {
+            currentUser = null;
+            document.getElementById('user-info').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'block';
+        }
+    });
+
+    function savePaymentToDatabase(plan, amount) {
+        if (!currentUser) {
+            console.error("Ο χρήστης δεν είναι συνδεδεμένος.");
+            return;
+        }
+        const paymentRef = database.ref('payments/' + currentUser.uid);
+        paymentRef.push({
+            plan: plan,
+            amount: amount,
+            timestamp: new Date().toISOString()
+        }).then(() => {
+            alert("Η πληρωμή σας αποθηκεύτηκε επιτυχώς!");
+        }).catch((error) => {
+            console.error("Σφάλμα κατά την αποθήκευση πληρωμής:", error);
+        });
     }
 
-    function signInWithEmail(event) {
-        event.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                displayUserInfo(user);
-            })
-            .catch((error) => {
-                console.error("Σφάλμα κατά τη σύνδεση:", error);
-            });
+    function setupPayPalButton(containerId, plan, amount) {
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: amount.toString() }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Η πληρωμή ολοκληρώθηκε από ' + details.payer.name.given_name);
+                    savePaymentToDatabase(plan, amount);
+                });
+            },
+            onError: function(err) {
+                console.error("Σφάλμα PayPal:", err);
+            }
+        }).render('#' + containerId);
     }
 
-    function signUpWithEmail(event) {
-        event.preventDefault();
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                displayUserInfo(user);
-            })
-            .catch((error) => {
-                console.error("Σφάλμα κατά την εγγραφή:", error);
-            });
-    }
-
-    function displayUserInfo(user) {
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
-        document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
-    }
+    setupPayPalButton('paypal-basic', 'Βασικό', 10);
+    setupPayPalButton('paypal-plus', 'Plus', 20);
+    setupPayPalButton('paypal-premium', 'Premium', 30);
 
     function signOut() {
         auth.signOut()
             .then(() => {
-                document.getElementById('auth-container').style.display = 'block';
-                document.getElementById('user-info').style.display = 'none';
-                console.log("Ο χρήστης αποσυνδέθηκε.");
+                alert("Αποσυνδεθήκατε επιτυχώς.");
             })
             .catch((error) => {
                 console.error("Σφάλμα κατά την αποσύνδεση:", error);
