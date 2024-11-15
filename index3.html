@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css"> <!-- Σύνδεσμος στο αρχείο CSS -->
+    <link rel="icon" href="11.png" type="image/png">
+
+    <title>Καταγραφή Εσόδων</title>
+ 
+    <nav>
+        <img src="11.png" alt="Logo" class="logo">
+        <button class="menu-toggle">
+            &#9776;<br>Menu
+        </button>
+        <div class="menu-items">
+            <a href="index.html">Αρχική Σελίδα</a>
+    
+            <div class="dropdown">
+                <a href="#">Συναλλαγές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Εξόδων</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+    
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+    
+            <div class="dropdown">
+                <a href="#">Αναφορές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+    
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία </a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                    
+
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <a href="index.html">Αρχική Σελίδα</a>
+            
+            <div class="dropdown">
+                <a href="#">Συναλλαγές</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Εξόδων</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+            
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+            
+            <div class="dropdown">
+                <a href="#">Αναφορές</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+            
+            <!-- Νέα ενότητα για Προσωπικό -->
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία</a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</head>
+<body>
+
+    <h1>Καταγραφή Εσόδων</h1>
+    <form id="revenue-form">
+        <label for="revenue-date">Ημερομηνία</label>
+        <input type="date" id="revenue-date" required>
+
+        <label for="cash-revenue">Ταμείο Ημέρας (€)</label>
+        <input type="number" id="cash-revenue" step="0.01" required>
+
+        <label for="card-revenue">Έσοδα από Κάρτες (€)</label>
+        <input type="number" id="card-revenue" step="0.01" required>
+
+        <input type="submit" value="Καταγραφή Εσόδων">
+    </form>
+
+    <div id="revenue-summary">
+        <p id="revenue-date-display" class="summary-item">Ημερομηνία: -</p>
+        <p id="cash-revenue-display" class="summary-item">Ταμείο Ημέρας: 0.00 €</p>
+        <p id="card-revenue-display" class="summary-item">Έσοδα από Κάρτες: 0.00 €</p>
+        <p id="total-payments-display" class="summary-item">Συνολικές Πληρωμές με Μετρητά: 0.00 €</p>
+        <p id="balance-display" class="summary-item">Υπόλοιπο Μετρητών: 0.00 €</p>
+    </div>
+
+    <footer>&copy; 2024 Καταγραφή Εσόδων</footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const revenueForm = document.getElementById('revenue-form');
+            const revenueDate = document.getElementById('revenue-date');
+            const cashRevenueInput = document.getElementById('cash-revenue');
+            const cardRevenueInput = document.getElementById('card-revenue');
+            const cashRevenueDisplay = document.getElementById('cash-revenue-display');
+            const cardRevenueDisplay = document.getElementById('card-revenue-display');
+            const totalPaymentsDisplay = document.getElementById('total-payments-display');
+            const balanceDisplay = document.getElementById('balance-display');
+            const revenueDateDisplay = document.getElementById('revenue-date-display');
+    
+            const revenueData = JSON.parse(localStorage.getItem('revenueData')) || {};
+            const paymentsData = JSON.parse(localStorage.getItem('payments')) || {};
+    
+            function saveRevenue() {
+                localStorage.setItem('revenueData', JSON.stringify(revenueData));
+            }
+    
+            function updateSummary() {
+                const date = revenueDate.value;
+                if (date) {
+                    const cashRevenue = revenueData[date] ? revenueData[date].cash : 0;
+                    const cardRevenue = revenueData[date] ? revenueData[date].card : 0;
+    
+                    const totalPayments = paymentsData[date] ? paymentsData[date].reduce((sum, payment) => sum + payment.amount, 0) : 0;
+    
+                    const balance = cashRevenue - cardRevenue - totalPayments;
+    
+                    revenueDateDisplay.textContent = `Ημερομηνία: ${date}`;
+                    cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${cashRevenue.toFixed(2)} €`;
+                    cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${cardRevenue.toFixed(2)} €`;
+                    totalPaymentsDisplay.textContent = `Συνολικές Πληρωμές με Μετρητά: ${totalPayments.toFixed(2)} €`;
+                    balanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${balance.toFixed(2)} €`;
+                }
+            }
+    
+            revenueForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const date = revenueDate.value;
+                if (date) {
+                    const cashRevenue = parseFloat(cashRevenueInput.value) || 0;
+                    const cardRevenue = parseFloat(cardRevenueInput.value) || 0;
+    
+                    if (!revenueData[date]) {
+                        revenueData[date] = { cash: 0, card: 0 };
+                    }
+    
+                    revenueData[date].cash = cashRevenue;
+                    revenueData[date].card = cardRevenue;
+    
+                    saveRevenue();
+                    updateSummary();
+                    revenueForm.reset();
+                }
+            });
+    
+            revenueDate.addEventListener('change', updateSummary);
+    
+            updateSummary();
+        });
+    </script>
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'flex';
+        });
+        
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'none';
+        });
+        
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('menuModal')) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        }
+        
+        // Κώδικας για την απόκρυψη του toggle menu όταν μεγαλώνει η οθόνη
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        });
+        
+        </script>
+</body>
+</html>
