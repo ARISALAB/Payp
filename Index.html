@@ -47,6 +47,7 @@
 <div id="user-info" style="display: none;">
     <h2>Καλωσήρθες, <span id="user-name"></span>!</h2>
     <img id="user-photo" src="" alt="Φωτογραφία Χρήστη" style="width: 100px; height: 100px; border-radius: 50%;"/>
+    <button id="access-pages" style="display: none;" onclick="showAccessiblePages()">Πρόσβαση στις Σελίδες</button>
     <button onclick="signOut()">Αποσύνδεση</button>
 </div>
 
@@ -71,6 +72,20 @@
     </div>
 </section>
 
+<div id="accessible-pages" style="display: none;">
+    <h3>Πρόσβαση στις Σελίδες</h3>
+    <ul>
+        <li><a href="index1.html">Καταγραφή Εξόδων</a></li>
+        <li><a href="index4.html">Τιμολόγια Επί Πιστώσει</a></li>
+        <li><a href="index5.html">Πληρωμές Τράπεζας</a></li>
+        <li><a href="index3.html">Καταγραφή Εσόδων</a></li>
+        <li><a href="index7.html">Ημερήσια Αναφορά</a></li>
+        <li><a href="index6.html">Εβδομαδιαία Αναφορά</a></li>
+        <li><a href="index8.html">Μηνιαία Αναφορά</a></li>
+        <li><a href="index9.html">Ετήσια Αναφορά</a></li>
+    </ul>
+</div>
+
 <script>
     // Ρύθμιση Firebase
     const firebaseConfig = {
@@ -88,23 +103,26 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-   function displayUserInfo(user) {
-    if (user) {
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
-        document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
-    } else {
-        document.getElementById('auth-container').style.display = 'block';
-        document.getElementById('user-info').style.display = 'none';
+    // Συνάρτηση για εμφάνιση πληροφοριών χρήστη
+    function displayUserInfo(user) {
+        if (user) {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
+            document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
+
+            // Έλεγχος συνδρομής για ενεργοποίηση του κουμπιού
+            db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
+                const userPlan = snapshot.val();
+                if (userPlan === "basic") {
+                    document.getElementById('access-pages').style.display = 'inline-block';
+                }
+            });
+        } else {
+            document.getElementById('auth-container').style.display = 'block';
+            document.getElementById('user-info').style.display = 'none';
+        }
     }
-}
-
-// Ενημερώστε το auth observer για να διαχειριστεί σωστά την εμφάνιση:
-auth.onAuthStateChanged(function(user) {
-    displayUserInfo(user);
-});
-
 
     // Αποσύνδεση χρήστη
     function signOut() {
@@ -112,6 +130,41 @@ auth.onAuthStateChanged(function(user) {
             document.getElementById('auth-container').style.display = 'block';
             document.getElementById('user-info').style.display = 'none';
         });
+    }
+
+    // Εμφάνιση προσβάσιμων σελίδων
+    function showAccessiblePages() {
+        document.getElementById('accessible-pages').style.display = 'block';
+    }
+
+    // Συνάρτηση για Google Login
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).then((result) => displayUserInfo(result.user));
+    }
+
+    // Συνάρτηση για Email Login
+    function signInWithEmail(event) {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                displayUserInfo(userCredential.user);
+            });
+    }
+
+    // Συνάρτηση για Email Signup
+    function signUpWithEmail(event) {
+        event.preventDefault();
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+
+        auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                displayUserInfo(userCredential.user);
+            });
     }
 
     // Υλοποίηση PayPal κουμπιών
@@ -132,15 +185,13 @@ auth.onAuthStateChanged(function(user) {
                     if (user) {
                         const userPlan = planName === "Βασικό" ? "basic" : planName === "Plus" ? "plus" : "premium";
 
-                        // Αποθήκευση του πλάνου στο Firebase
                         db.ref('users/' + user.uid + '/subscription').set({
                             plan: userPlan,
                             timestamp: new Date().toISOString()
                         });
 
-                        alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε με επιτυχία.`);
-                    } else {
-                        alert("Παρακαλώ συνδεθείτε για να ολοκληρώσετε την πληρωμή.");
+                        alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε.`);
+                        displayUserInfo(user);
                     }
                 });
             }
@@ -152,67 +203,10 @@ auth.onAuthStateChanged(function(user) {
     setupPayPal('#paypal-plus', 'Plus', '10.00');
     setupPayPal('#paypal-premium', 'Premium', '20.00');
 
-    // Συνάρτηση για Google Login
-    function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).then((result) => displayUserInfo(result.user));
-    }
-
-    // Συνάρτηση για Email Login
-    function signInWithEmail(event) {
-        event.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
-            displayUserInfo(userCredential.user);
-        });
-    }
-
-    // Συνάρτηση για Email Signup
-    function signUpWithEmail(event) {
-        event.preventDefault();
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
-            displayUserInfo(userCredential.user);
-        });
-    }
-
-   document.addEventListener("DOMContentLoaded", function() {
-    const restrictedPages = {
-        basic: [
-            "index2.html", // Καρτέλες Προμηθευτών
-            "employee-management.html", // Καταγραφή Προσωπικού
-            "salary.html", // Καταγραφή Μισθοδοσίας
-            "weekly-salary.html", // Εβδομαδιαία Μισθοδοσία
-            "salary-report.html" // Αναφορά Μισθοδοσίας
-        ]
-    };
-
+    // Παρακολούθηση κατάστασης χρήστη
     auth.onAuthStateChanged(function(user) {
-        const currentPage = window.location.pathname.split('/').pop();
-
-        if (!user) {
-            // Μην ανακατευθύνεις αν είσαι ήδη στην index.html
-            if (currentPage !== "index.html") {
-                alert("Παρακαλώ συνδεθείτε για να αποκτήσετε πρόσβαση.");
-                window.location.href = "index.html";
-            }
-            return;
-        }
-
-        db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
-            const userPlan = snapshot.val();
-
-            // Έλεγχος αν η σελίδα είναι περιορισμένη
-            if (userPlan === "basic" && restrictedPages.basic.includes(currentPage)) {
-                alert("Δεν έχετε πρόσβαση σε αυτή τη σελίδα. Αναβαθμίστε τη συνδρομή σας.");
-                window.location.href = "index.html"; // Επιστροφή στην Αρχική Σελίδα
-            }
-        });
+        displayUserInfo(user);
     });
-});
-
 </script>
 
 <style>
