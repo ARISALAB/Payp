@@ -75,56 +75,22 @@
         const auth = getAuth();
         const db = getFirestore(app);
 
-        // Αποθήκευση Εσόδων στη Firestore
-        async function saveRevenueToFirestore(date, cash, card) {
+        // Έλεγχος πληρωμής
+        async function checkPaymentStatus(user) {
             try {
-                const user = auth.currentUser;
-                if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+                const paymentDoc = doc(db, "payments", user.uid);
+                const paymentData = (await getDoc(paymentDoc)).data();
 
-                const revenueDoc = doc(db, "revenues", user.uid);
-                const currentData = (await getDoc(revenueDoc)).data() || {};
-                currentData[date] = { cash, card };
-
-                await setDoc(revenueDoc, currentData);
-                console.log("Τα δεδομένα αποθηκεύτηκαν επιτυχώς!");
+                if (paymentData && paymentData.isPaid) {
+                    console.log("Η πληρωμή έχει ολοκληρωθεί.");
+                    return true;
+                } else {
+                    console.warn("Η πληρωμή δεν έχει ολοκληρωθεί.");
+                    return false;
+                }
             } catch (error) {
-                console.error("Σφάλμα κατά την αποθήκευση δεδομένων:", error);
-            }
-        }
-
-        // Ανάκτηση Εσόδων από τη Firestore
-        async function getRevenueFromFirestore(date) {
-            try {
-                const user = auth.currentUser;
-                if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
-
-                const revenueDoc = doc(db, "revenues", user.uid);
-                const currentData = (await getDoc(revenueDoc)).data() || {};
-
-                return currentData[date] || { cash: 0, card: 0 };
-            } catch (error) {
-                console.error("Σφάλμα κατά την ανάκτηση δεδομένων:", error);
-                return { cash: 0, card: 0 };
-            }
-        }
-
-        // Υπολογισμός και Ενημέρωση Περίληψης
-        async function updateSummary() {
-            const revenueDate = document.getElementById('revenue-date').value;
-            const revenueDateDisplay = document.getElementById('revenue-date-display');
-            const cashRevenueDisplay = document.getElementById('cash-revenue-display');
-            const cardRevenueDisplay = document.getElementById('card-revenue-display');
-            const cashBalanceDisplay = document.getElementById('cash-balance-display');
-
-            if (revenueDate) {
-                const { cash, card } = await getRevenueFromFirestore(revenueDate);
-
-                const cashBalance = cash - card; // Υπολογισμός μετρητών
-
-                revenueDateDisplay.textContent = `Ημερομηνία: ${revenueDate}`;
-                cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${cash.toFixed(2)} €`;
-                cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${card.toFixed(2)} €`;
-                cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${cashBalance.toFixed(2)} €`;
+                console.error("Σφάλμα κατά τον έλεγχο πληρωμής:", error);
+                return false;
             }
         }
 
@@ -143,15 +109,54 @@
             }
         });
 
-        // Έλεγχος Σύνδεσης Χρήστη
-        onAuthStateChanged(auth, (user) => {
+        // Έλεγχος Σύνδεσης Χρήστη και Πληρωμής
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                document.body.style.display = 'block';
+                const isPaid = await checkPaymentStatus(user);
+                if (isPaid) {
+                    document.body.style.display = 'block';
+                } else {
+                    alert('Δεν έχετε ολοκληρώσει την πληρωμή σας. Μεταφέρεστε στη σελίδα πληρωμής.');
+                    window.location.href = 'index.html'; // Ανακατεύθυνση στη σελίδα πληρωμής
+                }
             } else {
                 alert('Δεν έχετε συνδεθεί! Παρακαλώ συνδεθείτε πρώτα.');
-                window.location.href = 'index.html';
+                window.location.href = 'index.html'; // Ανακατεύθυνση στη σελίδα σύνδεσης/πληρωμής
             }
         });
+
+        // Ανάκτηση Εσόδων από τη Firestore
+        async function getRevenueFromFirestore(date) {
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+
+                const revenueDoc = doc(db, "revenues", user.uid);
+                const currentData = (await getDoc(revenueDoc)).data() || {};
+
+                return currentData[date] || { cash: 0, card: 0 };
+            } catch (error) {
+                console.error("Σφάλμα κατά την ανάκτηση δεδομένων:", error);
+                return { cash: 0, card: 0 };
+            }
+        }
+
+        // Αποθήκευση Εσόδων στη Firestore
+        async function saveRevenueToFirestore(date, cash, card) {
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+
+                const revenueDoc = doc(db, "revenues", user.uid);
+                const currentData = (await getDoc(revenueDoc)).data() || {};
+                currentData[date] = { cash, card };
+
+                await setDoc(revenueDoc, currentData);
+                console.log("Τα δεδομένα αποθηκεύτηκαν επιτυχώς!");
+            } catch (error) {
+                console.error("Σφάλμα κατά την αποθήκευση δεδομένων:", error);
+            }
+        }
 
         // Αλλαγή Ημερομηνίας
         document.getElementById('revenue-date').addEventListener('change', updateSummary);
