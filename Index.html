@@ -88,13 +88,23 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Συνάρτηση για εμφάνιση πληροφοριών χρήστη
-    function displayUserInfo(user) {
+   function displayUserInfo(user) {
+    if (user) {
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('user-info').style.display = 'block';
         document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
         document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
+    } else {
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('user-info').style.display = 'none';
     }
+}
+
+// Ενημερώστε το auth observer για να διαχειριστεί σωστά την εμφάνιση:
+auth.onAuthStateChanged(function(user) {
+    displayUserInfo(user);
+});
+
 
     // Αποσύνδεση χρήστη
     function signOut() {
