@@ -89,7 +89,7 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
- function displayUserInfo(user) {
+function displayUserInfo(user) {
     if (user) {
         // Απόκρυψη του authentication container και εμφάνιση του user info
         document.getElementById('auth-container').style.display = 'none';
@@ -97,19 +97,21 @@
         document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
         document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
 
+        // Επαναφορά της κατάστασης του κουμπιού
+        const accessButton = document.getElementById('access-pages');
+        accessButton.style.display = 'none';
+
         // Ανάκτηση συνδρομής από το Firebase
         db.ref('users/' + user.uid + '/subscription').once('value')
             .then(snapshot => {
                 const subscription = snapshot.val();
                 if (subscription && subscription.plan === "basic" && subscription.paymentVerified) {
-                    document.getElementById('access-pages').style.display = 'inline-block';
-                } else {
-                    document.getElementById('access-pages').style.display = 'none';
+                    accessButton.style.display = 'inline-block'; // Ενεργοποίηση κουμπιού αν έχει πληρωθεί
                 }
             })
             .catch(error => {
                 console.error("Σφάλμα κατά την ανάκτηση συνδρομής:", error);
-                document.getElementById('access-pages').style.display = 'none'; // Απόκρυψη του κουμπιού σε περίπτωση σφάλματος
+                accessButton.style.display = 'none'; // Απόκρυψη κουμπιού σε περίπτωση αποτυχίας
             });
     } else {
         // Αν ο χρήστης δεν είναι συνδεδεμένος
@@ -118,6 +120,7 @@
         document.getElementById('access-pages').style.display = 'none';
     }
 }
+
 
 
     // Αποσύνδεση χρήστη
@@ -193,13 +196,12 @@ function setupPayPal(planId, planName, price) {
 }
 
 
-
     // Ρύθμιση κουμπιών για τα πλάνα
     setupPayPal('#paypal-basic', 'Βασικό', '5.00');
     setupPayPal('#paypal-plus', 'Plus', '10.00');
     setupPayPal('#paypal-premium', 'Premium', '20.00');
 
-  auth.onAuthStateChanged(function(user) {
+ auth.onAuthStateChanged(function(user) {
     if (user) {
         displayUserInfo(user);
     } else {
