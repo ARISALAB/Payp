@@ -55,12 +55,26 @@
         <p id="payment-status" class="summary-item"></p> <!-- Για την εμφάνιση της πληρωμής -->
     </div>
 
+    <h2>Αποθηκευμένα Έσοδα</h2>
+    <table id="revenue-table">
+        <thead>
+            <tr>
+                <th>Ημερομηνία</th>
+                <th>Ταμείο Ημέρας (€)</th>
+                <th>Έσοδα από Κάρτες (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Δεδομένα από την Firestore θα εμφανιστούν εδώ -->
+        </tbody>
+    </table>
+
     <footer>&copy; 2024 Καταγραφή Εσόδων</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
@@ -93,19 +107,37 @@
             }
         }
 
-        // Ανάκτηση Εσόδων από τη Firestore
-        async function getRevenueFromFirestore(date) {
+        // Ανάκτηση Όλων των Εσόδων από τη Firestore
+        async function getAllRevenues() {
             try {
                 const user = auth.currentUser;
                 if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
 
                 const revenueDoc = doc(db, "revenues", user.uid);
-                const currentData = (await getDoc(revenueDoc)).data() || {};
+                const revenueSnapshot = await getDoc(revenueDoc);
+                const data = revenueSnapshot.data() || {};
 
-                return currentData[date] || { cash: 0, card: 0 };
+                return data;
             } catch (error) {
                 console.error("Σφάλμα κατά την ανάκτηση δεδομένων:", error);
-                return { cash: 0, card: 0 };
+                return {};
+            }
+        }
+
+        // Ενημέρωση του πίνακα με τα αποθηκευμένα έσοδα
+        function updateRevenueTable(revenues) {
+            const tableBody = document.getElementById('revenue-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Καθαρίζουμε τον πίνακα πριν την ανανέωση
+
+            for (const [date, { cash, card }] of Object.entries(revenues)) {
+                const row = tableBody.insertRow();
+                const dateCell = row.insertCell(0);
+                const cashCell = row.insertCell(1);
+                const cardCell = row.insertCell(2);
+
+                dateCell.textContent = date;
+                cashCell.textContent = cash.toFixed(2);
+                cardCell.textContent = card.toFixed(2);
             }
         }
 
@@ -119,49 +151,49 @@
             const paymentStatus = document.getElementById('payment-status');
 
             if (revenueDate) {
-                const { cash, card } = await getRevenueFromFirestore(revenueDate);
+                const revenues = await getAllRevenues();
+                const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
 
-                const cashBalance = cash - card; // Υπολογισμός μετρητών
+                const cashBalance = revenue.cash - revenue.card; // Υπολογισμός μετρητών
 
                 revenueDateDisplay.textContent = `Ημερομηνία: ${revenueDate}`;
-                cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${cash.toFixed(2)} €`;
-                cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${card.toFixed(2)} €`;
+                cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${revenue.cash.toFixed(2)} €`;
+                cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${revenue.card.toFixed(2)} €`;
                 cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${cashBalance.toFixed(2)} €`;
 
-                // Έλεγχος αν έχει πληρωθεί
-                if (cash + card > 0) {
-                    paymentStatus.textContent = "Η πληρωμή έχει ολοκληρωθεί.";
-                } else {
-                    paymentStatus.textContent = "Δεν έχει καταγραφεί πληρωμή για αυτή την ημερομηνία.";
-                }
+                // Έλεγχος αν υπάρχουν πληρωμές
+                paymentStatus.textContent = revenue.cash + revenue.card > 0 ? "Πληρωμές Καταχωρημένες" : "Δεν υπάρχουν πληρωμές";
             }
         }
 
-        // Υποβολή Φόρμας
-        document.getElementById('revenue-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Παρακολούθηση αλλαγών στο πεδίο ημερομηνίας
+        document.getElementById('revenue-date').addEventListener('change', updateSummary);
 
-            const revenueDate = document.getElementById('revenue-date').value;
-            const cashRevenue = parseFloat(document.getElementById('cash-revenue').value) || 0;
-            const cardRevenue = parseFloat(document.getElementById('card-revenue').value) || 0;
-
-            if (revenueDate) {
-                await saveRevenueToFirestore(revenueDate, cashRevenue, cardRevenue);
-                updateSummary();
-                e.target.reset();
-            }
-        });
-
-        // Έλεγχος Σύνδεσης Χρήστη
+        // Έλεγχος αν είναι συνδεδεμένος ο χρήστης
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.body.style.display = 'block';
+                document.body.style.display = 'block'; // Εμφάνιση περιεχομένου όταν ο χρήστης είναι συνδεδεμένος
                 updateSummary();
+                getAllRevenues().then(updateRevenueTable); // Ενημέρωση πίνακα με όλα τα έσοδα
             } else {
                 document.body.style.display = 'none';
                 alert('Παρακαλώ συνδεθείτε!');
                 window.location.href = "login.html";
             }
+        });
+
+        // Αποθήκευση δεδομένων όταν υποβληθεί η φόρμα
+        document.getElementById('revenue-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const date = document.getElementById('revenue-date').value;
+            const cash = parseFloat(document.getElementById('cash-revenue').value);
+            const card = parseFloat(document.getElementById('card-revenue').value);
+
+            saveRevenueToFirestore(date, cash, card).then(() => {
+                updateSummary(); // Ενημέρωση της περίληψης μετά την αποθήκευση
+                getAllRevenues().then(updateRevenueTable); // Ενημέρωση του πίνακα
+            });
         });
     </script>
 </body>
