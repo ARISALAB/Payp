@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Αναφορά Μισθοδοσίας</title>
+</head>
+<body>
+    <nav>
+        <img src="11.png" alt="Logo" class="logo">
+        <button class="menu-toggle">
+            &#9776;<br>Menu
+        </button>
+        <div class="menu-items">
+            <a href="index.html">Αρχική Σελίδα</a>
+    
+            <div class="dropdown">
+                <a href="#">Συναλλαγές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Συναλλαγών</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+    
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+    
+            <div class="dropdown">
+                <a href="#">Αναφορές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+    
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία </a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                    
+
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <a href="index.html">Αρχική Σελίδα</a>
+            
+            <div class="dropdown">
+                <a href="#">Συναλλαγές</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Συναλλαγών</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+            
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+            
+            <div class="dropdown">
+                <a href="#">Αναφορές</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+            
+            <!-- Νέα ενότητα για Προσωπικό -->
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία</a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <h1>Αναφορά Μισθοδοσίας</h1>
+    <form id="date-range-form">
+        <label for="start-date">Ημερομηνία Έναρξης:</label>
+        <input type="date" id="start-date" required><br>
+
+        <label for="end-date">Ημερομηνία Λήξης:</label>
+        <input type="date" id="end-date" required><br>
+
+        <button type="submit">Προβολή Αναφοράς</button>
+    </form>
+
+    <h2 id="report-period">
+        Η μισθοδοσία από 
+        <span id="start-date-link" class="date-link green">Ημερομηνία Έναρξης</span> 
+        έως την 
+        <span id="end-date-link" class="date-link red">Ημερομηνία Λήξης</span> είναι αναλυτικά:
+    </h2>
+        <table id="report-table">
+        <thead>
+            <tr>
+                <th>Όνομα</th>
+                <th>Ειδικότητα</th>
+                <th>Συνολική Πληρωμή (€)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div>
+        <strong>Συνολική Μισθοδοσία:</strong> <span id="total-report-salary">0.00 €</span>
+    </div>
+
+    <script>
+ document.getElementById('date-range-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    const startDate = new Date(document.getElementById('start-date').value);
+    const endDate = new Date(document.getElementById('end-date').value);
+    const salaryData = JSON.parse(localStorage.getItem('salaryData')) || [];
+    const weeklySalaryData = JSON.parse(localStorage.getItem('weeklySalaryData')) || [];
+    const employees = JSON.parse(localStorage.getItem('employees')) || [];
+    const reportTableBody = document.getElementById('report-table').querySelector('tbody');
+    
+    reportTableBody.innerHTML = ''; // Καθαρισμός του πίνακα
+    let totalAmount = 0;
+
+    // Ενημέρωση του τίτλου περιόδου
+    document.getElementById('report-period').textContent = `Η μισθοδοσία από ${startDate.toLocaleDateString()} έως ${endDate.toLocaleDateString()} είναι αναλυτικά:`;
+
+    // Ομαδοποίηση πληρωμών ανά υπάλληλο
+    const employeePayments = {};
+
+    // Φιλτράρισμα και ομαδοποίηση δεδομένων από τη γενική μισθοδοσία
+    salaryData.forEach(entry => {
+        const entryDate = new Date(entry.date);
+        if (entryDate >= startDate && entryDate <= endDate) {
+            if (!employeePayments[entry.name]) {
+                const employee = employees.find(emp => emp.name === entry.name);
+                employeePayments[entry.name] = {
+                    role: employee ? employee.role : '-', // Ανάκτηση ειδικότητας
+                    totalPayment: 0
+                };
+            }
+            employeePayments[entry.name].totalPayment += entry.amount;
+            totalAmount += entry.amount;
+        }
+    });
+
+    // Φιλτράρισμα και ομαδοποίηση δεδομένων από την εβδομαδιαία μισθοδοσία
+    weeklySalaryData.forEach(entry => {
+        const entryDate = new Date(entry.date);
+        if (entryDate >= startDate && entryDate <= endDate) {
+            if (!employeePayments[entry.name]) {
+                const employee = employees.find(emp => emp.name === entry.name);
+                employeePayments[entry.name] = {
+                    role: employee ? employee.role : '-', // Ανάκτηση ειδικότητας
+                    totalPayment: 0
+                };
+            }
+            const paymentAmount = (entry.hoursWorked * entry.wagePer8Hours) / 8;
+            employeePayments[entry.name].totalPayment += paymentAmount;
+            totalAmount += paymentAmount;
+        }
+    });
+
+    // Εμφάνιση των αποτελεσμάτων στον πίνακα
+    for (const [name, data] of Object.entries(employeePayments)) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${name}</td>
+            <td>${data.role}</td>
+            <td>${data.totalPayment.toFixed(2)} €</td>
+        `;
+        reportTableBody.appendChild(row);
+    }
+
+    // Ενημέρωση του συνολικού ποσού αναφοράς
+    document.getElementById('total-report-salary').textContent = totalAmount.toFixed(2) + ' €';
+});
+
+
+        // Ανοίγει το ημερολόγιο της ημερομηνίας έναρξης όταν κάνουμε κλικ στο "Ημερομηνία Έναρξης"
+document.getElementById('start-date-link').addEventListener('click', function() {
+    document.getElementById('start-date').focus();
+});
+
+// Ανοίγει το ημερολόγιο της ημερομηνίας λήξης όταν κάνουμε κλικ στο "Ημερομηνία Λήξης"
+document.getElementById('end-date-link').addEventListener('click', function() {
+    document.getElementById('end-date').focus();
+});
+
+    </script>
+     <script>
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'flex';
+        });
+        
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'none';
+        });
+        
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('menuModal')) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        }
+        
+        // Κώδικας για την απόκρυψη του toggle menu όταν μεγαλώνει η οθόνη
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        });
+        
+        </script>
+</body>
+</html>
