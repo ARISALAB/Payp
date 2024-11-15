@@ -11,68 +11,80 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
             margin: 0;
             padding: 0;
+            background-color: #f4f4f4;
         }
-        header {
-            text-align: center;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
-        }
-        .pricing-plans {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 20px;
+            justify-content: space-around;
         }
         .plan {
-            background: #ffffff;
+            background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 30%;
             text-align: center;
             padding: 20px;
         }
-        .plan .header {
-            font-size: 24px;
+        .plan-header {
+            font-size: 1.5em;
             font-weight: bold;
             margin-bottom: 10px;
+            padding: 10px;
         }
-        .plan .price {
-            font-size: 20px;
-            margin-bottom: 15px;
+        .basic { background-color: #007bff; color: white; }
+        .plus { background-color: #28a745; color: white; }
+        .premium { background-color: #ffc107; color: black; }
+        .plan-details {
+            margin: 15px 0;
+            font-size: 1em;
         }
-        .plan .paypal-button-container {
-            margin-top: 20px;
+        #paypal-button-container-basic,
+        #paypal-button-container-plus,
+        #paypal-button-container-premium {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Πλάνα Πληρωμών</h1>
+        <h1 style="text-align: center;">Επιλέξτε το Πλάνο Πληρωμής σας</h1>
     </header>
 
-    <section class="pricing-plans">
-        <!-- Βασικό Πλάνο -->
+    <section class="container">
+        <!-- Basic Plan -->
         <div class="plan">
-            <div class="header">Βασικό</div>
-            <div class="price">€10/μήνα</div>
-            <div id="paypal-button-basic" class="paypal-button-container"></div>
+            <div class="plan-header basic">Βασικό</div>
+            <div class="plan-details">
+                <p>Κόστος: €10</p>
+                <p>Πρόσβαση σε βασικά χαρακτηριστικά</p>
+            </div>
+            <div id="paypal-button-container-basic"></div>
         </div>
 
-        <!-- Plus Πλάνο -->
+        <!-- Plus Plan -->
         <div class="plan">
-            <div class="header">Plus</div>
-            <div class="price">€20/μήνα</div>
-            <div id="paypal-button-plus" class="paypal-button-container"></div>
+            <div class="plan-header plus">Plus</div>
+            <div class="plan-details">
+                <p>Κόστος: €20</p>
+                <p>Πρόσβαση σε επιπλέον χαρακτηριστικά</p>
+            </div>
+            <div id="paypal-button-container-plus"></div>
         </div>
 
-        <!-- Premium Πλάνο -->
+        <!-- Premium Plan -->
         <div class="plan">
-            <div class="header">Premium</div>
-            <div class="price">€30/μήνα</div>
-            <div id="paypal-button-premium" class="paypal-button-container"></div>
+            <div class="plan-header premium">Premium</div>
+            <div class="plan-details">
+                <p>Κόστος: €30</p>
+                <p>Πρόσβαση σε όλα τα χαρακτηριστικά</p>
+            </div>
+            <div id="paypal-button-container-premium"></div>
         </div>
     </section>
 
@@ -91,27 +103,29 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Αποθήκευση πληρωμής στο Firestore
+        // Αποθήκευση πληρωμών στο Firestore
         function savePaymentToFirestore(userId, plan, amount) {
             db.collection('payments').add({
                 userId: userId,
                 plan: plan,
                 amount: amount,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then((docRef) => {
-                console.log("Η πληρωμή αποθηκεύτηκε με ID: ", docRef.id);
+            }).then(() => {
+                alert("Η πληρωμή σας αποθηκεύτηκε επιτυχώς!");
             }).catch((error) => {
-                console.error("Σφάλμα αποθήκευσης πληρωμής: ", error);
+                console.error("Σφάλμα κατά την αποθήκευση πληρωμής:", error);
             });
         }
 
         // PayPal Buttons
-        function renderPaypalButton(containerId, plan, amount) {
+        function renderPayPalButton(containerId, plan, amount) {
             paypal.Buttons({
                 createOrder: function(data, actions) {
                     return actions.order.create({
                         purchase_units: [{
-                            amount: { value: amount }
+                            amount: {
+                                value: amount
+                            }
                         }]
                     });
                 },
@@ -120,28 +134,19 @@
                         const user = auth.currentUser;
                         if (user) {
                             savePaymentToFirestore(user.uid, plan, amount);
-                            alert('Η πληρωμή σας για το πλάνο ' + plan + ' ολοκληρώθηκε.');
+                            alert("Ευχαριστούμε για την αγορά σας, " + details.payer.name.given_name + "!");
                         } else {
-                            alert('Παρακαλώ συνδεθείτε πριν την πληρωμή.');
+                            alert("Παρακαλώ συνδεθείτε για να αποθηκεύσετε την πληρωμή σας.");
                         }
                     });
                 }
             }).render(containerId);
         }
 
-        // Ρύθμιση PayPal Buttons για κάθε πλάνο
-        renderPaypalButton('#paypal-button-basic', 'Βασικό', '10.00');
-        renderPaypalButton('#paypal-button-plus', 'Plus', '20.00');
-        renderPaypalButton('#paypal-button-premium', 'Premium', '30.00');
-
-        // Προαιρετική σύνδεση χρήστη
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('Συνδεδεμένος χρήστης: ', user.email);
-            } else {
-                console.log('Δεν υπάρχει συνδεδεμένος χρήστης.');
-            }
-        });
+        // Δημιουργία PayPal Buttons για κάθε πλάνο
+        renderPayPalButton('#paypal-button-container-basic', 'Βασικό', '10.00');
+        renderPayPalButton('#paypal-button-container-plus', 'Plus', '20.00');
+        renderPayPalButton('#paypal-button-container-premium', 'Premium', '30.00');
     </script>
 </body>
 </html>
