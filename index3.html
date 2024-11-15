@@ -8,9 +8,9 @@
     <title>Καταγραφή Εσόδων</title>
     <!-- Firebase SDKs -->
     
-   <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.13.0/firebase-analytics.js";
 
   const firebaseConfig = {
@@ -29,7 +29,8 @@
 
   // Function to save revenue to Firestore
   function saveRevenue(date, cashRevenue, cardRevenue) {
-    db.collection('revenues').doc(date).set({
+    const revenueRef = doc(db, 'revenues', date);
+    setDoc(revenueRef, {
       cash: cashRevenue,
       card: cardRevenue
     }).then(() => {
@@ -41,9 +42,10 @@
 
   // Function to update the summary after submission
   function updateSummary(date) {
-    db.collection('revenues').doc(date).get().then((doc) => {
-      if (doc.exists) {
-        const data = doc.data();
+    const revenueRef = doc(db, 'revenues', date);
+    getDoc(revenueRef).then((docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
         const cashRevenue = data.cash || 0;
         const cardRevenue = data.card || 0;
         const totalPayments = 0; // Προσθήκη λειτουργικότητας για πληρωμές εάν είναι απαραίτητο
