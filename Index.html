@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Αρχική Σελίδα</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="11.png" type="image/png">
+    <link rel="icon" href="./11.png" type="image/png">
+
+    <!-- Firebase CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
 
@@ -35,48 +36,17 @@
 </div>
 
 <nav>
-    <img src="11.png" alt="Logo" class="logo">
+    <img src="./11.png" alt="Logo" class="logo">
     <button class="menu-toggle">
         &#9776;<br>Menu
     </button>
     <div class="menu-items">
         <a href="index.html">Αρχική Σελίδα</a>
-        <div class="dropdown">
-            <a href="#">Συναλλαγές &#9662;</a>
-            <div class="dropdown-content">
-                <a href="index1.html">Καταγραφή Εξόδων</a>
-                <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
-                <a href="index5.html">Πληρωμές Τράπεζας</a>
-            </div>
-        </div>
-        <a href="index3.html">Καταγραφή Εσόδων</a>
-        <a href="index2.html">Καρτέλες Προμηθευτών</a>
-        <div class="dropdown">
-            <a href="#">Αναφορές &#9662;</a>
-            <div class="dropdown-content">
-                <a href="index7.html">Ημερήσια Αναφορά</a>
-                <a href="index6.html">Εβδομαδιαία Αναφορά</a>
-                <a href="index8.html">Μηνιαία Αναφορά</a>
-                <a href="index9.html">Ετήσια Αναφορά</a>
-            </div>
-        </div>
-        <div class="dropdown">
-            <a href="#">Προσωπικό &#9662;</a>
-            <div class="dropdown-content">
-                <a href="employee-management.html">Καταγραφή Προσωπικού</a>
-                <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
-                <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία </a>
-                <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
-            </div>
-        </div>
     </div>
 </nav>
 
 <script>
     // Ρύθμιση Firebase
-    import { initializeApp } from "firebase/app";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-
     const firebaseConfig = {
         apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
         authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -87,13 +57,13 @@
         measurementId: "G-NGZHWDY6S5"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-
-    const googleProvider = new GoogleAuthProvider();
+    // Αρχικοποίηση Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
     function signInWithGoogle() {
-        signInWithPopup(auth, googleProvider)
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider)
             .then((result) => {
                 console.log("Σύνδεση επιτυχής με Google:", result.user);
             })
@@ -106,7 +76,7 @@
         event.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        signInWithEmailAndPassword(auth, email, password)
+        auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
                 console.log("Σύνδεση επιτυχής:", userCredential.user);
             })
@@ -119,7 +89,7 @@
         event.preventDefault();
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
-        createUserWithEmailAndPassword(auth, email, password)
+        auth.createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
                 console.log("Εγγραφή επιτυχής:", userCredential.user);
             })
