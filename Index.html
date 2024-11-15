@@ -73,39 +73,39 @@
 </section>
 
 <script>
-    // Ρύθμιση Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-        authDomain: "speedy-bazaar-411110.firebaseapp.com",
-        projectId: "speedy-bazaar-411110",
-        storageBucket: "speedy-bazaar-411110.appspot.com",
-        messagingSenderId: "752456596300",
-        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-        measurementId: "G-NGZHWDY6S5"
-    };
+  // Ρύθμιση Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+    authDomain: "speedy-bazaar-411110.firebaseapp.com",
+    projectId: "speedy-bazaar-411110",
+    storageBucket: "speedy-bazaar-411110.appspot.com",
+    messagingSenderId: "752456596300",
+    appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+    measurementId: "G-NGZHWDY6S5"
+};
 
-    // Αρχικοποίηση Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+// Αρχικοποίηση Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-    // Συνάρτηση για εμφάνιση πληροφοριών χρήστη
-    function displayUserInfo(user) {
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
-        document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
-    }
+// Συνάρτηση για εμφάνιση πληροφοριών χρήστη
+function displayUserInfo(user) {
+    document.getElementById('auth-container').style.display = 'none';
+    document.getElementById('user-info').style.display = 'block';
+    document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
+    document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
+}
 
-    // Αποσύνδεση χρήστη
-    function signOut() {
-        auth.signOut().then(() => {
-            document.getElementById('auth-container').style.display = 'block';
-            document.getElementById('user-info').style.display = 'none';
-        });
-    }
+// Αποσύνδεση χρήστη
+function signOut() {
+    auth.signOut().then(() => {
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('user-info').style.display = 'none';
+    });
+}
 
- // Υλοποίηση PayPal κουμπιών
+// Υλοποίηση PayPal κουμπιών
 function setupPayPal(planId, planName, price) {
     paypal.Buttons({
         createOrder: function (data, actions) {
@@ -148,6 +148,14 @@ function setupPayPal(planId, planName, price) {
         }
     }).render(planId);
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    setupPayPal('#paypal-basic', 'Βασικό', '5.00');
+    setupPayPal('#paypal-plus', 'Plus', '10.00');
+    setupPayPal('#paypal-premium', 'Premium', '20.00');
+});
+
+
 
 document.addEventListener("DOMContentLoaded", function() {
     const restrictedPages = {
