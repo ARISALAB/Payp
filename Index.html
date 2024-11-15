@@ -1,200 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pricing Plans</title>
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <!-- Firebase Authentication -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #f5f5f5;
-      padding: 20px;
-    }
-
-    .auth-container, .pricing-container {
-      margin: 20px auto;
-      max-width: 600px;
-    }
-
-    .pricing-container {
-      display: flex;
-      justify-content: space-around;
-      gap: 20px;
-    }
-
-    .plan {
-      border: 1px solid #ddd;
-      padding: 20px;
-      border-radius: 10px;
-      width: 180px;
-      background-color: #fff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      text-align: center;
-    }
-
-    .plan.basic { background-color: #B2DBE7; }
-    .plan.premium { background-color: #FFD54F; }
-    .plan.standard { background-color: #FF8A65; }
-
-    .plan h3 {
-      margin-bottom: 10px;
-    }
-
-    .plan p {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    .plan ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .plan button {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .auth-container input {
-      padding: 10px;
-      margin: 10px;
-      width: 200px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
-
-    .auth-container button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Εγγραφή & Σύνδεση</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <h1>Choose the Right Plan for Your Business</h1>
-  <p>Choose the plan that works best for you and your team</p>
-
-  <div class="auth-container">
-    <h2>Sign Up / Sign In</h2>
-    <button id="googleSignInBtn">Sign in with Google</button>
-
-    <form id="signUpForm">
-      <input type="email" id="signUpEmail" placeholder="Email" required>
-      <input type="password" id="signUpPassword" placeholder="Password" required>
-      <button type="button" onclick="signUp()">Sign Up</button>
-    </form>
-
-    <form id="signInForm">
-      <input type="email" id="signInEmail" placeholder="Email" required>
-      <input type="password" id="signInPassword" placeholder="Password" required>
-      <button type="button" onclick="signIn()">Sign In</button>
-    </form>
-  </div>
-
-  <div class="pricing-container">
-    <div class="plan basic">
-      <h3>Basic</h3>
-      <p>$5 / month</p>
-      <ul>
-        <li>All limited links</li>
-        <li>Own analytics platform</li>
-        <li>Chat support</li>
-      </ul>
-      <button>Select Basic Plan</button>
+    <div id="login-container">
+        <h1>Καλώς ήρθατε!</h1>
+        <button id="google-login">Σύνδεση με Google</button>
+        <button id="email-login">Σύνδεση με Email</button>
+        <div id="email-form" style="display: none;">
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Κωδικός">
+            <button id="email-login-submit">Σύνδεση</button>
+            <button id="register-submit">Εγγραφή</button>
+        </div>
+        <div id="user-info" style="display: none;">
+            <h3>Καλώς ήρθες, <span id="user-name"></span></h3>
+            <img id="user-photo" src="" alt="User Photo" width="100">
+            <h4>Επιλέξτε Πλάνο</h4>
+            <div>
+                <button id="plan1">Πλάνο 1</button>
+                <button id="plan2">Πλάνο 2</button>
+                <button id="plan3">Πλάνο 3</button>
+            </div>
+        </div>
     </div>
-    <div class="plan premium">
-      <h3>Premium</h3>
-      <p>$45 / month</p>
-      <ul>
-        <li>All limited links</li>
-        <li>Own analytics platform</li>
-        <li>Chat support</li>
-        <li>Optimize hashtags</li>
-        <li>Unlimited revisions</li>
-      </ul>
-      <button>Select Premium Plan</button>
-    </div>
-    <div class="plan standard">
-      <h3>Standard</h3>
-      <p>$39 / month</p>
-      <ul>
-        <li>All limited links</li>
-        <li>Own analytics platform</li>
-        <li>Chat support</li>
-        <li>Optimize hashtags</li>
-      </ul>
-      <button>Select Standard Plan</button>
-    </div>
-  </div>
 
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-      authDomain: "speedy-bazaar-411110.firebaseapp.com",
-      projectId: "speedy-bazaar-411110",
-      storageBucket: "speedy-bazaar-411110.appspot.com",
-      messagingSenderId: "752456596300",
-      appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-      measurementId: "G-NGZHWDY6S5"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    // Google Sign In
-    document.getElementById('googleSignInBtn').addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then((result) => {
-          console.log("User signed in:", result.user);
-        })
-        .catch((error) => {
-          console.error("Error signing in with Google:", error);
-        });
-    });
-
-    // Sign Up with Email and Password
-    function signUp() {
-      const email = document.getElementById('signUpEmail').value;
-      const password = document.getElementById('signUpPassword').value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          console.log("User signed up:", userCredential.user);
-        })
-        .catch((error) => {
-          console.error("Error signing up:", error);
-        });
-    }
-
-    // Sign In with Email and Password
-    function signIn() {
-      const email = document.getElementById('signInEmail').value;
-      const password = document.getElementById('signInPassword').value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          console.log("User signed in:", userCredential.user);
-        })
-        .catch((error) => {
-          console.error("Error signing in:", error);
-        });
-    }
-  </script>
-
+    <script src="app.js"></script>
 </body>
 </html>
