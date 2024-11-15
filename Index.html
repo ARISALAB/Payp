@@ -5,13 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Αρχική Σελίδα - Πλάνα Πληρωμής</title>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&currency=EUR"></script>
-    <script type="module">
-        // Firebase Configuration
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
-        import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-firestore.js";
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <style>
+        /* Στυλ για τα κουτιά των πλάνων και τη διάταξη */
+        /* Προσθέστε το CSS από το προηγούμενο παράδειγμα εδώ */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Επιλέξτε το Πλάνο Πληρωμής σας</h1>
+    </header>
 
-        // Firebase Config
+    <section class="pricing-plans">
+        <!-- Πλάνα και PayPal Buttons όπως προηγουμένως -->
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Όλα τα Δικαιώματα Διατηρούνται.</p>
+    </footer>
+
+    <div id="user-actions">
+        <button id="google-login">Σύνδεση με Google</button>
+        <button id="email-login">Σύνδεση με Email</button>
+        <button id="logout" style="display: none;">Αποσύνδεση</button>
+    </div>
+
+    <script>
+        // Firebase Configuration και Αρχικοποίηση
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
             authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -21,78 +43,65 @@
             appId: "1:752456596300:web:f920df7be01ba63d66ede9",
             measurementId: "G-NGZHWDY6S5"
         };
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Ενεργοποίηση κουμπιού σύνδεσης με Google
+        document.getElementById('google-login').addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then((result) => {
+                // Εδώ μπορείς να αποθηκεύσεις πληροφορίες χρήστη στο Firestore αν χρειάζεται
+                const user = result.user;
+                console.log('Σύνδεση με Google: ', user.displayName);
+                document.getElementById('google-login').style.display = 'none';
+                document.getElementById('logout').style.display = 'inline-block';
+            }).catch((error) => {
+                console.error(error);
+            });
+        });
 
-        // Google Sign-In
-        const googleProvider = new GoogleAuthProvider();
+        // Σύνδεση με email και κωδικό
+        document.getElementById('email-login').addEventListener('click', () => {
+            const email = prompt("Εισάγετε το email σας:");
+            const password = prompt("Εισάγετε τον κωδικό σας:");
+            auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
+                const user = userCredential.user;
+                console.log('Σύνδεση με email: ', user.email);
+                document.getElementById('email-login').style.display = 'none';
+                document.getElementById('logout').style.display = 'inline-block';
+            }).catch((error) => {
+                console.error(error);
+            });
+        });
 
-        // Σύνδεση με Google
-        function googleSignIn() {
-            signInWithPopup(auth, googleProvider)
-                .then((result) => {
-                    const user = result.user;
-                    saveUserData(user);
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        }
+        // Αποσύνδεση
+        document.getElementById('logout').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                console.log('Αποσύνδεση επιτυχής');
+                document.getElementById('google-login').style.display = 'inline-block';
+                document.getElementById('email-login').style.display = 'inline-block';
+                document.getElementById('logout').style.display = 'none';
+            }).catch((error) => {
+                console.error(error);
+            });
+        });
 
-        // Σύνδεση με Email
-        function emailSignIn(email, password) {
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    saveUserData(user);
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        }
-
-        // Εγγραφή με Email
-        function emailSignUp(email, password) {
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    saveUserData(user);
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        }
-
-        // Αποθήκευση Δεδομένων Χρήστη στο Firestore
-        function saveUserData(user) {
-            const userRef = doc(db, "users", user.uid);
-            setDoc(userRef, {
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL
-            })
-            .then(() => {
-                console.log("User data saved to Firestore");
-            })
-            .catch((error) => {
-                console.error("Error saving user data: ", error);
+        // Αποθήκευση πληρωμής στο Firestore μετά την επιτυχή πληρωμή
+        function savePaymentToFirestore(userId, plan, amount) {
+            db.collection('payments').add({
+                userId: userId,
+                plan: plan,
+                amount: amount,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then((docRef) => {
+                console.log("Η πληρωμή αποθηκεύτηκε με ID: ", docRef.id);
+            }).catch((error) => {
+                console.error("Σφάλμα αποθήκευσης πληρωμής: ", error);
             });
         }
 
-        // Παρακολούθηση καταστάσεως σύνδεσης
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log("User signed in:", user);
-                // Δείξε το κουμπί πληρωμής μετά την σύνδεση
-                document.getElementById('payment-buttons').style.display = 'block';
-            } else {
-                console.log("No user signed in.");
-            }
-        });
-
-        // PayPal Button για Βασικό Πλάνο (€10)
+        // Παράδειγμα PayPal Button για το Βασικό Πλάνο (€10)
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
@@ -105,155 +114,18 @@
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
-                    alert('Η πληρωμή σας ολοκληρώθηκε με επιτυχία!');
-                    savePaymentData(details);
+                    const user = auth.currentUser;
+                    if (user) {
+                        savePaymentToFirestore(user.uid, 'Βασικό', 10);
+                        alert('Σας ευχαριστούμε για την αγορά σας, ' + details.payer.name.given_name + '!');
+                        // Ενεργοποίηση κουμπιού κατεύθυνσης στην εφαρμογή
+                        alert("Κάντε κλικ για να μεταβείτε στην εφαρμογή!");
+                    }
                 });
             }
         }).render('#paypal-button-basic');
 
-        // Save payment data to Firestore
-        function savePaymentData(details) {
-            const user = auth.currentUser;
-            if (user) {
-                const paymentRef = doc(db, "payments", details.id);
-                setDoc(paymentRef, {
-                    userId: user.uid,
-                    amount: details.purchase_units[0].amount.value,
-                    payer: details.payer.name.given_name,
-                    email: user.email,
-                    status: "completed",
-                    transactionId: details.id,
-                    timestamp: new Date().toISOString()
-                })
-                .then(() => {
-                    console.log("Payment data saved to Firestore");
-                })
-                .catch((error) => {
-                    console.error("Error saving payment data: ", error);
-                });
-            }
-        }
+        // Εδώ μπορείς να προσθέσεις άλλες λειτουργίες PayPal για τα υπόλοιπα πλάνα.
     </script>
-    <style>
-        /* Στυλ για τα κουτιά των πλάνων και τη διάταξη */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-            text-align: center;
-        }
-
-        header {
-            background-color: #343a40;
-            color: white;
-            padding: 20px;
-        }
-
-        h1 {
-            font-size: 2em;
-        }
-
-        .pricing-plans {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 50px 0;
-            flex-wrap: wrap;
-        }
-
-        .plan {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            width: 250px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-
-        .plan:hover {
-            transform: scale(1.05);
-        }
-
-        .plan-header {
-            height: 10px;
-            width: 100%;
-            margin-bottom: 20px;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .basic .plan-header {
-            background-color: #B2DBE7; /* Απαλό μπλε */
-        }
-
-        .standard .plan-header {
-            background-color: #28A745; /* Πράσινο */
-        }
-
-        .premium .plan-header {
-            background-color: #FFD700; /* Χρυσό */
-        }
-
-        h2 {
-            margin-bottom: 15px;
-            font-size: 1.5em;
-        }
-
-        .price {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        ul {
-            list-style-type: none;
-            margin-bottom: 20px;
-            padding: 0;
-        }
-
-        ul li {
-            margin-bottom: 10px;
-        }
-
-        footer {
-            background-color: #343a40;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-
-        #payment-buttons {
-            display: none;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Επιλέξτε το Πλάνο Πληρωμής σας</h1>
-    </header>
-
-    <section class="pricing-plans">
-        <!-- Βασικό Πλάνο -->
-        <div class="plan basic">
-            <div class="plan-header"></div>
-            <h2>Βασικό</h2>
-            <p class="price">€10/μήνα</p>
-            <ul>
-                <li>1 Χρήστης</li>
-                <li>Περιορισμένο Υποστήριξη</li>
-                <li>Απλά Χαρακτηριστικά</li>
-            </ul>
-            <div id="paypal-button-basic"></div>
-        </div>
-    </section>
-
-
-    
+</body>
+</html>
