@@ -5,94 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css"> <!-- Σύνδεσμος στο αρχείο CSS -->
     <link rel="icon" href="11.png" type="image/png">
-
     <title>Καταγραφή Εσόδων</title>
- 
-    <nav>
-        <img src="11.png" alt="Logo" class="logo">
-        <button class="menu-toggle">
-            &#9776;<br>Menu
-        </button>
-        <div class="menu-items">
-            <a href="index.html">Αρχική Σελίδα</a>
-    
-            <div class="dropdown">
-                <a href="#">Συναλλαγές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index1.html">Καταγραφή Εξόδων</a>
-                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
-                    <a href="index5.html">Πληρωμές Τράπεζας</a>
-                </div>
-            </div>
-    
-            <a href="index3.html">Καταγραφή Εσόδων</a>
-            <a href="index2.html">Καρτέλες Προμηθευτών</a>
-    
-            <div class="dropdown">
-                <a href="#">Αναφορές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index7.html">Ημερήσια Αναφορά</a>
-                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
-                    <a href="index8.html">Μηνιαία Αναφορά</a>
-                    <a href="index9.html">Ετήσια Αναφορά</a>
-                </div>
-            </div>
-    
-            <div class="dropdown">
-                <a href="#">Προσωπικό &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
-                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
-                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία </a>
-                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
-                    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-analytics.js"></script>
 
-                </div>
-            </div>
-        </div>
-    </nav>
-    
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+        authDomain: "speedy-bazaar-411110.firebaseapp.com",
+        projectId: "speedy-bazaar-411110",
+        storageBucket: "speedy-bazaar-411110.appspot.com",
+        messagingSenderId: "752456596300",
+        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+        measurementId: "G-NGZHWDY6S5"
+      };
 
-    <div id="menuModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <a href="index.html">Αρχική Σελίδα</a>
-            
-            <div class="dropdown">
-                <a href="#">Συναλλαγές</a>
-                <div class="dropdown-content">
-                    <a href="index1.html">Καταγραφή Εξόδων</a>
-                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
-                    <a href="index5.html">Πληρωμές Τράπεζας</a>
-                </div>
-            </div>
-            
-            <a href="index3.html">Καταγραφή Εσόδων</a>
-            <a href="index2.html">Καρτέλες Προμηθευτών</a>
-            
-            <div class="dropdown">
-                <a href="#">Αναφορές</a>
-                <div class="dropdown-content">
-                    <a href="index7.html">Ημερήσια Αναφορά</a>
-                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
-                    <a href="index8.html">Μηνιαία Αναφορά</a>
-                    <a href="index9.html">Ετήσια Αναφορά</a>
-                </div>
-            </div>
-            
-            <!-- Νέα ενότητα για Προσωπικό -->
-            <div class="dropdown">
-                <a href="#">Προσωπικό &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
-                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
-                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία</a>
-                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
-                </div>
-            </div>
-            
-        </div>
-    </div>
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore(app); // Firestore database reference
+      const analytics = firebase.getAnalytics(app); // Firebase Analytics
+    </script>
 </head>
 <body>
 
@@ -131,79 +66,61 @@
             const totalPaymentsDisplay = document.getElementById('total-payments-display');
             const balanceDisplay = document.getElementById('balance-display');
             const revenueDateDisplay = document.getElementById('revenue-date-display');
-    
-            const revenueData = JSON.parse(localStorage.getItem('revenueData')) || {};
-            const paymentsData = JSON.parse(localStorage.getItem('payments')) || {};
-    
-            function saveRevenue() {
-                localStorage.setItem('revenueData', JSON.stringify(revenueData));
+
+            // Function to save revenue to Firestore
+            function saveRevenue(date, cashRevenue, cardRevenue) {
+                db.collection('revenues').doc(date).set({
+                    cash: cashRevenue,
+                    card: cardRevenue
+                }).then(() => {
+                    console.log("Τα έσοδα καταχωρήθηκαν επιτυχώς");
+                }).catch((error) => {
+                    console.error("Σφάλμα κατά την καταχώρηση των εσόδων: ", error);
+                });
             }
-    
-            function updateSummary() {
-                const date = revenueDate.value;
-                if (date) {
-                    const cashRevenue = revenueData[date] ? revenueData[date].cash : 0;
-                    const cardRevenue = revenueData[date] ? revenueData[date].card : 0;
-    
-                    const totalPayments = paymentsData[date] ? paymentsData[date].reduce((sum, payment) => sum + payment.amount, 0) : 0;
-    
-                    const balance = cashRevenue - cardRevenue - totalPayments;
-    
-                    revenueDateDisplay.textContent = `Ημερομηνία: ${date}`;
-                    cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${cashRevenue.toFixed(2)} €`;
-                    cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${cardRevenue.toFixed(2)} €`;
-                    totalPaymentsDisplay.textContent = `Συνολικές Πληρωμές με Μετρητά: ${totalPayments.toFixed(2)} €`;
-                    balanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${balance.toFixed(2)} €`;
-                }
+
+            // Function to update the summary after submission
+            function updateSummary(date) {
+                db.collection('revenues').doc(date).get().then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const cashRevenue = data.cash || 0;
+                        const cardRevenue = data.card || 0;
+                        const totalPayments = 0; // Προσθήκη λειτουργικότητας για πληρωμές εάν είναι απαραίτητο
+                        const balance = cashRevenue - cardRevenue - totalPayments;
+
+                        revenueDateDisplay.textContent = `Ημερομηνία: ${date}`;
+                        cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${cashRevenue.toFixed(2)} €`;
+                        cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${cardRevenue.toFixed(2)} €`;
+                        totalPaymentsDisplay.textContent = `Συνολικές Πληρωμές με Μετρητά: ${totalPayments.toFixed(2)} €`;
+                        balanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${balance.toFixed(2)} €`;
+                    }
+                }).catch((error) => {
+                    console.error("Σφάλμα κατά την ανάκτηση των δεδομένων: ", error);
+                });
             }
-    
+
+            // Handle form submission
             revenueForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const date = revenueDate.value;
                 if (date) {
                     const cashRevenue = parseFloat(cashRevenueInput.value) || 0;
                     const cardRevenue = parseFloat(cardRevenueInput.value) || 0;
-    
-                    if (!revenueData[date]) {
-                        revenueData[date] = { cash: 0, card: 0 };
-                    }
-    
-                    revenueData[date].cash = cashRevenue;
-                    revenueData[date].card = cardRevenue;
-    
-                    saveRevenue();
-                    updateSummary();
+                    saveRevenue(date, cashRevenue, cardRevenue);
+                    updateSummary(date);
                     revenueForm.reset();
                 }
             });
-    
-            revenueDate.addEventListener('change', updateSummary);
-    
-            updateSummary();
+
+            // Update the summary when date changes
+            revenueDate.addEventListener('change', (e) => {
+                const date = e.target.value;
+                if (date) {
+                    updateSummary(date);
+                }
+            });
         });
     </script>
-    <script>
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            document.getElementById('menuModal').style.display = 'flex';
-        });
-        
-        document.querySelector('.close').addEventListener('click', function() {
-            document.getElementById('menuModal').style.display = 'none';
-        });
-        
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('menuModal')) {
-                document.getElementById('menuModal').style.display = 'none';
-            }
-        }
-        
-        // Κώδικας για την απόκρυψη του toggle menu όταν μεγαλώνει η οθόνη
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                document.getElementById('menuModal').style.display = 'none';
-            }
-        });
-        
-        </script>
 </body>
 </html>
