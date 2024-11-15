@@ -43,6 +43,25 @@ h1 {
     transform: scale(1.05);
 }
 
+.plan-header {
+    height: 5px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 10px 10px 0 0;
+}
+
+.basic .plan-header {
+    background-color: #B2DBE7; /* Απαλό μπλε */
+}
+
+.standard .plan-header {
+    background-color: #28A745; /* Πράσινο */
+}
+
+.premium .plan-header {
+    background-color: #FFD700; /* Χρυσό */
+}
+
 h2 {
     margin-bottom: 15px;
     font-size: 1.5em;
