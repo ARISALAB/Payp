@@ -51,6 +51,7 @@
         <p id="revenue-date-display" class="summary-item">Ημερομηνία: -</p>
         <p id="cash-revenue-display" class="summary-item">Ταμείο Ημέρας: 0.00 €</p>
         <p id="card-revenue-display" class="summary-item">Έσοδα από Κάρτες: 0.00 €</p>
+        <p id="cash-balance-display" class="summary-item">Υπόλοιπο Μετρητών: 0.00 €</p>
     </div>
 
     <footer>&copy; 2024 Καταγραφή Εσόδων</footer>
@@ -60,7 +61,6 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
             authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -108,19 +108,23 @@
             }
         }
 
-        // Ενημέρωση Περίληψης
+        // Υπολογισμός και Ενημέρωση Περίληψης
         async function updateSummary() {
             const revenueDate = document.getElementById('revenue-date').value;
             const revenueDateDisplay = document.getElementById('revenue-date-display');
             const cashRevenueDisplay = document.getElementById('cash-revenue-display');
             const cardRevenueDisplay = document.getElementById('card-revenue-display');
+            const cashBalanceDisplay = document.getElementById('cash-balance-display');
 
             if (revenueDate) {
                 const { cash, card } = await getRevenueFromFirestore(revenueDate);
 
+                const cashBalance = cash - card; // Υπολογισμός μετρητών
+
                 revenueDateDisplay.textContent = `Ημερομηνία: ${revenueDate}`;
                 cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${cash.toFixed(2)} €`;
                 cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${card.toFixed(2)} €`;
+                cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${cashBalance.toFixed(2)} €`;
             }
         }
 
