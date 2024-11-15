@@ -89,26 +89,29 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Συνάρτηση για εμφάνιση πληροφοριών χρήστη
-    function displayUserInfo(user) {
-        if (user) {
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('user-info').style.display = 'block';
-            document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
-            document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
+  function displayUserInfo(user) {
+    if (user) {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('user-info').style.display = 'block';
+        document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
+        document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
 
-            // Έλεγχος συνδρομής για ενεργοποίηση του κουμπιού
-            db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
-                const userPlan = snapshot.val();
-                if (userPlan === "basic") {
-                    document.getElementById('access-pages').style.display = 'inline-block';
-                }
-            });
-        } else {
-            document.getElementById('auth-container').style.display = 'block';
-            document.getElementById('user-info').style.display = 'none';
-        }
+        // Έλεγχος συνδρομής για ενεργοποίηση του κουμπιού
+        db.ref('users/' + user.uid + '/subscription').once('value').then(snapshot => {
+            const subscription = snapshot.val();
+            if (subscription && subscription.plan === "basic" && subscription.paymentVerified) {
+                document.getElementById('access-pages').style.display = 'inline-block';
+            }
+        }).catch(error => {
+            console.error("Σφάλμα κατά την ανάκτηση συνδρομής:", error);
+        });
+    } else {
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('user-info').style.display = 'none';
+        document.getElementById('access-pages').style.display = 'none';
     }
+}
+
 
     // Αποσύνδεση χρήστη
     function signOut() {
