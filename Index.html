@@ -151,38 +151,40 @@
             });
     }
 
-    // Υλοποίηση PayPal κουμπιών
-    function setupPayPal(planId, planName, price) {
-        paypal.Buttons({
-            createOrder: function (data, actions) {
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: price
-                        }
-                    }]
-                });
-            },
-            onApprove: function (data, actions) {
-                return actions.order.capture().then(function (details) {
-                    const user = auth.currentUser;
-                    if (user) {
-                        const userPlan = planName === "Βασικό" ? "basic" : planName === "Plus" ? "plus" : "premium";
-
-                        // Αποθήκευση του πλάνου στο Firebase
-                        db.ref('users/' + user.uid + '/subscription').set({
-                            plan: userPlan,
-                            timestamp: new Date().toISOString(),
-                            paymentVerified: true
-                        });
-
-                        alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε.`);
-                        displayUserInfo(user);
+function setupPayPal(planId, planName, price) {
+    paypal.Buttons({
+        createOrder: function (data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: price
                     }
-                });
-            }
-        }).render(planId);
-    }
+                }]
+            });
+        },
+        onApprove: function (data, actions) {
+            return actions.order.capture().then(function (details) {
+                const user = auth.currentUser;
+                if (user) {
+                    const userPlan = planName === "Βασικό" ? "basic" : planName === "Plus" ? "plus" : "premium";
+
+                    // Αποθήκευση της πληρωμής στο Firebase
+                    db.ref('users/' + user.uid + '/subscription').set({
+                        plan: userPlan,
+                        timestamp: new Date().toISOString(),
+                        paymentVerified: true
+                    }).then(() => {
+                        alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε.`);
+                        displayUserInfo(user); // Ενημερώνουμε τη διεπαφή χρήστη
+                    }).catch(error => {
+                        console.error("Σφάλμα κατά την αποθήκευση της πληρωμής:", error);
+                    });
+                }
+            });
+        }
+    }).render(planId);
+}
+
 
     // Ρύθμιση κουμπιών για τα πλάνα
     setupPayPal('#paypal-basic', 'Βασικό', '5.00');
