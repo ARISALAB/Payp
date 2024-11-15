@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="./11.png" type="image/png">
 
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
+    <!-- Firebase CDN Compatibility Mode -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 </head>
 <body>
 
@@ -46,7 +46,7 @@
 </nav>
 
 <script>
-    // Ρύθμιση Firebase
+    // Ρύθμιση Firebase με Compatibility Mode
     const firebaseConfig = {
         apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
         authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -58,7 +58,7 @@
     };
 
     // Αρχικοποίηση Firebase
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
     function signInWithGoogle() {
