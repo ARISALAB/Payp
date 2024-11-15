@@ -3,77 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Αρχική Σελίδα</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="./11.png" type="image/png">
+    <title>Καλώς Ήρθατε - Πληρωμή PayPal</title>
+    <style>
+        /* Βασικό στυλ για ευχάριστη εμφάνιση */
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 95%;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: white;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h1 {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+            border-radius: 8px;
+            text-align: center;
+            box-sizing: border-box;
+        }
 
-    <!-- Firebase CDN Compatibility Mode -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+        h2 {
+            color: #0056b3;
+            margin-top: 20px;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .section img {
+            width: 96%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .paypal-button {
+            text-align: center;
+            margin-top: 30px;
+        }
 
-    <!-- PayPal SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&currency=EUR"></script>
+        /* Στυλ για τα κουμπιά εγγραφής και σύνδεσης */
+        .google-button, .email-signup-button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .google-button:hover, .email-signup-button:hover {
+            background-color: #357ae8;
+        }
+
+        /* Στυλ για τη φόρμα εγγραφής */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .form-container input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
 </head>
 <body>
+    <div class="container">
+        <!-- Χαιρετισμός -->
+        <section class="section">
+            <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
+            <p>Εδώ θα βρείτε τις πληροφορίες που χρειάζεστε για να προχωρήσετε σε ασφαλή πληρωμή μέσω PayPal.</p>
+        </section>
 
-<header>
-    <img src="./11.png" alt="Logo" class="logo">
-    <h1>Εφαρμογή Καταγραφής Συναλλαγών</h1>
-</header>
+        <!-- Περιγραφή Υπηρεσίας -->
+        <section class="section">
+            <h2>Τι Θα Συναντήσετε Εδώ</h2>
+            <p>Στη σελίδα μας μπορείτε να δείτε όλες τις λεπτομέρειες για την υπηρεσία που προσφέρουμε. Παρακάτω ακολουθεί ένα σύντομο βίντεο που εξηγεί πώς λειτουργεί η διαδικασία πληρωμής και τι πρέπει να γνωρίζετε πριν προχωρήσετε.</p>
+            <!-- Νέο βίντεο -->
+            <iframe width="100%" height="315" src="https://www.youtube.com/embed/jl5yQsj5duI?start=8" frameborder="0" allowfullscreen></iframe>
+        </section>
+   <section class="section">
+            <h2>Ποιοι Είμαστε</h2>
+            <p>Η ομάδα μας αποτελείται από ειδικούς που εργάζονται για να σας παρέχουν τις καλύτερες δυνατές υπηρεσίες. Παρακάτω μπορείτε να δείτε μερικές φωτογραφίες της ομάδας μας και του χώρου μας.</p>
+            <div>
+                <img src="cash-register-377039_1280.jpg" alt="Φωτογραφία Ομάδας">
+                <p><em>Θα μείνετε κολλημένοι στο παρελθόν; Οι παλιές ταμειακές μηχανές είναι η υπενθύμιση μιας εποχής που έχει περάσει. Ήρθε η ώρα να αφήσουμε πίσω τις παραδοσιακές πρακτικές και να προχωρήσουμε μπροστά.</em></p>
+            </div>
+            <div>
+                <img src="finger-3389914_1280.jpg" alt="Φωτογραφία Γραφείου">
+                <p><em>Το μέλλον είναι εδώ! Σημασία δεν έχει πια η απλή ταμειακή μηχανή, αλλά ο τρόπος που διαχειριζόμαστε τις επιχειρήσεις μας. Επενδύστε στην ανάπτυξη, με τη δύναμη της τεχνολογίας δίπλα σας.</em></p>
+            </div>
+        </section>
+        <!-- Εδώ προστίθεται η εικόνα του χρήστη -->
+        <div id="userInfo" style="display: none; text-align: center;">
+            <h2>Καλώς Ήρθες!</h2>
+            <img id="userImage" src="" alt="Εικόνα Χρήστη" style="border-radius: 50%; width: 100px; height: 100px;">
+            <p id="userName"></p>
+        </div>
+        <!-- Κουμπί για πρόσβαση στην εφαρμογή, αρχικά κρυφό -->
+<button id="accessAppButton" style="display: none; background-color: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+    Μετάβαση στην Εφαρμογή
+</button>
 
-<div id="auth-container">
-    <div id="auth-options">
-        <h2>Συνδεθείτε ή Εγγραφείτε</h2>
-        <form id="email-auth-form" onsubmit="signInWithEmail(event)">
-            <label for="email">Email:</label>
-            <input type="email" id="email" required>
-            <label for="password">Κωδικός:</label>
-            <input type="password" id="password" required>
-            <button type="submit">Σύνδεση</button>
-        </form>
-        <form id="email-signup-form" onsubmit="signUpWithEmail(event)">
-            <label for="signup-email">Εγγραφή Email:</label>
-            <input type="email" id="signup-email" required>
-            <label for="signup-password">Κωδικός:</label>
-            <input type="password" id="signup-password" required>
-            <button type="submit">Εγγραφή</button>
-        </form>
-        <p>Ή</p>
-        <button onclick="signInWithGoogle()">Σύνδεση με Google</button>
+<!-- Κουμπί αποσύνδεσης -->
+<button class="google-button" id="googleSignOut" style="display: none;">Αποσύνδεση</button>
+
+        <!-- Κουμπί PayPal -->
+        <div class="paypal-button" id="paypal-button-container"></div>
+
+        <!-- Εγγραφή και Σύνδεση -->
+        <div id="auth-section" style="margin-top: 20px;">
+            <h2>Σύνδεση ή Εγγραφή</h2>
+            <!-- Κουμπί Google Sign-In -->
+            <button class="google-button" id="googleSignIn">Σύνδεση με Google</button>
+
+            <!-- Εγγραφή με email -->
+            <div id="signup-section" style="margin-top: 20px;">
+                <h3>Ή Εγγραφείτε με Email</h3>
+                <div class="form-container">
+                    <input type="email" id="email" placeholder="Ηλεκτρονικό Ταχυδρομείο" required>
+                    <input type="password" id="password" placeholder="Κωδικός Πρόσβασης" required>
+                    <button class="email-signup-button" id="emailSignUp">Εγγραφή</button>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<div id="user-info" style="display: none;">
-    <h2>Καλωσήρθες, <span id="user-name"></span>!</h2>
-    <img id="user-photo" src="" alt="Φωτογραφία Χρήστη" style="width: 100px; height: 100px; border-radius: 50%;"/>
-    <button id="access-pages" style="display: none;" onclick="window.location.href='index1.html'">Πρόσβαση στις Σελίδες</button>
-    <button onclick="signOut()">Αποσύνδεση</button>
-</div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
 
-<section id="plans">
-    <h2>Πλάνα Συνδρομής</h2>
-    <div class="plan-container">
-        <div class="plan basic">
-            <div class="plan-header">Βασικό</div>
-            <p>Κόστος: 5€/μήνα</p>
-            <div id="paypal-basic"></div>
-        </div>
-        <div class="plan plus">
-            <div class="plan-header">Plus</div>
-            <p>Κόστος: 10€/μήνα</p>
-            <div id="paypal-plus"></div>
-        </div>
-        <div class="plan premium">
-            <div class="plan-header">Premium</div>
-            <p>Κόστος: 20€/μήνα</p>
-            <div id="paypal-premium"></div>
-        </div>
-    </div>
-</section>
-
-<script>
-    // Ρύθμιση Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
         authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -84,161 +162,132 @@
         measurementId: "G-NGZHWDY6S5"
     };
 
-    // Αρχικοποίηση Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-function displayUserInfo(user) {
-    if (user) {
-        // Απόκρυψη του authentication container και εμφάνιση του user info
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
-        document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
+    const checkPaymentStatus = async (user) => {
+        if (user) {
+            const userPaymentDoc = doc(db, "users", user.uid);
+            const docSnap = await getDoc(userPaymentDoc);
 
-        // Επαναφορά της κατάστασης του κουμπιού
-        const accessButton = document.getElementById('access-pages');
-        accessButton.style.display = 'none';
+            if (docSnap.exists() && docSnap.data().isPaid) {
+                document.getElementById('paypal-button-container').style.display = 'none';
+                document.getElementById('accessAppButton').style.display = 'inline-block';
+                alert('Η εφαρμογή είναι διαθέσιμη για πάντα. Ευχαριστούμε για την πληρωμή σας!');
+            } else {
+                document.getElementById('paypal-button-container').style.display = 'block';
+                document.getElementById('accessAppButton').style.display = 'none';
+            }
+        } else {
+            document.getElementById('paypal-button-container').style.display = 'block';
+            document.getElementById('accessAppButton').style.display = 'none';
+        }
+    };
 
-        // Ανάκτηση συνδρομής από το Firebase
-        db.ref('users/' + user.uid + '/subscription').once('value')
-            .then(snapshot => {
-                const subscription = snapshot.val();
-                if (subscription && subscription.plan === "basic" && subscription.paymentVerified) {
-                    accessButton.style.display = 'inline-block'; // Ενεργοποίηση κουμπιού αν έχει πληρωθεί
-                }
+    document.getElementById('googleSignIn').addEventListener('click', () => {
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                const user = result.user;
+                alert(`Καλωσήρθες, ${user.displayName}!`);
+                document.getElementById('userImage').src = user.photoURL;
+                document.getElementById('userName').innerText = `Όνομα: ${user.displayName}`;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('googleSignOut').style.display = 'inline-block';
+
+                checkPaymentStatus(user);
             })
-            .catch(error => {
-                console.error("Σφάλμα κατά την ανάκτηση συνδρομής:", error);
-                accessButton.style.display = 'none'; // Απόκρυψη κουμπιού σε περίπτωση αποτυχίας
+            .catch((error) => {
+                console.log(error);
+                alert('Σφάλμα στην σύνδεση!');
             });
-    } else {
-        // Αν ο χρήστης δεν είναι συνδεδεμένος
-        document.getElementById('auth-container').style.display = 'block';
-        document.getElementById('user-info').style.display = 'none';
-        document.getElementById('access-pages').style.display = 'none';
-    }
-}
+    });
 
-
-
-    // Αποσύνδεση χρήστη
-    function signOut() {
-        auth.signOut().then(() => {
-            document.getElementById('auth-container').style.display = 'block';
-            document.getElementById('user-info').style.display = 'none';
-        });
-    }
-
-    // Συνάρτηση για Google Login
-    function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).then((result) => displayUserInfo(result.user));
-    }
-
-    // Συνάρτηση για Email Login
-    function signInWithEmail(event) {
-        event.preventDefault();
+    document.getElementById('emailSignUp').addEventListener('click', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
-        auth.signInWithEmailAndPassword(email, password)
+        createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                displayUserInfo(userCredential.user);
+                const user = userCredential.user;
+                alert(`Εγγραφή ολοκληρώθηκε για τον χρήστη: ${user.email}`);
+                document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+                document.getElementById('userName').innerText = `Όνομα: ${user.email}`;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('googleSignOut').style.display = 'inline-block';
+
+                checkPaymentStatus(user);
+            })
+            .catch((error) => {
+                console.log(error);
+                alert('Σφάλμα στην εγγραφή!');
             });
-    }
+    });
 
-    // Συνάρτηση για Email Signup
-    function signUpWithEmail(event) {
-        event.preventDefault();
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
+    document.getElementById('googleSignOut').addEventListener('click', () => {
+        auth.signOut().then(() => {
+            alert('Αποσυνδεθήκατε επιτυχώς!');
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('googleSignOut').style.display = 'none';
+            document.getElementById('accessAppButton').style.display = 'none';
+            document.getElementById('googleSignIn').style.display = 'inline-block';
+        }).catch((error) => {
+            console.log(error);
+            alert('Σφάλμα στην αποσύνδεση!');
+        });
+    });
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                displayUserInfo(userCredential.user);
-            });
-    }
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            document.getElementById('googleSignOut').style.display = 'inline-block';
+            document.getElementById('googleSignIn').style.display = 'none';
+            document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+            document.getElementById('userName').innerText = `Όνομα: ${user.displayName || user.email}`;
+            document.getElementById('userInfo').style.display = 'block';
 
-function setupPayPal(planId, planName, price) {
+            await checkPaymentStatus(user);
+        } else {
+            document.getElementById('googleSignIn').style.display = 'inline-block';
+            document.getElementById('googleSignOut').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('accessAppButton').style.display = 'none';
+        }
+    });
+
     paypal.Buttons({
-        createOrder: function (data, actions) {
+        createOrder: function(data, actions) {
             return actions.order.create({
                 purchase_units: [{
                     amount: {
-                        value: price
+                        value: '10.00'
                     }
                 }]
             });
         },
-        onApprove: function (data, actions) {
-            return actions.order.capture().then(function (details) {
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(async function(details) {
+                alert('Η πληρωμή ολοκληρώθηκε από τον ' + details.payer.name.given_name);
+
                 const user = auth.currentUser;
                 if (user) {
-                    const userPlan = planName === "Βασικό" ? "basic" : planName === "Plus" ? "plus" : "premium";
+                    const userPaymentDoc = doc(db, "users", user.uid);
+                    await setDoc(userPaymentDoc, { isPaid: true }, { merge: true });
 
-                    // Αποθήκευση της πληρωμής στο Firebase
-                    db.ref('users/' + user.uid + '/subscription').set({
-                        plan: userPlan,
-                        timestamp: new Date().toISOString(),
-                        paymentVerified: true
-                    }).then(() => {
-                        alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε.`);
-                        displayUserInfo(user); // Ενημερώνουμε άμεσα τη διεπαφή χρήστη
-                    }).catch(error => {
-                        console.error("Σφάλμα κατά την αποθήκευση της πληρωμής:", error);
-                    });
+                    // Επανεμφανίζουμε το κουμπί και το μήνυμα μετά την πληρωμή
+                    await checkPaymentStatus(user);
+                } else {
+                    alert('Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!');
                 }
             });
         }
-    }).render(planId);
-}
+    }).render('#paypal-button-container');
 
-
-    // Ρύθμιση κουμπιών για τα πλάνα
-    setupPayPal('#paypal-basic', 'Βασικό', '5.00');
-    setupPayPal('#paypal-plus', 'Plus', '10.00');
-    setupPayPal('#paypal-premium', 'Premium', '20.00');
-
- auth.onAuthStateChanged(function(user) {
-    if (user) {
-        displayUserInfo(user);
-    } else {
-        document.getElementById('auth-container').style.display = 'block';
-        document.getElementById('user-info').style.display = 'none';
-        document.getElementById('access-pages').style.display = 'none';
-    }
-});
-
+    document.getElementById('accessAppButton').addEventListener('click', () => {
+        window.location.href = 'https://myaris.netlify.app/';
+    });
 </script>
-
-<style>
-    /* Στυλ για τα πλάνα πληρωμών */
-    .plan-container {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin: 20px;
-    }
-    .plan {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 20px;
-        width: 200px;
-        text-align: center;
-    }
-    .plan-header {
-        font-size: 18px;
-        font-weight: bold;
-        color: #fff;
-        padding: 10px;
-        margin-bottom: 10px;
-    }
-    .basic .plan-header { background-color: #007bff; }
-    .plus .plan-header { background-color: #28a745; }
-    .premium .plan-header { background-color: #ffc107; }
-</style>
 
 </body>
 </html>
