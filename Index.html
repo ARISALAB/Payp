@@ -168,36 +168,41 @@
         });
     }
 
-    // Περιορισμός Πρόσβασης
-    document.addEventListener("DOMContentLoaded", function() {
-        const restrictedPages = {
-            basic: [
-                "index2.html", // Καρτέλες Προμηθευτών
-                "employee-management.html", // Καταγραφή Προσωπικού
-                "salary.html", // Καταγραφή Μισθοδοσίας
-                "weekly-salary.html", // Εβδομαδιαία Μισθοδοσία
-                "salary-report.html" // Αναφορά Μισθοδοσίας
-            ]
-        };
+   document.addEventListener("DOMContentLoaded", function() {
+    const restrictedPages = {
+        basic: [
+            "index2.html", // Καρτέλες Προμηθευτών
+            "employee-management.html", // Καταγραφή Προσωπικού
+            "salary.html", // Καταγραφή Μισθοδοσίας
+            "weekly-salary.html", // Εβδομαδιαία Μισθοδοσία
+            "salary-report.html" // Αναφορά Μισθοδοσίας
+        ]
+    };
 
-        auth.onAuthStateChanged(function(user) {
-            if (user) {
-                db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
-                    const userPlan = snapshot.val();
-                    const currentPage = window.location.pathname.split('/').pop();
+    auth.onAuthStateChanged(function(user) {
+        const currentPage = window.location.pathname.split('/').pop();
 
-                    // Έλεγχος αν η σελίδα είναι περιορισμένη
-                    if (userPlan === "basic" && restrictedPages.basic.includes(currentPage)) {
-                        alert("Δεν έχετε πρόσβαση σε αυτή τη σελίδα. Αναβαθμίστε τη συνδρομή σας.");
-                        window.location.href = "index.html"; // Επιστροφή στην Αρχική Σελίδα
-                    }
-                });
-            } else {
+        if (!user) {
+            // Μην ανακατευθύνεις αν είσαι ήδη στην index.html
+            if (currentPage !== "index.html") {
                 alert("Παρακαλώ συνδεθείτε για να αποκτήσετε πρόσβαση.");
+                window.location.href = "index.html";
+            }
+            return;
+        }
+
+        db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
+            const userPlan = snapshot.val();
+
+            // Έλεγχος αν η σελίδα είναι περιορισμένη
+            if (userPlan === "basic" && restrictedPages.basic.includes(currentPage)) {
+                alert("Δεν έχετε πρόσβαση σε αυτή τη σελίδα. Αναβαθμίστε τη συνδρομή σας.");
                 window.location.href = "index.html"; // Επιστροφή στην Αρχική Σελίδα
             }
         });
     });
+});
+
 </script>
 
 <style>
