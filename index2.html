@@ -52,6 +52,7 @@
         <p id="cash-revenue-display" class="summary-item">Ταμείο Ημέρας: 0.00 €</p>
         <p id="card-revenue-display" class="summary-item">Έσοδα από Κάρτες: 0.00 €</p>
         <p id="cash-balance-display" class="summary-item">Υπόλοιπο Μετρητών: 0.00 €</p>
+        <p id="payment-status" class="summary-item"></p> <!-- Για την εμφάνιση της πληρωμής -->
     </div>
 
     <footer>&copy; 2024 Καταγραφή Εσόδων</footer>
@@ -115,6 +116,7 @@
             const cashRevenueDisplay = document.getElementById('cash-revenue-display');
             const cardRevenueDisplay = document.getElementById('card-revenue-display');
             const cashBalanceDisplay = document.getElementById('cash-balance-display');
+            const paymentStatus = document.getElementById('payment-status');
 
             if (revenueDate) {
                 const { cash, card } = await getRevenueFromFirestore(revenueDate);
@@ -125,6 +127,13 @@
                 cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${cash.toFixed(2)} €`;
                 cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${card.toFixed(2)} €`;
                 cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${cashBalance.toFixed(2)} €`;
+
+                // Έλεγχος αν έχει πληρωθεί
+                if (cash + card > 0) {
+                    paymentStatus.textContent = "Η πληρωμή έχει ολοκληρωθεί.";
+                } else {
+                    paymentStatus.textContent = "Δεν έχει καταγραφεί πληρωμή για αυτή την ημερομηνία.";
+                }
             }
         }
 
@@ -147,14 +156,13 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.body.style.display = 'block';
+                updateSummary();
             } else {
-                alert('Δεν έχετε συνδεθεί! Παρακαλώ συνδεθείτε πρώτα.');
-                window.location.href = 'index.html';
+                document.body.style.display = 'none';
+                alert('Παρακαλώ συνδεθείτε!');
+                window.location.href = "login.html";
             }
         });
-
-        // Αλλαγή Ημερομηνίας
-        document.getElementById('revenue-date').addEventListener('change', updateSummary);
     </script>
 </body>
 </html>
