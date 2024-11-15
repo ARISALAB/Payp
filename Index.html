@@ -104,7 +104,7 @@
         });
     }
 
-    // Υλοποίηση PayPal κουμπιών
+ // Υλοποίηση PayPal κουμπιών
 function setupPayPal(planId, planName, price) {
     paypal.Buttons({
         createOrder: function (data, actions) {
@@ -129,6 +129,17 @@ function setupPayPal(planId, planName, price) {
                     });
 
                     alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε με επιτυχία.`);
+
+                    // Δημιουργία κουμπιού για μετάβαση στις επιτρεπόμενες σελίδες
+                    const accessButton = document.createElement("button");
+                    accessButton.textContent = "Μετάβαση στις επιτρεπόμενες σελίδες";
+                    accessButton.onclick = function () {
+                        window.location.href = "index2.html"; // Σελίδα που επιτρέπεται για το Βασικό Πλάνο
+                    };
+
+                    // Προσθήκη κουμπιού στην σελίδα
+                    document.body.appendChild(accessButton);
+
                 } else {
                     alert("Παρακαλώ συνδεθείτε για να ολοκληρώσετε την πληρωμή.");
                 }
@@ -136,6 +147,7 @@ function setupPayPal(planId, planName, price) {
         }
     }).render(planId);
 }
+
 document.addEventListener("DOMContentLoaded", function() {
     const restrictedPages = {
         basic: [
