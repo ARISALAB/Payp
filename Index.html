@@ -81,6 +81,38 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+        .plan {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            flex: 1;
+        }
+        .plan h2 {
+            color: #333;
+        }
+        .price {
+            font-size: 24px;
+            color: #333;
+        }
+        .choose-plan-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0056b3;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
 </head>
@@ -125,6 +157,42 @@
 <!-- Κουμπί αποσύνδεσης -->
 <button class="google-button" id="googleSignOut" style="display: none;">Αποσύνδεση</button>
 
+<div class="container">
+        <!-- Basic Plan -->
+        <div class="plan" id="basicPlan">
+            <h2>Basic</h2>
+            <p class="price">$5 / μήνα</p>
+            <p>Απεριόριστοι σύνδεσμοι</p>
+            <p>Πλατφόρμα αναλύσεων</p>
+            <p>Υποστήριξη πελατών</p>
+            <button class="choose-plan-button" onclick="selectPlan('Basic', 5)">Επιλογή Πλάνου</button>
+        </div>
+
+    <!-- Standard Plan -->
+        <div class="plan" id="standardPlan">
+            <h2>Standard</h2>
+            <p class="price">$39 / μήνα</p>
+            <p>Απεριόριστοι σύνδεσμοι</p>
+            <p>Πλατφόρμα αναλύσεων</p>
+            <p>Βελτιστοποίηση hashtag</p>
+            <p>Υποστήριξη πελατών</p>
+            <button class="choose-plan-button" onclick="selectPlan('Standard', 39)">Επιλογή Πλάνου</button>
+        </div>
+
+
+    <div class="plan" id="premiumPlan">
+            <h2>Premium</h2>
+            <p class="price">$45 / μήνα</p>
+            <p>Απεριόριστοι σύνδεσμοι</p>
+            <p>Πλατφόρμα αναλύσεων</p>
+            <p>Βελτιστοποίηση hashtag</p>
+            <p>Υποστήριξη πελατών</p>
+            <p>Απεριόριστες αναθεωρήσεις</p>
+            <button class="choose-plan-button" onclick="selectPlan('Premium', 45)">Επιλογή Πλάνου</button>
+        </div>
+</div>
+
+        
         <!-- Κουμπί PayPal -->
         <div class="paypal-button" id="paypal-button-container"></div>
 
