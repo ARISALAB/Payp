@@ -49,7 +49,6 @@
     <img id="user-photo" src="" alt="Φωτογραφία Χρήστη" style="width: 100px; height: 100px; border-radius: 50%;"/>
     <button onclick="signOut()">Αποσύνδεση</button>
 </div>
-<button id="transition-button" style="display: none;" onclick="goToRestrictedPages()">Μετάβαση σε Επιτρεπόμενες Σελίδες</button>
 
 <section id="plans">
     <h2>Πλάνα Συνδρομής</h2>
@@ -73,119 +72,70 @@
 </section>
 
 <script>
-  // Ρύθμιση Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-    authDomain: "speedy-bazaar-411110.firebaseapp.com",
-    projectId: "speedy-bazaar-411110",
-    storageBucket: "speedy-bazaar-411110.appspot.com",
-    messagingSenderId: "752456596300",
-    appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-    measurementId: "G-NGZHWDY6S5"
-};
-
-// Αρχικοποίηση Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-
-// Συνάρτηση για εμφάνιση πληροφοριών χρήστη
-function displayUserInfo(user) {
-    document.getElementById('auth-container').style.display = 'none';
-    document.getElementById('user-info').style.display = 'block';
-    document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
-    document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
-}
-
-// Αποσύνδεση χρήστη
-function signOut() {
-    auth.signOut().then(() => {
-        document.getElementById('auth-container').style.display = 'block';
-        document.getElementById('user-info').style.display = 'none';
-    });
-}
-
-// Υλοποίηση PayPal κουμπιών
-function setupPayPal(planId, planName, price) {
-    paypal.Buttons({
-        createOrder: function (data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: {
-                        value: price
-                    }
-                }]
-            });
-        },
-        onApprove: function (data, actions) {
-            return actions.order.capture().then(function (details) {
-                const user = auth.currentUser;
-                if (user) {
-                    const userPlan = planName === "Βασικό" ? "basic" : planName === "Plus" ? "plus" : "premium";
-
-                    // Αποθήκευση του πλάνου στο Firebase
-                    db.ref('users/' + user.uid + '/subscription').set({
-                        plan: userPlan,
-                        timestamp: new Date().toISOString()
-                    });
-
-                    alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε με επιτυχία.`);
-
-                    // Δημιουργία κουμπιού για μετάβαση στις επιτρεπόμενες σελίδες
-                    const accessButton = document.createElement("button");
-                    accessButton.textContent = "Μετάβαση στις επιτρεπόμενες σελίδες";
-                    accessButton.onclick = function () {
-                        window.location.href = "index2.html"; // Σελίδα που επιτρέπεται για το Βασικό Πλάνο
-                    };
-
-                    // Προσθήκη κουμπιού στην σελίδα
-                    document.body.appendChild(accessButton);
-
-                } else {
-                    alert("Παρακαλώ συνδεθείτε για να ολοκληρώσετε την πληρωμή.");
-                }
-            });
-        }
-    }).render(planId);
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    setupPayPal('#paypal-basic', 'Βασικό', '5.00');
-    setupPayPal('#paypal-plus', 'Plus', '10.00');
-    setupPayPal('#paypal-premium', 'Premium', '20.00');
-});
-
-
-
-document.addEventListener("DOMContentLoaded", function() {
-    const restrictedPages = {
-        basic: [
-            "index2.html", // Καρτέλες Προμηθευτών
-            "employee-management.html", // Καταγραφή Προσωπικού
-            "salary.html", // Καταγραφή Μισθοδοσίας
-            "weekly-salary.html", // Εβδομαδιαία Μισθοδοσία
-            "salary-report.html" // Αναφορά Μισθοδοσίας
-        ]
+    // Ρύθμιση Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+        authDomain: "speedy-bazaar-411110.firebaseapp.com",
+        projectId: "speedy-bazaar-411110",
+        storageBucket: "speedy-bazaar-411110.appspot.com",
+        messagingSenderId: "752456596300",
+        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+        measurementId: "G-NGZHWDY6S5"
     };
 
-    auth.onAuthStateChanged(function(user) {
-        if (user) {
-            db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
-                const userPlan = snapshot.val();
-                const currentPage = window.location.pathname.split('/').pop();
+    // Αρχικοποίηση Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-                // Έλεγχος αν η σελίδα είναι περιορισμένη
-                if (userPlan === "basic" && restrictedPages.basic.includes(currentPage)) {
-                    alert("Δεν έχετε πρόσβαση σε αυτή τη σελίδα. Αναβαθμίστε τη συνδρομή σας.");
-                    window.location.href = "index.html"; // Επιστροφή στην Αρχική Σελίδα
-                }
-            });
-        } else {
-            alert("Παρακαλώ συνδεθείτε για να αποκτήσετε πρόσβαση.");
-            window.location.href = "index.html"; // Επιστροφή στην Αρχική Σελίδα
-        }
-    });
-});
+    // Συνάρτηση για εμφάνιση πληροφοριών χρήστη
+    function displayUserInfo(user) {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('user-info').style.display = 'block';
+        document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
+        document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
+    }
+
+    // Αποσύνδεση χρήστη
+    function signOut() {
+        auth.signOut().then(() => {
+            document.getElementById('auth-container').style.display = 'block';
+            document.getElementById('user-info').style.display = 'none';
+        });
+    }
+
+    // Υλοποίηση PayPal κουμπιών
+    function setupPayPal(planId, planName, price) {
+        paypal.Buttons({
+            createOrder: function (data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: price
+                        }
+                    }]
+                });
+            },
+            onApprove: function (data, actions) {
+                return actions.order.capture().then(function (details) {
+                    const user = auth.currentUser;
+                    if (user) {
+                        const userPlan = planName === "Βασικό" ? "basic" : planName === "Plus" ? "plus" : "premium";
+
+                        // Αποθήκευση του πλάνου στο Firebase
+                        db.ref('users/' + user.uid + '/subscription').set({
+                            plan: userPlan,
+                            timestamp: new Date().toISOString()
+                        });
+
+                        alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε με επιτυχία.`);
+                    } else {
+                        alert("Παρακαλώ συνδεθείτε για να ολοκληρώσετε την πληρωμή.");
+                    }
+                });
+            }
+        }).render(planId);
+    }
 
     // Ρύθμιση κουμπιών για τα πλάνα
     setupPayPal('#paypal-basic', 'Βασικό', '5.00');
@@ -217,40 +167,37 @@ document.addEventListener("DOMContentLoaded", function() {
             displayUserInfo(userCredential.user);
         });
     }
-    // Συνάρτηση για να δείξει το κουμπί μετάβασης
-function showTransitionButton(userPlan) {
-    if (userPlan === "basic") {
-        document.getElementById('transition-button').style.display = 'block'; // Εμφανίζει το κουμπί
-    } else {
-        document.getElementById('transition-button').style.display = 'none'; // Κρύβει το κουμπί
-    }
-}
 
-// Συνάρτηση για τη μετάβαση στις επιτρεπόμενες σελίδες
-function goToRestrictedPages() {
-    const allowedPages = [
-        "index2.html", // Καρτέλες Προμηθευτών
-        "employee-management.html", // Καταγραφή Προσωπικού
-        "salary.html", // Καταγραφή Μισθοδοσίας
-        "weekly-salary.html", // Εβδομαδιαία Μισθοδοσία
-        "salary-report.html" // Αναφορά Μισθοδοσίας
-    ];
+    // Περιορισμός Πρόσβασης
+    document.addEventListener("DOMContentLoaded", function() {
+        const restrictedPages = {
+            basic: [
+                "index2.html", // Καρτέλες Προμηθευτών
+                "employee-management.html", // Καταγραφή Προσωπικού
+                "salary.html", // Καταγραφή Μισθοδοσίας
+                "weekly-salary.html", // Εβδομαδιαία Μισθοδοσία
+                "salary-report.html" // Αναφορά Μισθοδοσίας
+            ]
+        };
 
-    // Επιλέγει τυχαία μια επιτρεπόμενη σελίδα και ανακατευθύνει εκεί
-    const randomPage = allowedPages[Math.floor(Math.random() * allowedPages.length)];
-    window.location.href = randomPage;
-}
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
+                    const userPlan = snapshot.val();
+                    const currentPage = window.location.pathname.split('/').pop();
 
-// Ελέγχει το πλάνο του χρήστη και εμφανίζει το κουμπί αν είναι το βασικό
-auth.onAuthStateChanged(function(user) {
-    if (user) {
-        db.ref('users/' + user.uid + '/subscription/plan').once('value').then(snapshot => {
-            const userPlan = snapshot.val();
-            showTransitionButton(userPlan); // Εμφανίζει το κουμπί αν το πλάνο είναι το βασικό
+                    // Έλεγχος αν η σελίδα είναι περιορισμένη
+                    if (userPlan === "basic" && restrictedPages.basic.includes(currentPage)) {
+                        alert("Δεν έχετε πρόσβαση σε αυτή τη σελίδα. Αναβαθμίστε τη συνδρομή σας.");
+                        window.location.href = "index.html"; // Επιστροφή στην Αρχική Σελίδα
+                    }
+                });
+            } else {
+                alert("Παρακαλώ συνδεθείτε για να αποκτήσετε πρόσβαση.");
+                window.location.href = "index.html"; // Επιστροφή στην Αρχική Σελίδα
+            }
         });
-    }
-});
-
+    });
 </script>
 
 <style>
