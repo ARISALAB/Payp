@@ -355,6 +355,46 @@
     document.getElementById('accessAppButton').addEventListener('click', () => {
         window.location.href = 'https://myaris.netlify.app/';
     });
+
+    let selectedPlan = null;
+        let planPrice = null;
+
+        function selectPlan(plan, price) {
+            selectedPlan = plan;
+            planPrice = price;
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: price.toString()
+                            }
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(async function(details) {
+                        alert('Πληρωμή ολοκληρώθηκε για το πλάνο: ' + selectedPlan);
+
+                        const user = auth.currentUser;
+                        if (user) {
+                            const userPaymentDoc = doc(db, "users", user.uid);
+                            await setDoc(userPaymentDoc, { plan: selectedPlan, isPaid: true }, { merge: true });
+                        } else {
+                            alert('Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!');
+                        }
+                    });
+                }
+            }).render('#' + plan.toLowerCase() + 'Plan');
+                                                        }
+
+    onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Ο χρήστης είναι συνδεδεμένος:", user.displayName || user.email);
+            } else {
+                alert("Παρακαλώ συνδεθείτε για να επιλέξετε ένα πλάνο.");
+            }
+        });
 </script>
 
 </body>
