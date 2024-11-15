@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Αρχική Σελίδα - Πλάνα Πληρωμής</title>
+    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&currency=EUR"></script>
     <style>
+        /* Στυλ για τα κουτιά των πλάνων και τη διάταξη */
         * {
             margin: 0;
             padding: 0;
@@ -91,20 +93,6 @@
             margin-bottom: 10px;
         }
 
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        button:hover {
-            background-color: #218838;
-        }
-
         footer {
             background-color: #343a40;
             color: white;
@@ -137,10 +125,6 @@
             .price {
                 font-size: 1.1em;
             }
-
-            button {
-                font-size: 0.9em;
-            }
         }
     </style>
 </head>
@@ -150,6 +134,7 @@
     </header>
 
     <section class="pricing-plans">
+        <!-- Βασικό Πλάνο -->
         <div class="plan basic">
             <div class="plan-header"></div>
             <h2>Βασικό</h2>
@@ -159,9 +144,10 @@
                 <li>Περιορισμένο Υποστήριξη</li>
                 <li>Απλά Χαρακτηριστικά</li>
             </ul>
-            <button>Επιλέξτε</button>
+            <div id="paypal-button-basic"></div>
         </div>
 
+        <!-- Κανονικό Πλάνο -->
         <div class="plan standard">
             <div class="plan-header"></div>
             <h2>Κανονικό</h2>
@@ -171,9 +157,10 @@
                 <li>Προτεραιότητα Υποστήριξη</li>
                 <li>Πλήρη Χαρακτηριστικά</li>
             </ul>
-            <button>Επιλέξτε</button>
+            <div id="paypal-button-standard"></div>
         </div>
 
+        <!-- Premium Πλάνο -->
         <div class="plan premium">
             <div class="plan-header"></div>
             <h2>Premium</h2>
@@ -183,12 +170,68 @@
                 <li>24/7 Υποστήριξη</li>
                 <li>Όλα τα Χαρακτηριστικά</li>
             </ul>
-            <button>Επιλέξτε</button>
+            <div id="paypal-button-premium"></div>
         </div>
     </section>
 
     <footer>
         <p>&copy; 2024 Όλα τα Δικαιώματα Διατηρούνται.</p>
     </footer>
+
+    <script>
+        // PayPal Button για Βασικό Πλάνο (€10)
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '10.00'
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Σας ευχαριστούμε για την αγορά σας, ' + details.payer.name.given_name + '!');
+                });
+            }
+        }).render('#paypal-button-basic');
+
+        // PayPal Button για Κανονικό Πλάνο (€25)
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '25.00'
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Σας ευχαριστούμε για την αγορά σας, ' + details.payer.name.given_name + '!');
+                });
+            }
+        }).render('#paypal-button-standard');
+
+        // PayPal Button για Premium Πλάνο (€50)
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '50.00'
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Σας ευχαριστούμε για την αγορά σας, ' + details.payer.name.given_name + '!');
+                });
+            }
+        }).render('#paypal-button-premium');
+    </script>
 </body>
 </html>
