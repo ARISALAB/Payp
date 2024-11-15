@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css"> <!-- Σύνδεσμος στο αρχείο CSS -->
+    <link rel="icon" href="11.png" type="image/png">
+
+    <title>Συναλλαγές Προμηθευτών</title>
+   
+        
+</head>
+<body>
+  <nav>
+        <img src="11.png" alt="Logo" class="logo">
+        <button class="menu-toggle">
+            &#9776;<br>Menu
+        </button>
+        <div class="menu-items">
+            <a href="index.html">Αρχική Σελίδα</a>
+    
+            <div class="dropdown">
+                <a href="#">Συναλλαγές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Εξόδων</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+    
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+    
+            <div class="dropdown">
+                <a href="#">Αναφορές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+    
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία </a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                    
+
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <a href="index.html">Αρχική Σελίδα</a>
+            
+            <div class="dropdown">
+                <a href="#">Συναλλαγές</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Εξόδων</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+            
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+            
+            <div class="dropdown">
+                <a href="#">Αναφορές</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+            
+            <!-- Νέα ενότητα για Προσωπικό -->
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία</a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+
+    <h1>Συναλλαγές Προμηθευτών</h1>
+    <ul class="supplier-list" id="supplier-list"></ul>
+
+ <!-- Modal -->
+ <div id="transaction-modal" class="modal1">
+    <div class="modal1-content">
+        <span class="close">&times;</span>
+        <h2 id="supplier-name">Συναλλαγές Προμηθευτή</h2>
+        <table id="transaction-table">
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th>Αριθμός Τιμολογίου</th>
+                    <th>Τιμολόγια Επί Πιστώσει (€)</th>
+                    <th>Τιμολόγια Πληρωμένα (€)</th>
+                    <th>Καταθέσεις (€)</th>
+                    <th>Υπόλοιπο (€)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div>
+            <strong>Συνολικά Τιμολόγια Επί Πιστώσει:</strong> <span id="total-credit">0.00 €</span><br>
+            <strong>Συνολικά Καταγεγραμμένα:</strong> <span id="total-recorded">0.00 €</span><br>
+            <strong>Σύνολο Αγορών:</strong> <span id="total-purchases">0.00 €</span><br> <!-- Νέα γραμμή για το σύνολο αγορών -->
+            <strong>Συνολικό Υπόλοιπο:</strong> <span id="total-balance">0.00 €</span>
+        </div>
+        <button id="export-pdf" class="export-button">Εξαγωγή σε PDF</button> <!-- Κουμπί τοποθετημένο στο τέλος -->
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.72/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.72/vfs_fonts.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const supplierList = document.getElementById('supplier-list');
+    const transactionModal = document.getElementById('transaction-modal');
+    const transactionTableBody = document.querySelector('#transaction-table tbody');
+    const supplierNameDisplay = document.getElementById('supplier-name');
+    const closeModal = document.querySelector('.close');
+    const totalCreditElem = document.getElementById('total-credit');
+    const totalRecordedElem = document.getElementById('total-recorded');
+    const totalBalanceElem = document.getElementById('total-balance');
+    const exportPdfButton = document.getElementById('export-pdf');
+
+    // Εξαγωγή συναλλαγών, τιμολογίων επί πιστώσει και καταθέσεων από το localStorage
+    const payments = JSON.parse(localStorage.getItem('payments')) || {};
+    const creditInvoices = JSON.parse(localStorage.getItem('credit-invoices')) || {};
+    const bankPayments = JSON.parse(localStorage.getItem('bank-payments')) || {};
+
+    // Ομαδοποίηση συναλλαγών ανά προμηθευτή
+    const groupedBySupplier = {};
+
+    // Αρχικοποίηση προμηθευτών
+    Object.keys(payments).forEach(date => {
+        payments[date].forEach(transaction => {
+            const supplier = transaction.supplier;
+            if (!groupedBySupplier[supplier]) {
+                groupedBySupplier[supplier] = {
+                    creditAmount: 0,
+                    recordedAmount: 0,
+                    deposits: 0,
+                    transactions: [],
+                    balance: 0
+                };
+            }
+            // Προσθήκη καταγεγραμμένων συναλλαγών
+            groupedBySupplier[supplier].recordedAmount += parseFloat(transaction.amount);
+            groupedBySupplier[supplier].transactions.push({ date, ...transaction, type: 'regular' });
+        });
+    });
+
+    // Προσθήκη τιμολογίων επί πιστώσει
+    Object.keys(creditInvoices).forEach(date => {
+        creditInvoices[date].forEach(invoice => {
+            const supplier = invoice.supplier;
+            if (!groupedBySupplier[supplier]) {
+                groupedBySupplier[supplier] = {
+                    creditAmount: 0,
+                    recordedAmount: 0,
+                    deposits: 0,
+                    transactions: [],
+                    balance: 0
+                };
+            }
+            groupedBySupplier[supplier].creditAmount += parseFloat(invoice.amount);
+            groupedBySupplier[supplier].transactions.push({ date, ...invoice, type: 'credit' });
+        });
+    });
+
+    // Προσθήκη καταθέσεων
+    Object.keys(bankPayments).forEach(date => {
+        bankPayments[date].forEach(payment => {
+            const supplier = payment.supplier;
+            if (!groupedBySupplier[supplier]) {
+                groupedBySupplier[supplier] = {
+                    creditAmount: 0,
+                    recordedAmount: 0,
+                    deposits: 0,
+                    transactions: [],
+                    balance: 0
+                };
+            }
+            groupedBySupplier[supplier].deposits += parseFloat(payment.amount);
+            groupedBySupplier[supplier].transactions.push({ date, ...payment, type: 'deposit' });
+        });
+    });
+
+    // Ταξινόμηση προμηθευτών αλφαβητικά
+    const sortedSuppliers = Object.keys(groupedBySupplier).sort();
+
+  // Εμφάνιση προμηθευτών
+sortedSuppliers.forEach(supplier => {
+    const supplierData = groupedBySupplier[supplier];
+    const listItem = document.createElement('li');
+    listItem.className = 'supplier-item';
+
+    // Υπολογισμός υπολοίπου
+    const balance = supplierData.creditAmount - supplierData.deposits;
+
+    // Υπολογισμός του συνολικού ποσού που είναι το άθροισμα των τιμολογίων επί πιστώσει και των πληρωμένων τιμολογίων
+    const total = supplierData.creditAmount + supplierData.recordedAmount; // Άθροισμα των τιμολογίων επί πιστώσει και των πληρωμένων τιμολογίων
+
+    listItem.innerHTML = `
+        <strong>${supplier}</strong><br>
+        Τιμολόγια Επί Πιστώσει: ${supplierData.creditAmount.toFixed(2)} €<br>
+        Τιμολόγια Πληρωμένα: ${supplierData.recordedAmount.toFixed(2)} €<br>
+        Καταθέσεις: ${supplierData.deposits.toFixed(2)} €<br>
+        Σύνολο: ${total.toFixed(2)} €<br> <!-- Εμφάνιση του σωστού συνόλου -->
+        Υπόλοιπο: ${balance.toFixed(2)} €
+    `;
+
+    listItem.addEventListener('click', () => openModal(supplier));
+    supplierList.appendChild(listItem);
+});
+
+
+
+    // Άνοιγμα modal με τις συναλλαγές του προμηθευτή
+function openModal(supplier) {
+    supplierNameDisplay.textContent = `Συναλλαγές Προμηθευτή: ${supplier}`;
+    transactionTableBody.innerHTML = '';
+
+    // Ταξινόμηση συναλλαγών κατά ημερομηνία (αύξουσα σειρά)
+    const transactions = groupedBySupplier[supplier].transactions;
+    transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    let totalCredit = 0;
+    let totalRecorded = 0;
+    let totalDeposits = 0;
+    let currentBalance = 0;
+
+    transactions.forEach(transaction => {
+        const creditAmount = transaction.type === 'credit' ? parseFloat(transaction.amount).toFixed(2) : '-';
+        const recordedAmount = transaction.type === 'regular' ? parseFloat(transaction.amount).toFixed(2) : '-';
+        const depositAmount = transaction.type === 'deposit' ? parseFloat(transaction.amount).toFixed(2) : '-';
+
+        // Υπολογισμός του υπολοίπου
+        if (transaction.type === 'credit') {
+            totalCredit += parseFloat(transaction.amount);
+            currentBalance += parseFloat(transaction.amount);
+        } else if (transaction.type === 'regular') {
+            totalRecorded += parseFloat(transaction.amount);
+        } else if (transaction.type === 'deposit') {
+            totalDeposits += parseFloat(transaction.amount);
+            currentBalance -= parseFloat(transaction.amount);
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${transaction.date}</td>
+            <td>${transaction.invoiceNumber || '-'}</td>
+            <td>${creditAmount} €</td>
+            <td>${recordedAmount} €</td>
+            <td>${depositAmount} €</td>
+            <td>${currentBalance.toFixed(2)} €</td>
+        `;
+        transactionTableBody.appendChild(row);
+    });
+
+    // Υπολογισμός και εμφάνιση του συνολικού ποσού στο modal
+    const totalPurchases = totalCredit + totalRecorded; // Υπολογισμός του συνόλου αγορών
+    document.getElementById('total-purchases').textContent = totalPurchases.toFixed(2) + ' €';
+    document.getElementById('total-credit').textContent = totalCredit.toFixed(2) + ' €';
+    document.getElementById('total-recorded').textContent = totalRecorded.toFixed(2) + ' €';
+    document.getElementById('total-balance').textContent = currentBalance.toFixed(2) + ' €';
+
+    transactionModal.style.display = 'block';
+}
+
+    const closeModalButton = transactionModal.querySelector('.close'); // Κάνει αναφορά στο σωστό κουμπί κλεισίματος
+
+     // Κλείσιμο του modal με κλικ στο κουμπί κλεισίματος
+    closeModalButton.addEventListener('click', () => {
+        transactionModal.style.display = 'none';
+    });
+
+    // Κλείσιμο του modal με κλικ έξω από το modal
+    window.addEventListener('click', (event) => {
+        if (event.target === transactionModal) {
+            transactionModal.style.display = 'none';
+        }
+    });
+
+    // Εξαγωγή σε PDF
+    exportPdfButton.addEventListener('click', () => {
+                const supplier = supplierNameDisplay.textContent.replace('Συναλλαγές Προμηθευτή: ', '');
+                const transactions = groupedBySupplier[supplier].transactions;
+                const totalCredit = groupedBySupplier[supplier].creditAmount;
+                const totalRecorded = groupedBySupplier[supplier].recordedAmount;
+                const totalDeposits = groupedBySupplier[supplier].deposits;
+                let balance = 0;
+
+                const tableBody = transactions.map(transaction => {
+                    const creditAmount = transaction.type === 'credit' ? parseFloat(transaction.amount).toFixed(2) : '-';
+                    const recordedAmount = transaction.type === 'regular' ? parseFloat(transaction.amount).toFixed(2) : '-';
+                    const depositAmount = transaction.type === 'deposit' ? parseFloat(transaction.amount).toFixed(2) : '-';
+                    balance += transaction.type === 'credit' ? parseFloat(transaction.amount) : 0;
+                    balance -= transaction.type === 'deposit' ? parseFloat(transaction.amount) : 0;
+                    const balanceAmount = balance.toFixed(2);
+                    return [
+                        { text: transaction.date, alignment: 'center' }, 
+                        { text: transaction.invoiceNumber || '-', alignment: 'center' }, 
+                        { text: creditAmount, alignment: 'center' }, 
+                        { text: recordedAmount, alignment: 'center' }, 
+                        { text: depositAmount, alignment: 'center' }, 
+                        { text: balanceAmount, alignment: 'center' }
+                    ];
+                });
+
+                const docDefinition = {
+                    pageSize: 'A4',
+                    content: [
+                        { text: `Συναλλαγές Προμηθευτή: ${supplier}`, style: 'header' },
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: ['*', '*', '*', '*', '*', '*'],
+                                body: [
+                                    [
+                                        { text: 'Ημερομηνία', bold: true, color: 'white', alignment: 'center' }, 
+                                        { text: 'Αριθμός Τιμολογίου', bold: true, color: 'white', alignment: 'center' }, 
+                                        { text: 'Τιμολόγια Επί Πιστώσει (€)', bold: true, color: 'white', alignment: 'center' }, 
+                                        { text: 'Τιμολόγια Πληρωμένα (€)', bold: true, color: 'white', alignment: 'center' }, 
+                                        { text: 'Καταθέσεις (€)', bold: true, color: 'white', alignment: 'center' }, 
+                                        { text: 'Υπόλοιπο (€)', bold: true, color: 'white', alignment: 'center' }
+                                    ],
+                                    ...tableBody
+                                ]
+                            },
+                            layout: {
+                                fillColor: function (rowIndex) {
+                                    return rowIndex === 0 ? '#003366' : (rowIndex % 2 === 0 ? '#ffffff' : '#e6f2ff');
+                                },
+                                hLineColor: function () {
+                                    return '#004080';
+                                },
+                                vLineColor: function () {
+                                    return '#004080';
+                                },
+                                paddingLeft: function () {
+                                    return 10;
+                                },
+                                paddingRight: function () {
+                                    return 10;
+                                },
+                                paddingTop: function () {
+                                    return 8;
+                                },
+                                paddingBottom: function () {
+                                    return 8;
+                                }
+                            },
+                            margin: [0, 10, 0, 10]
+                        },
+                        {
+                            text: '\nΣυνολικά Στοιχεία:',
+                            style: 'subheader'
+                        },
+                        {
+                            table: {
+                                widths: ['*', '*'],
+                                body: [
+                                    ['Συνολικά Τιμολόγια Επί Πιστώσει', `${totalCredit.toFixed(2)} €`],
+                                    ['Συνολικά Καταγεγραμμένα', `${totalRecorded.toFixed(2)} €`],
+                                    ['Συνολικές Καταθέσεις', `${totalDeposits.toFixed(2)} €`],
+                                    ['Τελικό Υπόλοιπο', `${balance.toFixed(2)} €`]
+                                ]
+                            },
+                            layout: {
+                                fillColor: function (rowIndex) {
+                                    return rowIndex === 0 ? '#003366' : (rowIndex % 2 === 0 ? '#004080' : '#e6f2ff');
+                                },
+                                hLineColor: function () {
+                                    return '#004080';
+                                },
+                                vLineColor: function () {
+                                    return '#004080';
+                                },
+                                paddingLeft: function () {
+                                    return 10;
+                                },
+                                paddingRight: function () {
+                                    return 10;
+                                },
+                                paddingTop: function () {
+                                    return 8;
+                                },
+                                paddingBottom: function () {
+                                    return 8;
+                                }
+                            }
+                        }
+                    ],
+                    styles: {
+                        header: {
+                            fontSize: 18,
+                            bold: true,
+                            alignment: 'center',
+                            margin: [0, 20, 0, 10],
+                            color: '#003366'
+                        },
+                        subheader: {
+                            fontSize: 16,
+                            bold: true,
+                            margin: [0, 10, 0, 5],
+                            color: '#0066cc'
+                        }
+                    },
+                    defaultStyle: {
+                        columnGap: 20
+                    }
+                };
+
+                pdfMake.createPdf(docDefinition).download(`${supplier}_συναλλαγές.pdf`);
+            });
+        });
+    </script>
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'flex';
+        });
+        
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'none';
+        });
+        
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('menuModal')) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        }
+        
+        // Κώδικας για την απόκρυψη του toggle menu όταν μεγαλώνει η οθόνη
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        });
+        
+        </script>
+        
+</body>
+</html>
