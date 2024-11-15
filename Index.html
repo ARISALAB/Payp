@@ -89,23 +89,30 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-  function displayUserInfo(user) {
+ function displayUserInfo(user) {
     if (user) {
+        // Απόκρυψη του authentication container και εμφάνιση του user info
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('user-info').style.display = 'block';
         document.getElementById('user-name').innerText = user.displayName || "Χρήστης";
         document.getElementById('user-photo').src = user.photoURL || "./default-avatar.png";
 
-        // Έλεγχος συνδρομής για ενεργοποίηση του κουμπιού
-        db.ref('users/' + user.uid + '/subscription').once('value').then(snapshot => {
-            const subscription = snapshot.val();
-            if (subscription && subscription.plan === "basic" && subscription.paymentVerified) {
-                document.getElementById('access-pages').style.display = 'inline-block';
-            }
-        }).catch(error => {
-            console.error("Σφάλμα κατά την ανάκτηση συνδρομής:", error);
-        });
+        // Ανάκτηση συνδρομής από το Firebase
+        db.ref('users/' + user.uid + '/subscription').once('value')
+            .then(snapshot => {
+                const subscription = snapshot.val();
+                if (subscription && subscription.plan === "basic" && subscription.paymentVerified) {
+                    document.getElementById('access-pages').style.display = 'inline-block';
+                } else {
+                    document.getElementById('access-pages').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error("Σφάλμα κατά την ανάκτηση συνδρομής:", error);
+                document.getElementById('access-pages').style.display = 'none'; // Απόκρυψη του κουμπιού σε περίπτωση σφάλματος
+            });
     } else {
+        // Αν ο χρήστης δεν είναι συνδεδεμένος
         document.getElementById('auth-container').style.display = 'block';
         document.getElementById('user-info').style.display = 'none';
         document.getElementById('access-pages').style.display = 'none';
@@ -175,7 +182,7 @@ function setupPayPal(planId, planName, price) {
                         paymentVerified: true
                     }).then(() => {
                         alert(`Η πληρωμή σας για το πλάνο "${planName}" ολοκληρώθηκε.`);
-                        displayUserInfo(user); // Ενημερώνουμε τη διεπαφή χρήστη
+                        displayUserInfo(user); // Ενημερώνουμε άμεσα τη διεπαφή χρήστη
                     }).catch(error => {
                         console.error("Σφάλμα κατά την αποθήκευση της πληρωμής:", error);
                     });
@@ -186,15 +193,22 @@ function setupPayPal(planId, planName, price) {
 }
 
 
+
     // Ρύθμιση κουμπιών για τα πλάνα
     setupPayPal('#paypal-basic', 'Βασικό', '5.00');
     setupPayPal('#paypal-plus', 'Plus', '10.00');
     setupPayPal('#paypal-premium', 'Premium', '20.00');
 
-    // Παρακολούθηση κατάστασης χρήστη
-    auth.onAuthStateChanged(function(user) {
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
         displayUserInfo(user);
-    });
+    } else {
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('user-info').style.display = 'none';
+        document.getElementById('access-pages').style.display = 'none';
+    }
+});
+
 </script>
 
 <style>
