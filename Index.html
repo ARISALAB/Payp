@@ -5,132 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Αρχική Σελίδα - Πλάνα Πληρωμής</title>
     <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj&currency=EUR"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore.js"></script>
     <style>
         /* Στυλ για τα κουτιά των πλάνων και τη διάταξη */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-            text-align: center;
-        }
-
-        header {
-            background-color: #343a40;
-            color: white;
-            padding: 20px;
-        }
-
-        h1 {
-            font-size: 2em;
-        }
-
-        .pricing-plans {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 50px 0;
-            flex-wrap: wrap;
-        }
-
-        .plan {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            width: 250px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-
-        .plan:hover {
-            transform: scale(1.05);
-        }
-
-        .plan-header {
-            height: 10px;
-            width: 100%;
-            margin-bottom: 20px;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .basic .plan-header {
-            background-color: #B2DBE7; /* Απαλό μπλε */
-        }
-
-        .standard .plan-header {
-            background-color: #28A745; /* Πράσινο */
-        }
-
-        .premium .plan-header {
-            background-color: #FFD700; /* Χρυσό */
-        }
-
-        h2 {
-            margin-bottom: 15px;
-            font-size: 1.5em;
-        }
-
-        .price {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        ul {
-            list-style-type: none;
-            margin-bottom: 20px;
-            padding: 0;
-        }
-
-        ul li {
-            margin-bottom: 10px;
-        }
-
-        footer {
-            background-color: #343a40;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-
-        /* Προσαρμογές για κινητές συσκευές */
-        @media (max-width: 768px) {
-            .pricing-plans {
-                flex-direction: column;
-                align-items: center;
-                gap: 30px;
-                padding: 20px;
-            }
-
-            .plan {
-                width: 90%;
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            h2 {
-                font-size: 1.4em;
-            }
-
-            .price {
-                font-size: 1.1em;
-            }
-        }
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; text-align: center; }
+        header { background-color: #343a40; color: white; padding: 20px; }
+        h1 { font-size: 2em; }
+        .pricing-plans { display: flex; justify-content: center; gap: 20px; padding: 50px 0; flex-wrap: wrap; }
+        .plan { background-color: white; border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 250px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: transform 0.3s; }
+        .plan:hover { transform: scale(1.05); }
+        .plan-header { height: 10px; width: 100%; margin-bottom: 20px; border-radius: 10px 10px 0 0; }
+        .basic .plan-header { background-color: #B2DBE7; }
+        .standard .plan-header { background-color: #28A745; }
+        .premium .plan-header { background-color: #FFD700; }
+        h2 { margin-bottom: 15px; font-size: 1.5em; }
+        .price { font-size: 1.2em; font-weight: bold; margin-bottom: 20px; }
+        ul { list-style-type: none; margin-bottom: 20px; padding: 0; }
+        ul li { margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <header>
         <h1>Επιλέξτε το Πλάνο Πληρωμής σας</h1>
+        <button onclick="loginWithGoogle()">Σύνδεση με Google</button>
+        <button onclick="signInEmail()">Σύνδεση με Email</button>
     </header>
 
     <section class="pricing-plans">
@@ -174,25 +74,51 @@
         </div>
     </section>
 
-    <footer>
-        <p>&copy; 2024 Όλα τα Δικαιώματα Διατηρούνται.</p>
-    </footer>
-
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Google Login
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(result => {
+                alert("Συνδεθήκατε με επιτυχία!");
+            }).catch(error => console.error("Σφάλμα: ", error));
+        }
+
+        // Email Login
+        function signInEmail() {
+            const email = prompt("Εισάγετε το email σας:");
+            const password = prompt("Εισάγετε τον κωδικό σας:");
+            auth.signInWithEmailAndPassword(email, password).then(result => {
+                alert("Συνδεθήκατε με επιτυχία!");
+            }).catch(error => console.error("Σφάλμα: ", error));
+        }
+
         // PayPal Button για Βασικό Πλάνο (€10)
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: '10.00'
-                        }
-                    }]
+                    purchase_units: [{ amount: { value: '10.00' } }]
                 });
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
                     alert('Σας ευχαριστούμε για την αγορά σας, ' + details.payer.name.given_name + '!');
+                    savePayment(details, 'Basic', 10.00);
                 });
             }
         }).render('#paypal-button-basic');
@@ -201,16 +127,13 @@
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: '25.00'
-                        }
-                    }]
+                    purchase_units: [{ amount: { value: '25.00' } }]
                 });
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
                     alert('Σας ευχαριστούμε για την αγορά σας, ' + details.payer.name.given_name + '!');
+                    savePayment(details, 'Standard', 25.00);
                 });
             }
         }).render('#paypal-button-standard');
@@ -219,19 +142,39 @@
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: '50.00'
-                        }
-                    }]
+                    purchase_units: [{ amount: { value: '50.00' } }]
                 });
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
                     alert('Σας ευχαριστούμε για την αγορά σας, ' + details.payer.name.given_name + '!');
+                    savePayment(details, 'Premium', 50.00);
                 });
             }
         }).render('#paypal-button-premium');
+
+        // Αποθήκευση πληρωμής στο Firestore
+        function savePayment(details, plan, amount) {
+            if (auth.currentUser) {
+                db.collection("payments").add({
+                    userId: auth.currentUser.uid,
+                    plan: plan,
+                    amount: amount,
+                    transactionId: details.id,
+                    status: "completed",
+                    date: new Date()
+                }).then(() => {
+                    alert("Η πληρωμή καταχωρήθηκε με επιτυχία!");
+                    document.getElementById('access-button').style.display = 'block';
+                }).catch(error => console.error("Σφάλμα κατά την καταχώρηση: ", error));
+            } else {
+                alert("Πρέπει να συνδεθείτε για να ολοκληρώσετε την πληρωμή.");
+            }
+        }
     </script>
+
+    <footer>
+        <button id="access-button" style="display: none;" onclick="window.location.href = 'app.html';">Μετάβαση στην Εφαρμογή</button>
+    </footer>
 </body>
 </html>
