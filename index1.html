@@ -47,108 +47,109 @@
     <p id="total-amount">Συνολικό Ποσό: 0.00 €</p>
 
     <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
-<script>
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"; // Add this import
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+  import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"; // Add this import
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-    authDomain: "speedy-bazaar-411110.firebaseapp.com",
-    projectId: "speedy-bazaar-411110",
-    storageBucket: "speedy-bazaar-411110.appspot.com",
-    messagingSenderId: "752456596300",
-    appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-    measurementId: "G-NGZHWDY6S5"
-};
+  const firebaseConfig = {
+      apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+      authDomain: "speedy-bazaar-411110.firebaseapp.com",
+      projectId: "speedy-bazaar-411110",
+      storageBucket: "speedy-bazaar-411110.appspot.com",
+      messagingSenderId: "752456596300",
+      appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+      measurementId: "G-NGZHWDY6S5"
+  };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore(app);
-const database = getDatabase(app); // Initialize Firebase Database
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth();
+  const db = getFirestore(app);
+  const database = getDatabase(app); // Initialize Firebase Database
 
-// Check User Authentication
-onAuthStateChanged(auth, user => {
-    if (!user) {
-        alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
-        window.location.href = 'index.html';
-    }
-});
+  // Check User Authentication
+  onAuthStateChanged(auth, user => {
+      if (!user) {
+          alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
+          window.location.href = 'index.html';
+      }
+  });
 
-// DOM Elements
-const transactionForm = document.getElementById('transaction-form');
-const transactionDate = document.getElementById('transaction-date');
-const supplierInput = document.getElementById('supplier');
-const invoiceNumberInput = document.getElementById('invoice-number');
-const descriptionInput = document.getElementById('description');
-const amountInput = document.getElementById('amount');
-const transactionList = document.getElementById('transaction-list');
-const totalAmountDisplay = document.getElementById('total-amount');
+  // DOM Elements
+  const transactionForm = document.getElementById('transaction-form');
+  const transactionDate = document.getElementById('transaction-date');
+  const supplierInput = document.getElementById('supplier');
+  const invoiceNumberInput = document.getElementById('invoice-number');
+  const descriptionInput = document.getElementById('description');
+  const amountInput = document.getElementById('amount');
+  const transactionList = document.getElementById('transaction-list');
+  const totalAmountDisplay = document.getElementById('total-amount');
 
-// Fetch Transactions from Firebase
-function loadTransactions(date) {
-    const transactionsRef = ref(database, `transactions/${date}`);
-    onValue(transactionsRef, snapshot => {
-        const data = snapshot.val();
-        renderTransactionList(data || {}, date);
-    });
-}
+  // Fetch Transactions from Firebase
+  function loadTransactions(date) {
+      const transactionsRef = ref(database, `transactions/${date}`);
+      onValue(transactionsRef, snapshot => {
+          const data = snapshot.val();
+          renderTransactionList(data || {}, date);
+      });
+  }
 
-// Render Transactions
-function renderTransactionList(transactions, date) {
-    transactionList.innerHTML = '';
-    let totalAmount = 0;
+  // Render Transactions
+  function renderTransactionList(transactions, date) {
+      transactionList.innerHTML = '';
+      let totalAmount = 0;
 
-    for (const [key, transaction] of Object.entries(transactions)) {
-        const transactionItem = document.createElement('li');
-        transactionItem.innerHTML = `
-            <div><strong>Προμηθευτής:</strong> ${transaction.supplier}</div>
-            <div><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</div>
-            <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
-            <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
-            <button class="delete-btn" data-key="${key}">Διαγραφή</button>
-        `;
-        transactionItem.querySelector('.delete-btn').addEventListener('click', () => deleteTransaction(date, key));
-        transactionList.appendChild(transactionItem);
-        totalAmount += parseFloat(transaction.amount);
-    }
+      for (const [key, transaction] of Object.entries(transactions)) {
+          const transactionItem = document.createElement('li');
+          transactionItem.innerHTML = `
+              <div><strong>Προμηθευτής:</strong> ${transaction.supplier}</div>
+              <div><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</div>
+              <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
+              <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
+              <button class="delete-btn" data-key="${key}">Διαγραφή</button>
+          `;
+          transactionItem.querySelector('.delete-btn').addEventListener('click', () => deleteTransaction(date, key));
+          transactionList.appendChild(transactionItem);
+          totalAmount += parseFloat(transaction.amount);
+      }
 
-    totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
-}
+      totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
+  }
 
-// Add Transaction
-transactionForm.addEventListener('submit', e => {
-    e.preventDefault();
+  // Add Transaction
+  transactionForm.addEventListener('submit', e => {
+      e.preventDefault();
 
-    const date = transactionDate.value;
-    const supplier = supplierInput.value.trim();
-    const invoiceNumber = invoiceNumberInput.value.trim();
-    const description = descriptionInput.value.trim();
-    const amount = parseFloat(amountInput.value);
+      const date = transactionDate.value;
+      const supplier = supplierInput.value.trim();
+      const invoiceNumber = invoiceNumberInput.value.trim();
+      const description = descriptionInput.value.trim();
+      const amount = parseFloat(amountInput.value);
 
-    if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
-        alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
-        return;
-    }
+      if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
+          alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
+          return;
+      }
 
-    const newTransaction = { supplier, invoiceNumber, description, amount };
-    const transactionsRef = ref(database, `transactions/${date}`);
-    push(transactionsRef, newTransaction);
-    transactionForm.reset();
-    transactionDate.value = date;
-});
+      const newTransaction = { supplier, invoiceNumber, description, amount };
+      const transactionsRef = ref(database, `transactions/${date}`);
+      push(transactionsRef, newTransaction);
+      transactionForm.reset();
+      transactionDate.value = date;
+  });
 
-// Delete Transaction
-function deleteTransaction(date, key) {
-    const transactionRef = ref(database, `transactions/${date}/${key}`);
-    remove(transactionRef);
-}
+  // Delete Transaction
+  function deleteTransaction(date, key) {
+      const transactionRef = ref(database, `transactions/${date}/${key}`);
+      remove(transactionRef);
+  }
 
-// Load Initial Data
-transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
-transactionDate.value = new Date().toISOString().split('T')[0];
-loadTransactions(transactionDate.value);
+  // Load Initial Data
+  transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
+  transactionDate.value = new Date().toISOString().split('T')[0];
+  loadTransactions(transactionDate.value);
 </script>
+
 </body>
 </html>
