@@ -110,6 +110,7 @@
         <p id="cash-revenue-display" class="summary-item">Ταμείο Ημέρας: 0.00 €</p>
         <p id="card-revenue-display" class="summary-item">Έσοδα από Κάρτες: 0.00 €</p>
         <p id="cash-balance-display" class="summary-item">Υπόλοιπο Μετρητών: 0.00 €</p>
+        <p id="transaction-total">Σύνολο Συναλλαγών: 0.00 €</p>
         <p id="payment-status" class="summary-item"></p> <!-- Για την εμφάνιση της πληρωμής -->
     </div>
 
@@ -241,6 +242,28 @@
                 getAllRevenues().then(updateRevenueTable); // Ενημέρωση του πίνακα
             });
         });
+
+        function loadDailyTotals(date) {
+    const dailyTotalRef = ref(database, `dailyTotals/${date}`);
+    onValue(dailyTotalRef, snapshot => {
+        const data = snapshot.val();
+        const transactionTotal = data ? data.total : 0;
+        document.getElementById('transaction-total').textContent = `Σύνολο Συναλλαγών: ${transactionTotal.toFixed(2)} €`;
+    });
+}
+
+// Κλήση της συνάρτησης όταν αλλάζει η ημερομηνία
+const dateInput = document.getElementById('date-input');
+dateInput.addEventListener('change', () => {
+    const selectedDate = dateInput.value;
+    loadDailyTotals(selectedDate);
+});
+
+// Αυτόματη φόρτωση για την τρέχουσα ημερομηνία
+const today = new Date().toISOString().split('T')[0];
+dateInput.value = today;
+loadDailyTotals(today);
+        
     </script>
     <script>
         document.querySelector('.menu-toggle').addEventListener('click', function() {
