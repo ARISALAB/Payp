@@ -176,7 +176,9 @@ const firebaseConfig = {
 
       // Remove the current transaction
       deleteTransaction(date, key);
-  }
+        // Clear the form after editing
+    transactionForm.reset();
+}
 
   // Load Initial Data
   loadSuppliers();
