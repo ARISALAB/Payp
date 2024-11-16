@@ -154,7 +154,9 @@ const firebaseConfig = {
 
       // Add Supplier if not already present
       const suppliersRef = ref(database, `suppliers/${supplier}`);
-      setDoc(suppliersRef, { supplierName: supplier });
+set(ref(database, `suppliers/${supplier}`), {
+    supplierName: supplier
+});
 
       transactionForm.reset(); // Clear the form fields after submission
       transactionDate.value = date;
