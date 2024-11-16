@@ -53,25 +53,20 @@
   <script>
     // Firebase Configuration
 const firebaseConfig = {
-    const firebaseConfig = {
     apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
     authDomain: "speedy-bazaar-411110.firebaseapp.com",
+    databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com/",
     projectId: "speedy-bazaar-411110",
     storageBucket: "speedy-bazaar-411110.appspot.com",
     messagingSenderId: "752456596300",
     appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-    measurementId: "G-NGZHWDY6S5",
-    databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com/"
-
-
+    measurementId: "G-NGZHWDY6S5"
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
-
-
 
         // DOM Elements
         const transactionForm = document.getElementById('transaction-form');
