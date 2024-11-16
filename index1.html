@@ -6,6 +6,90 @@
     <title>Καταγραφή Εξόδων</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="11.png" type="image/png">
+    <STYLE>
+    /* Κεντρική διάταξη για τις συναλλαγές */
+#transaction-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Καρτέλες Συναλλαγών */
+#transaction-list li {
+    background-color: #f8f9fa;
+    padding: 20px;
+    width: 80%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+}
+
+/* Κάθετη γραμμή στην αρχή κάθε καρτέλας */
+#transaction-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #28a745; /* Σκούρο πράσινο χρώμα */
+}
+
+/* Στυλ για τα κουμπιά */
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* Κουμπί Διαγραφής */
+button.delete-btn {
+    background-color: #dc3545; /* Κόκκινο */
+    color: white;
+}
+
+/* Κουμπί Επεξεργασίας */
+button.edit-btn {
+    background-color: #fd7e14; /* Πορτοκαλί */
+    color: white;
+}
+
+/* Κεντρική εμφάνιση του συνολικού ποσού */
+#total-amount {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* Ενίσχυση του κεντρικού πλαισίου της σελίδας */
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    background-color: #e9ecef;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #343a40;
+    color: white;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+}
+
+    </STYLE>
 </head>
 <body>
     <nav>
@@ -49,25 +133,24 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+  import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-  authDomain: "speedy-bazaar-411110.firebaseapp.com",
-  databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-  projectId: "speedy-bazaar-411110",
-  storageBucket: "speedy-bazaar-411110.appspot.com",
-  messagingSenderId: "752456596300",
-  appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-  measurementId: "G-NGZHWDY6S5"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+    authDomain: "speedy-bazaar-411110.firebaseapp.com",
+    databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+    projectId: "speedy-bazaar-411110",
+    storageBucket: "speedy-bazaar-411110.appspot.com",
+    messagingSenderId: "752456596300",
+    appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+    measurementId: "G-NGZHWDY6S5"
+  };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth();
   const db = getFirestore(app);
-  const database = getDatabase(app); // Initialize Firebase Database
+  const database = getDatabase(app);
 
-  // Check User Authentication
   onAuthStateChanged(auth, user => {
       if (!user) {
           alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
@@ -75,7 +158,6 @@ const firebaseConfig = {
       }
   });
 
-  // DOM Elements
   const transactionForm = document.getElementById('transaction-form');
   const transactionDate = document.getElementById('transaction-date');
   const supplierInput = document.getElementById('supplier');
@@ -85,7 +167,6 @@ const firebaseConfig = {
   const transactionList = document.getElementById('transaction-list');
   const totalAmountDisplay = document.getElementById('total-amount');
 
-  // Fetch Suppliers from Firebase
   function loadSuppliers() {
     const suppliersRef = ref(database, 'suppliers');
     onValue(suppliersRef, snapshot => {
@@ -100,7 +181,6 @@ const firebaseConfig = {
     });
   }
 
-  // Fetch Transactions from Firebase
   function loadTransactions(date) {
       const transactionsRef = ref(database, `transactions/${date}`);
       onValue(transactionsRef, snapshot => {
@@ -109,7 +189,6 @@ const firebaseConfig = {
       });
   }
 
-  // Render Transactions
   function renderTransactionList(transactions, date) {
       transactionList.innerHTML = '';
       let totalAmount = 0;
@@ -133,61 +212,38 @@ const firebaseConfig = {
       totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
   }
 
-  // Add Transaction
-  transactionForm.addEventListener('submit', e => {
-      e.preventDefault();
-
-      const date = transactionDate.value;
-      const supplier = supplierInput.value.trim();
-      const invoiceNumber = invoiceNumberInput.value.trim();
-      const description = descriptionInput.value.trim();
-      const amount = parseFloat(amountInput.value);
-
-      if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
-          alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
-          return;
-      }
-
-      const newTransaction = { supplier, invoiceNumber, description, amount };
-      const transactionsRef = ref(database, `transactions/${date}`);
-      push(transactionsRef, newTransaction);
-
-     // Add Supplier if not already present
-const suppliersRef = ref(database, `suppliers/${supplier}`);
-set(suppliersRef, {
-    supplierName: supplier
-});
-
-
-      transactionForm.reset(); // Clear the form fields after submission
-      transactionDate.value = date;
-  });
-
-  // Delete Transaction
   function deleteTransaction(date, key) {
       const transactionRef = ref(database, `transactions/${date}/${key}`);
       remove(transactionRef);
   }
 
-  // Edit Transaction
   function editTransaction(date, key, transaction) {
       transactionDate.value = date;
       supplierInput.value = transaction.supplier;
       invoiceNumberInput.value = transaction.invoiceNumber;
       descriptionInput.value = transaction.description;
       amountInput.value = transaction.amount;
-
-      // Remove the current transaction
-      deleteTransaction(date, key);
   }
 
-  // Load Initial Data
+  transactionForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const transaction = {
+          supplier: supplierInput.value,
+          invoiceNumber: invoiceNumberInput.value,
+          description: descriptionInput.value,
+          amount: amountInput.value,
+      };
+
+      const date = transactionDate.value;
+      const transactionRef = ref(database, `transactions/${date}`);
+      const newTransactionRef = push(transactionRef);
+      set(newTransactionRef, transaction);
+
+      transactionForm.reset();
+  });
+
   loadSuppliers();
-  transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
-  transactionDate.value = new Date().toISOString().split('T')[0];
-  loadTransactions(transactionDate.value);
 </script>
-
-
 </body>
 </html>
