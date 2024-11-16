@@ -49,18 +49,18 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-  import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"; // Add this import
+import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-    authDomain: "speedy-bazaar-411110.firebaseapp.com",
-    databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-    projectId: "speedy-bazaar-411110",
-    storageBucket: "speedy-bazaar-411110.appspot.com",
-    messagingSenderId: "752456596300",
-    appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-    measurementId: "G-NGZHWDY6S5"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+  authDomain: "speedy-bazaar-411110.firebaseapp.com",
+  databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+  projectId: "speedy-bazaar-411110",
+  storageBucket: "speedy-bazaar-411110.appspot.com",
+  messagingSenderId: "752456596300",
+  appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+  measurementId: "G-NGZHWDY6S5"
+};
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth();
@@ -69,10 +69,10 @@
 
   // Check User Authentication
   onAuthStateChanged(auth, user => {
-    if (!user) {
-      alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
-      window.location.href = 'index.html';
-    }
+      if (!user) {
+          alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
+          window.location.href = 'index.html';
+      }
   });
 
   // DOM Elements
@@ -89,118 +89,105 @@
   function loadSuppliers() {
     const suppliersRef = ref(database, 'suppliers');
     onValue(suppliersRef, snapshot => {
-      const data = snapshot.val();
-      if (data) {
-        const suppliers = Object.values(data);
-        const datalist = document.getElementById('suppliers-list');
-        datalist.innerHTML = '';
-        suppliers.forEach(supplier => {
-          const option = document.createElement('option');
-          option.value = supplier;
-          datalist.appendChild(option);
-        });
-      }
+        const data = snapshot.val();
+        const suppliersList = document.getElementById('suppliers-list');
+        suppliersList.innerHTML = '';
+        for (const supplierName in data) {
+            const option = document.createElement('option');
+            option.value = supplierName;
+            suppliersList.appendChild(option);
+        }
     });
   }
 
   // Fetch Transactions from Firebase
   function loadTransactions(date) {
-    const transactionsRef = ref(database, `transactions/${date}`);
-    onValue(transactionsRef, snapshot => {
-      const data = snapshot.val();
-      renderTransactionList(data || {}, date);
-    });
+      const transactionsRef = ref(database, `transactions/${date}`);
+      onValue(transactionsRef, snapshot => {
+          const data = snapshot.val();
+          renderTransactionList(data || {}, date);
+      });
   }
 
   // Render Transactions
   function renderTransactionList(transactions, date) {
-    transactionList.innerHTML = '';
-    let totalAmount = 0;
+      transactionList.innerHTML = '';
+      let totalAmount = 0;
 
-    for (const [key, transaction] of Object.entries(transactions)) {
-      const transactionItem = document.createElement('li');
-      transactionItem.innerHTML = `
-        <div><strong>Προμηθευτής:</strong> ${transaction.supplier}</div>
-        <div><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</div>
-        <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
-        <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
-        <button class="edit-btn" data-key="${key}">Επεξεργασία</button>
-        <button class="delete-btn" data-key="${key}">Διαγραφή</button>
-      `;
-      transactionItem.querySelector('.delete-btn').addEventListener('click', () => deleteTransaction(date, key));
-      transactionItem.querySelector('.edit-btn').addEventListener('click', () => editTransaction(date, key, transaction));
-      transactionList.appendChild(transactionItem);
-      totalAmount += parseFloat(transaction.amount);
-    }
+      for (const [key, transaction] of Object.entries(transactions)) {
+          const transactionItem = document.createElement('li');
+          transactionItem.innerHTML = `
+              <div><strong>Προμηθευτής:</strong> ${transaction.supplier}</div>
+              <div><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</div>
+              <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
+              <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
+              <button class="edit-btn" data-key="${key}">Επεξεργασία</button>
+              <button class="delete-btn" data-key="${key}">Διαγραφή</button>
+          `;
+          transactionItem.querySelector('.delete-btn').addEventListener('click', () => deleteTransaction(date, key));
+          transactionItem.querySelector('.edit-btn').addEventListener('click', () => editTransaction(date, key, transaction));
+          transactionList.appendChild(transactionItem);
+          totalAmount += parseFloat(transaction.amount);
+      }
 
-    totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
+      totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
   }
 
   // Add Transaction
   transactionForm.addEventListener('submit', e => {
-    e.preventDefault();
+      e.preventDefault();
 
-    const date = transactionDate.value;
-    const supplier = supplierInput.value.trim();
-    const invoiceNumber = invoiceNumberInput.value.trim();
-    const description = descriptionInput.value.trim();
-    const amount = parseFloat(amountInput.value);
+      const date = transactionDate.value;
+      const supplier = supplierInput.value.trim();
+      const invoiceNumber = invoiceNumberInput.value.trim();
+      const description = descriptionInput.value.trim();
+      const amount = parseFloat(amountInput.value);
 
-    if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
-      alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
-      return;
-    }
+      if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
+          alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
+          return;
+      }
 
-    // Save Supplier if not already saved
-    const suppliersRef = ref(database, 'suppliers');
-    const suppliersData = (await get(suppliersRef)).val() || {};
-    if (!Object.values(suppliersData).includes(supplier)) {
-      push(suppliersRef, supplier); // Save new supplier
-    }
+      const newTransaction = { supplier, invoiceNumber, description, amount };
+      const transactionsRef = ref(database, `transactions/${date}`);
+      push(transactionsRef, newTransaction);
 
-    const newTransaction = { supplier, invoiceNumber, description, amount };
-    const transactionsRef = ref(database, `transactions/${date}`);
-    push(transactionsRef, newTransaction);
-    transactionForm.reset();
-    loadTransactions(date);
+     // Add Supplier if not already present
+const suppliersRef = ref(database, `suppliers/${supplier}`);
+set(suppliersRef, {
+    supplierName: supplier
+});
+
+
+      transactionForm.reset(); // Clear the form fields after submission
+      transactionDate.value = date;
   });
 
   // Delete Transaction
   function deleteTransaction(date, key) {
-    const transactionRef = ref(database, `transactions/${date}/${key}`);
-    remove(transactionRef);
+      const transactionRef = ref(database, `transactions/${date}/${key}`);
+      remove(transactionRef);
   }
 
   // Edit Transaction
   function editTransaction(date, key, transaction) {
-    transactionDate.value = date;
-    supplierInput.value = transaction.supplier;
-    invoiceNumberInput.value = transaction.invoiceNumber;
-    descriptionInput.value = transaction.description;
-    amountInput.value = transaction.amount;
+      transactionDate.value = date;
+      supplierInput.value = transaction.supplier;
+      invoiceNumberInput.value = transaction.invoiceNumber;
+      descriptionInput.value = transaction.description;
+      amountInput.value = transaction.amount;
 
-    transactionForm.addEventListener('submit', function updateTransaction(e) {
-      e.preventDefault();
-      const updatedTransaction = {
-        supplier: supplierInput.value,
-        invoiceNumber: invoiceNumberInput.value,
-        description: descriptionInput.value,
-        amount: parseFloat(amountInput.value)
-      };
-
-      const transactionRef = ref(database, `transactions/${date}/${key}`);
-      set(transactionRef, updatedTransaction);
-
-      loadTransactions(date);
-      transactionForm.removeEventListener('submit', updateTransaction);
-      transactionForm.reset();
-    });
+      // Remove the current transaction
+      deleteTransaction(date, key);
   }
 
-  // Initial Load
+  // Load Initial Data
   loadSuppliers();
+  transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
+  transactionDate.value = new Date().toISOString().split('T')[0];
   loadTransactions(transactionDate.value);
 </script>
+
 
 </body>
 </html>
