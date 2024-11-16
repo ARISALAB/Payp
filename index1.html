@@ -49,6 +49,8 @@
     <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
 
 <script type="module">
+    import { ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
   import { getDatabase } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
@@ -98,10 +100,10 @@
             }
         });
 
-        // Fetch Transactions from Firebase
-    // Fetch Transactions from Firebase
+// Fetch Transactions from Firebase
 function loadTransactions(date) {
-    database.ref(`transactions/${date}`).on('value', snapshot => {
+    const transactionsRef = ref(database, `transactions/${date}`);
+    onValue(transactionsRef, snapshot => {
         const data = snapshot.val();
         renderTransactionList(data || {}, date);
     });
@@ -129,7 +131,7 @@ function loadTransactions(date) {
             totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
         }
 
-     // Add Transaction
+// Add Transaction
 transactionForm.addEventListener('submit', e => {
     e.preventDefault();
 
@@ -145,20 +147,22 @@ transactionForm.addEventListener('submit', e => {
     }
 
     const newTransaction = { supplier, invoiceNumber, description, amount };
-    database.ref(`transactions/${date}`).push(newTransaction); // Χρήση της σωστής μεταβλητής
+    const transactionsRef = ref(database, `transactions/${date}`);
+    push(transactionsRef, newTransaction);
     transactionForm.reset();
     transactionDate.value = date;
 });
 
-     // Delete Transaction
+// Delete Transaction
 function deleteTransaction(date, key) {
-    database.ref(`transactions/${date}/${key}`).remove(); // Χρήση της σωστής μεταβλητής
+    const transactionRef = ref(database, `transactions/${date}/${key}`);
+    remove(transactionRef);
 }
 
-        // Load Initial Data
-        transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
-        transactionDate.value = new Date().toISOString().split('T')[0];
-        loadTransactions(transactionDate.value);
+// Load Initial Data
+transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
+transactionDate.value = new Date().toISOString().split('T')[0];
+loadTransactions(transactionDate.value);
     </script>
 </body>
 </html>
