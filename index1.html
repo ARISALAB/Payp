@@ -156,7 +156,7 @@ const firebaseConfig = {
       const suppliersRef = ref(database, `suppliers/${supplier}`);
       setDoc(suppliersRef, { supplierName: supplier });
 
-      transactionForm.reset();
+      transactionForm.reset(); // Clear the form fields after submission
       transactionDate.value = date;
   });
 
@@ -176,9 +176,7 @@ const firebaseConfig = {
 
       // Remove the current transaction
       deleteTransaction(date, key);
-        // Clear the form after editing
-    transactionForm.reset();
-}
+  }
 
   // Load Initial Data
   loadSuppliers();
@@ -186,6 +184,7 @@ const firebaseConfig = {
   transactionDate.value = new Date().toISOString().split('T')[0];
   loadTransactions(transactionDate.value);
 </script>
+
 
 </body>
 </html>
