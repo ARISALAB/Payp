@@ -48,11 +48,12 @@
 
     <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
 
-   <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-analytics.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
   import { getDatabase } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
 
+  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
     authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -64,11 +65,18 @@
     measurementId: "G-NGZHWDY6S5"
   };
 
+  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+  const auth = getAuth(app); // Initialize Firebase Auth
   const database = getDatabase(app);
-</script>
-<script>
+
+  // Check User Authentication
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
+      window.location.href = 'index.html';
+    }
+  });
 
 
 
