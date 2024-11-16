@@ -305,6 +305,18 @@ set(suppliersRef, {
     
 </script>
 
-
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', () => {
+            document.getElementById('menuModal').style.display = 'flex';
+        });
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('menuModal').style.display = 'none';
+        });
+        window.onclick = (event) => {
+            if (event.target == document.getElementById('menuModal')) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        };
+    </script>
 </body>
 </html>
