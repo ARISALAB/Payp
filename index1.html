@@ -49,7 +49,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-  import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"; // Add this import
+import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
@@ -152,11 +152,12 @@ const firebaseConfig = {
       const transactionsRef = ref(database, `transactions/${date}`);
       push(transactionsRef, newTransaction);
 
-      // Add Supplier if not already present
-      const suppliersRef = ref(database, `suppliers/${supplier}`);
-set(ref(database, `suppliers/${supplier}`), {
+     // Add Supplier if not already present
+const suppliersRef = ref(database, `suppliers/${supplier}`);
+set(suppliersRef, {
     supplierName: supplier
 });
+
 
       transactionForm.reset(); // Clear the form fields after submission
       transactionDate.value = date;
