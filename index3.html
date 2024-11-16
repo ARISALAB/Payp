@@ -3,191 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Καταγραφή Εξόδων</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="11.png" type="image/png">
+    <title>Καταγραφή Εσόδων</title>
 </head>
-<body>
+<body style="display: none;"> <!-- Απόκρυψη περιεχομένου μέχρι να επιβεβαιωθεί η σύνδεση -->
+
     <nav>
         <img src="11.png" alt="Logo" class="logo">
-        <button class="menu-toggle">&#9776;<br>Menu</button>
+        <button class="menu-toggle">
+            &#9776;<br>Menu
+        </button>
         <div class="menu-items">
             <a href="index.html">Αρχική Σελίδα</a>
-            <a href="index1.html">Καταγραφή Εξόδων</a>
+    
+            <div class="dropdown">
+                <a href="#">Συναλλαγές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Εξόδων</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+    
             <a href="index3.html">Καταγραφή Εσόδων</a>
             <a href="index2.html">Καρτέλες Προμηθευτών</a>
+    
+            <div class="dropdown">
+                <a href="#">Αναφορές &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+    
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία </a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                    
+
+                </div>
+            </div>
         </div>
     </nav>
+    
+<div id="menuModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <a href="index.html">Αρχική Σελίδα</a>
+            
+            <div class="dropdown">
+                <a href="#">Συναλλαγές</a>
+                <div class="dropdown-content">
+                    <a href="index1.html">Καταγραφή Εξόδων</a>
+                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
+                    <a href="index5.html">Πληρωμές Τράπεζας</a>
+                </div>
+            </div>
+            
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+            
+            <div class="dropdown">
+                <a href="#">Αναφορές</a>
+                <div class="dropdown-content">
+                    <a href="index7.html">Ημερήσια Αναφορά</a>
+                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
+                    <a href="index8.html">Μηνιαία Αναφορά</a>
+                    <a href="index9.html">Ετήσια Αναφορά</a>
+                </div>
+            </div>
+            
+            <!-- Νέα ενότητα για Προσωπικό -->
+            <div class="dropdown">
+                <a href="#">Προσωπικό &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
+                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
+                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία</a>
+                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
 
-    <h1>Καταγραφή Εξόδων</h1>
-    <form id="transaction-form">
-        <label for="transaction-date">Ημερομηνία</label>
-        <input type="date" id="transaction-date" required>
-
-        <label for="supplier">Προμηθευτής</label>
-        <input type="text" id="supplier" list="suppliers-list" required>
-        <datalist id="suppliers-list"></datalist>
-
-        <label for="invoice-number">Αριθμός Τιμολογίου</label>
-        <input type="text" id="invoice-number" required>
-
-        <label for="description">Περιγραφή</label>
-        <input type="text" id="description" required>
-
-        <label for="amount">Ποσό (€)</label>
-        <input type="number" id="amount" step="0.01" required>
-
-        <input type="submit" value="Προσθήκη Συναλλαγής">
+    <h1>Καταγραφή Εσόδων</h1>
+    <form id="revenue-form">
+        <label for="revenue-date">Ημερομηνία</label>
+        <input type="date" id="revenue-date" required>
+        <label for="cash-revenue">Ταμείο Ημέρας (€)</label>
+        <input type="number" id="cash-revenue" step="0.01" required>
+        <label for="card-revenue">Έσοδα από Κάρτες (€)</label>
+        <input type="number" id="card-revenue" step="0.01" required>
+        <input type="submit" value="Καταγραφή Εσόδων">
     </form>
 
-    <ul id="transaction-list"></ul>
-    <p id="total-amount">Συνολικό Ποσό: 0.00 €</p>
+    <div id="revenue-summary">
+        <p id="revenue-date-display" class="summary-item">Ημερομηνία: -</p>
+        <p id="cash-revenue-display" class="summary-item">Ταμείο Ημέρας: 0.00 €</p>
+        <p id="card-revenue-display" class="summary-item">Έσοδα από Κάρτες: 0.00 €</p>
+        <p id="cash-balance-display" class="summary-item">Υπόλοιπο Μετρητών: 0.00 €</p>
+        
+        <p id="payment-status" class="summary-item"></p> <!-- Για την εμφάνιση της πληρωμής -->
+    </div>
+<div id="daily-total-container">
+    <p id="daily-total-display">Συνολικό Ποσό Συναλλαγών: 0.00 €</p>
+</div>
+    
 
-    <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
+    <footer>&copy; 2024 Καταγραφή Εσόδων</footer>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-  authDomain: "speedy-bazaar-411110.firebaseapp.com",
-  databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-  projectId: "speedy-bazaar-411110",
-  storageBucket: "speedy-bazaar-411110.appspot.com",
-  messagingSenderId: "752456596300",
-  appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-  measurementId: "G-NGZHWDY6S5"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getFirestore(app);
-  const database = getDatabase(app); // Initialize Firebase Database
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore(app);
 
-  // Check User Authentication
-  onAuthStateChanged(auth, user => {
-      if (!user) {
-          alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
-          window.location.href = 'index.html';
-      }
-  });
+        // Αποθήκευση Εσόδων στη Firestore
+        async function saveRevenueToFirestore(date, cash, card) {
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
 
-  // DOM Elements
-  const transactionForm = document.getElementById('transaction-form');
-  const transactionDate = document.getElementById('transaction-date');
-  const supplierInput = document.getElementById('supplier');
-  const invoiceNumberInput = document.getElementById('invoice-number');
-  const descriptionInput = document.getElementById('description');
-  const amountInput = document.getElementById('amount');
-  const transactionList = document.getElementById('transaction-list');
-  const totalAmountDisplay = document.getElementById('total-amount');
+                const revenueDoc = doc(db, "revenues", user.uid);
+                const currentData = (await getDoc(revenueDoc)).data() || {};
+                currentData[date] = { cash, card };
 
-  // Fetch Suppliers from Firebase
-  function loadSuppliers() {
-    const suppliersRef = ref(database, 'suppliers');
-    onValue(suppliersRef, snapshot => {
-        const data = snapshot.val();
-        const suppliersList = document.getElementById('suppliers-list');
-        suppliersList.innerHTML = '';
-        for (const supplierName in data) {
-            const option = document.createElement('option');
-            option.value = supplierName;
-            suppliersList.appendChild(option);
+                await setDoc(revenueDoc, currentData);
+                console.log("Τα δεδομένα αποθηκεύτηκαν επιτυχώς!");
+            } catch (error) {
+                console.error("Σφάλμα κατά την αποθήκευση δεδομένων:", error);
+            }
         }
+
+        // Ανάκτηση Όλων των Εσόδων από τη Firestore
+        async function getAllRevenues() {
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+
+                const revenueDoc = doc(db, "revenues", user.uid);
+                const revenueSnapshot = await getDoc(revenueDoc);
+                const data = revenueSnapshot.data() || {};
+
+                return data;
+            } catch (error) {
+                console.error("Σφάλμα κατά την ανάκτηση δεδομένων:", error);
+                return {};
+            }
+        }
+
+        // Ενημέρωση του πίνακα με τα αποθηκευμένα έσοδα
+        function updateRevenueTable(revenues) {
+            const tableBody = document.getElementById('revenue-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Καθαρίζουμε τον πίνακα πριν την ανανέωση
+
+            for (const [date, { cash, card }] of Object.entries(revenues)) {
+                const row = tableBody.insertRow();
+                const dateCell = row.insertCell(0);
+                const cashCell = row.insertCell(1);
+                const cardCell = row.insertCell(2);
+
+                dateCell.textContent = date;
+                cashCell.textContent = cash.toFixed(2);
+                cardCell.textContent = card.toFixed(2);
+            }
+        }
+
+        // Υπολογισμός και Ενημέρωση Περίληψης
+        async function updateSummary() {
+            const revenueDate = document.getElementById('revenue-date').value;
+            const revenueDateDisplay = document.getElementById('revenue-date-display');
+            const cashRevenueDisplay = document.getElementById('cash-revenue-display');
+            const cardRevenueDisplay = document.getElementById('card-revenue-display');
+            const cashBalanceDisplay = document.getElementById('cash-balance-display');
+            const paymentStatus = document.getElementById('payment-status');
+
+            if (revenueDate) {
+                const revenues = await getAllRevenues();
+                const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
+
+                const cashBalance = revenue.cash - revenue.card; // Υπολογισμός μετρητών
+
+                revenueDateDisplay.textContent = `Ημερομηνία: ${revenueDate}`;
+                cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${revenue.cash.toFixed(2)} €`;
+                cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${revenue.card.toFixed(2)} €`;
+                cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${cashBalance.toFixed(2)} €`;
+
+                // Έλεγχος αν υπάρχουν πληρωμές
+                paymentStatus.textContent = revenue.cash + revenue.card > 0 ? "Πληρωμές Καταχωρημένες" : "Δεν υπάρχουν πληρωμές";
+            }
+        }
+
+        // Παρακολούθηση αλλαγών στο πεδίο ημερομηνίας
+        document.getElementById('revenue-date').addEventListener('change', updateSummary);
+
+        // Έλεγχος αν είναι συνδεδεμένος ο χρήστης
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.body.style.display = 'block'; // Εμφάνιση περιεχομένου όταν ο χρήστης είναι συνδεδεμένος
+                updateSummary();
+                getAllRevenues().then(updateRevenueTable); // Ενημέρωση πίνακα με όλα τα έσοδα
+            } else {
+                document.body.style.display = 'none';
+                alert('Παρακαλώ συνδεθείτε!');
+                window.location.href = "index.html";
+            }
+        });
+
+        // Αποθήκευση δεδομένων όταν υποβληθεί η φόρμα
+        document.getElementById('revenue-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const date = document.getElementById('revenue-date').value;
+            const cash = parseFloat(document.getElementById('cash-revenue').value);
+            const card = parseFloat(document.getElementById('card-revenue').value);
+
+            saveRevenueToFirestore(date, cash, card).then(() => {
+                updateSummary(); // Ενημέρωση της περίληψης μετά την αποθήκευση
+                getAllRevenues().then(updateRevenueTable); // Ενημέρωση του πίνακα
+            });
+        });
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+// Σύνδεση με Firebase Realtime Database
+const database = getDatabase();
+
+function loadDailyTotal(date) {
+    const transactionsRef = ref(database, `transactions/${date}`);
+    onValue(transactionsRef, snapshot => {
+        const data = snapshot.val();
+        let totalAmount = 0;
+
+        if (data) {
+            for (const transaction of Object.values(data)) {
+                totalAmount += parseFloat(transaction.amount);
+            }
+        }
+
+        displayDailyTotal(totalAmount);
     });
-  }
+}
 
-  // Fetch Transactions from Firebase
-  function loadTransactions(date) {
-      const transactionsRef = ref(database, `transactions/${date}`);
-      onValue(transactionsRef, snapshot => {
-          const data = snapshot.val();
-          renderTransactionList(data || {}, date);
-      });
-  }
-
-  // Render Transactions
-  function renderTransactionList(transactions, date) {
-      transactionList.innerHTML = '';
-      let totalAmount = 0;
-
-      for (const [key, transaction] of Object.entries(transactions)) {
-          const transactionItem = document.createElement('li');
-          transactionItem.innerHTML = `
-              <div><strong>Προμηθευτής:</strong> ${transaction.supplier}</div>
-              <div><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</div>
-              <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
-              <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
-              <button class="edit-btn" data-key="${key}">Επεξεργασία</button>
-              <button class="delete-btn" data-key="${key}">Διαγραφή</button>
-          `;
-          transactionItem.querySelector('.delete-btn').addEventListener('click', () => deleteTransaction(date, key));
-          transactionItem.querySelector('.edit-btn').addEventListener('click', () => editTransaction(date, key, transaction));
-          transactionList.appendChild(transactionItem);
-          totalAmount += parseFloat(transaction.amount);
-      }
-
-      totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
-  }
-
-  // Add Transaction
-  transactionForm.addEventListener('submit', e => {
-      e.preventDefault();
-
-      const date = transactionDate.value;
-      const supplier = supplierInput.value.trim();
-      const invoiceNumber = invoiceNumberInput.value.trim();
-      const description = descriptionInput.value.trim();
-      const amount = parseFloat(amountInput.value);
-
-      if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
-          alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
-          return;
-      }
-
-      const newTransaction = { supplier, invoiceNumber, description, amount };
-      const transactionsRef = ref(database, `transactions/${date}`);
-      push(transactionsRef, newTransaction);
-
-     // Add Supplier if not already present
-const suppliersRef = ref(database, `suppliers/${supplier}`);
-set(suppliersRef, {
-    supplierName: supplier
+function displayDailyTotal(totalAmount) {
+    const dailyTotalDisplay = document.getElementById('daily-total-display');
+    dailyTotalDisplay.textContent = `Συνολικό Ποσό Συναλλαγών: ${totalAmount.toFixed(2)} €`;
+}
+        
+        document.getElementById('revenue-date').addEventListener('change', (event) => {
+    const selectedDate = event.target.value;
+    loadDailyTotal(selectedDate); // Φόρτωση συνολικού ποσού συναλλαγών
 });
-
-
-      transactionForm.reset(); // Clear the form fields after submission
-      transactionDate.value = date;
-  });
-
-  // Delete Transaction
-  function deleteTransaction(date, key) {
-      const transactionRef = ref(database, `transactions/${date}/${key}`);
-      remove(transactionRef);
-  }
-
-  // Edit Transaction
-  function editTransaction(date, key, transaction) {
-      transactionDate.value = date;
-      supplierInput.value = transaction.supplier;
-      invoiceNumberInput.value = transaction.invoiceNumber;
-      descriptionInput.value = transaction.description;
-      amountInput.value = transaction.amount;
-
-      // Remove the current transaction
-      deleteTransaction(date, key);
-  }
-
-  // Load Initial Data
-  loadSuppliers();
-  transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
-  transactionDate.value = new Date().toISOString().split('T')[0];
-  loadTransactions(transactionDate.value);
-</script>
-
-
+        
+    </script>
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'flex';
+        });
+        
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('menuModal').style.display = 'none';
+        });
+        
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('menuModal')) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        }
+        
+        // Κώδικας για την απόκρυψη του toggle menu όταν μεγαλώνει η οθόνη
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('menuModal').style.display = 'none';
+            }
+        });
+        
+        </script>
 </body>
 </html>
