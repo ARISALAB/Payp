@@ -113,7 +113,9 @@
         
         <p id="payment-status" class="summary-item"></p> <!-- Για την εμφάνιση της πληρωμής -->
     </div>
-
+<div id="daily-total-container">
+    <p id="daily-total-display">Συνολικό Ποσό Συναλλαγών: 0.00 €</p>
+</div>
     
 
     <footer>&copy; 2024 Καταγραφή Εσόδων</footer>
@@ -242,8 +244,36 @@
                 getAllRevenues().then(updateRevenueTable); // Ενημέρωση του πίνακα
             });
         });
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
+// Σύνδεση με Firebase Realtime Database
+const database = getDatabase();
+
+function loadDailyTotal(date) {
+    const transactionsRef = ref(database, `transactions/${date}`);
+    onValue(transactionsRef, snapshot => {
+        const data = snapshot.val();
+        let totalAmount = 0;
+
+        if (data) {
+            for (const transaction of Object.values(data)) {
+                totalAmount += parseFloat(transaction.amount);
+            }
+        }
+
+        displayDailyTotal(totalAmount);
+    });
+}
+
+function displayDailyTotal(totalAmount) {
+    const dailyTotalDisplay = document.getElementById('daily-total-display');
+    dailyTotalDisplay.textContent = `Συνολικό Ποσό Συναλλαγών: ${totalAmount.toFixed(2)} €`;
+}
         
+        document.getElementById('revenue-date').addEventListener('change', (event) => {
+    const selectedDate = event.target.value;
+    loadDailyTotal(selectedDate); // Φόρτωση συνολικού ποσού συναλλαγών
+});
         
     </script>
     <script>
