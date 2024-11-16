@@ -136,8 +136,8 @@
     totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
   }
 
-  // Add Transaction
-  transactionForm.addEventListener('submit', e => {
+// Add Transaction
+transactionForm.addEventListener('submit', async (e) => {  // Add 'async' here
     e.preventDefault();
 
     const date = transactionDate.value;
@@ -147,15 +147,15 @@
     const amount = parseFloat(amountInput.value);
 
     if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
-      alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
-      return;
+        alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
+        return;
     }
 
     // Save Supplier if not already saved
     const suppliersRef = ref(database, 'suppliers');
-    const suppliersData = (await get(suppliersRef)).val() || {};
+    const suppliersData = (await get(suppliersRef)).val() || {}; // Await the data fetch
     if (!Object.values(suppliersData).includes(supplier)) {
-      push(suppliersRef, supplier); // Save new supplier
+        push(suppliersRef, supplier); // Save new supplier
     }
 
     const newTransaction = { supplier, invoiceNumber, description, amount };
@@ -163,7 +163,7 @@
     push(transactionsRef, newTransaction);
     transactionForm.reset();
     loadTransactions(date);
-  });
+});
 
   // Delete Transaction
   function deleteTransaction(date, key) {
