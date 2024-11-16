@@ -106,16 +106,12 @@
     </form>
 
     <div id="revenue-summary">
-        <p id="revenue-date-display" class="summary-item">Ημερομηνία: -</p>
-        <p id="cash-revenue-display" class="summary-item">Ταμείο Ημέρας: 0.00 €</p>
-        <p id="card-revenue-display" class="summary-item">Έσοδα από Κάρτες: 0.00 €</p>
-        <p id="cash-balance-display" class="summary-item">Υπόλοιπο Μετρητών: 0.00 €</p>
-        
-        <p id="payment-status" class="summary-item"></p> <!-- Για την εμφάνιση της πληρωμής -->
+    <p id="revenue-date-display" class="summary-item">Ημερομηνία: -</p>
+    <p id="cash-revenue-display" class="summary-item">Ταμείο Ημέρας: 0.00 €</p>
+    <p id="card-revenue-display" class="summary-item">Έσοδα από Κάρτες: 0.00 €</p>
+    <p id="transactions-total-display" class="summary-item">Συνολικό Ποσό Συναλλαγών: 0.00 €</p>
+    <p id="cash-balance-display" class="summary-item">Υπόλοιπο Μετρητών Ημέρας: 0.00 €</p>
     </div>
-<div id="daily-total-container">
-    <p id="daily-total-display">Συνολικό Ποσό Συναλλαγών: 0.00 €</p>
-</div>
     
 
     <footer>&copy; 2024 Καταγραφή Εσόδων</footer>
@@ -192,28 +188,33 @@
 
         // Υπολογισμός και Ενημέρωση Περίληψης
         async function updateSummary() {
-            const revenueDate = document.getElementById('revenue-date').value;
-            const revenueDateDisplay = document.getElementById('revenue-date-display');
-            const cashRevenueDisplay = document.getElementById('cash-revenue-display');
-            const cardRevenueDisplay = document.getElementById('card-revenue-display');
-            const cashBalanceDisplay = document.getElementById('cash-balance-display');
-            const paymentStatus = document.getElementById('payment-status');
+    const revenueDate = document.getElementById('revenue-date').value;
+    const revenueDateDisplay = document.getElementById('revenue-date-display');
+    const cashRevenueDisplay = document.getElementById('cash-revenue-display');
+    const cardRevenueDisplay = document.getElementById('card-revenue-display');
+    const transactionsTotalDisplay = document.getElementById('transactions-total-display');
+    const cashBalanceDisplay = document.getElementById('cash-balance-display');
 
-            if (revenueDate) {
-                const revenues = await getAllRevenues();
-                const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
+    if (revenueDate) {
+        // Φόρτωση εσόδων
+        const revenues = await getAllRevenues();
+        const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
 
-                const cashBalance = revenue.cash - revenue.card; // Υπολογισμός μετρητών
+        // Φόρτωση συναλλαγών
+        const totalTransactions = await loadTransactionsTotal(revenueDate);
 
-                revenueDateDisplay.textContent = `Ημερομηνία: ${revenueDate}`;
-                cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${revenue.cash.toFixed(2)} €`;
-                cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${revenue.card.toFixed(2)} €`;
-                cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών: ${cashBalance.toFixed(2)} €`;
+        // Υπολογισμός υπολοίπου μετρητών
+        const cashBalance = revenue.cash - revenue.card - totalTransactions;
 
-                // Έλεγχος αν υπάρχουν πληρωμές
-                paymentStatus.textContent = revenue.cash + revenue.card > 0 ? "Πληρωμές Καταχωρημένες" : "Δεν υπάρχουν πληρωμές";
-            }
+        // Ενημέρωση περιεχομένου
+        revenueDateDisplay.textContent = `Ημερομηνία: ${revenueDate}`;
+        cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${revenue.cash.toFixed(2)} €`;
+        cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${revenue.card.toFixed(2)} €`;
+        transactionsTotalDisplay.textContent = `Συνολικό Ποσό Συναλλαγών: ${totalTransactions.toFixed(2)} €`;
+        cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών Ημέρας: ${cashBalance.toFixed(2)} €`;
+    }
         }
+        
 
         // Παρακολούθηση αλλαγών στο πεδίο ημερομηνίας
         document.getElementById('revenue-date').addEventListener('change', updateSummary);
@@ -274,6 +275,27 @@ function displayDailyTotal(totalAmount) {
     const selectedDate = event.target.value;
     loadDailyTotal(selectedDate); // Φόρτωση συνολικού ποσού συναλλαγών
 });
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+const database = getDatabase();
+
+async function loadTransactionsTotal(date) {
+    const transactionsRef = ref(database, `transactions/${date}`);
+    return new Promise((resolve) => {
+        onValue(transactionsRef, (snapshot) => {
+            const data = snapshot.val();
+            let totalTransactions = 0;
+
+            if (data) {
+                for (const transaction of Object.values(data)) {
+                    totalTransactions += parseFloat(transaction.amount);
+                }
+            }
+
+            resolve(totalTransactions);
+        });
+    });
+}
         
     </script>
     <script>
