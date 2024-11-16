@@ -99,12 +99,13 @@
         });
 
         // Fetch Transactions from Firebase
-        function loadTransactions(date) {
-            db.ref(`transactions/${date}`).on('value', snapshot => {
-                const data = snapshot.val();
-                renderTransactionList(data || {}, date);
-            });
-        }
+    // Fetch Transactions from Firebase
+function loadTransactions(date) {
+    database.ref(`transactions/${date}`).on('value', snapshot => {
+        const data = snapshot.val();
+        renderTransactionList(data || {}, date);
+    });
+}
 
         // Render Transactions
         function renderTransactionList(transactions, date) {
@@ -128,31 +129,31 @@
             totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
         }
 
-        // Add Transaction
-        transactionForm.addEventListener('submit', e => {
-            e.preventDefault();
+     // Add Transaction
+transactionForm.addEventListener('submit', e => {
+    e.preventDefault();
 
-            const date = transactionDate.value;
-            const supplier = supplierInput.value.trim();
-            const invoiceNumber = invoiceNumberInput.value.trim();
-            const description = descriptionInput.value.trim();
-            const amount = parseFloat(amountInput.value);
+    const date = transactionDate.value;
+    const supplier = supplierInput.value.trim();
+    const invoiceNumber = invoiceNumberInput.value.trim();
+    const description = descriptionInput.value.trim();
+    const amount = parseFloat(amountInput.value);
 
-            if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
-                alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
-                return;
-            }
+    if (!date || !supplier || !invoiceNumber || !description || isNaN(amount)) {
+        alert('Παρακαλώ συμπληρώστε όλα τα πεδία.');
+        return;
+    }
 
-            const newTransaction = { supplier, invoiceNumber, description, amount };
-            db.ref(`transactions/${date}`).push(newTransaction);
-            transactionForm.reset();
-            transactionDate.value = date;
-        });
+    const newTransaction = { supplier, invoiceNumber, description, amount };
+    database.ref(`transactions/${date}`).push(newTransaction); // Χρήση της σωστής μεταβλητής
+    transactionForm.reset();
+    transactionDate.value = date;
+});
 
-        // Delete Transaction
-        function deleteTransaction(date, key) {
-            db.ref(`transactions/${date}/${key}`).remove();
-        }
+     // Delete Transaction
+function deleteTransaction(date, key) {
+    database.ref(`transactions/${date}/${key}`).remove(); // Χρήση της σωστής μεταβλητής
+}
 
         // Load Initial Data
         transactionDate.addEventListener('change', e => loadTransactions(e.target.value));
