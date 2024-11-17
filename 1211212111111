@@ -44,6 +44,47 @@
             margin-bottom: 10px;
         }
 
+        /* Style για τις συναλλαγές */
+        .transaction-list {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .transaction-item {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.delete-btn {
+            background-color: #e74c3c;
+        }
+
+        button.edit-btn {
+            background-color: #f39c12;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .payment-list, .invoice-list {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            display: none;
+        }
+
         /* Modal Styling */
         .modal {
             display: none;
@@ -176,7 +217,6 @@
         const modal = document.getElementById("transactionModal");
         const span = document.getElementsByClassName("close")[0];
 
-        // Fetch Suppliers, Transactions, Payments, and Invoices
       function loadSuppliers() {
     const suppliersRef = ref(database, 'suppliers');
     onValue(suppliersRef, snapshot => {
@@ -202,95 +242,137 @@
             let cashPayments = 0;
             let bankPayments = 0;
 
-            // Συναλλαγές
+          // Συναλλαγές
+onValue(transactionsRef, snapshot => {
+    const data = snapshot.val();
+    for (const date in data) {
+        for (const transactionId in data[date]) {
+            if (data[date][transactionId].supplier === supplierName) {
+                const amount = parseFloat(data[date][transactionId].amount);
+                totalAmount += amount; // Περιλαμβάνουμε το ποσό
+                cashPayments += amount; // Θεωρούμε ότι αυτές είναι συναλλαγές με μετρητά
+            }
+        }
+    }
+    updateSupplierItem();
+});
+
+// Πληρωμές μέσω Τράπεζας
+onValue(paymentsRef, snapshot => {
+    const data = snapshot.val();
+    for (const date in data) {
+        for (const paymentId in data[date]) {
+            if (data[date][paymentId].supplier === supplierName) {
+                const amount = parseFloat(data[date][paymentId].amount);
+                bankPayments += amount; // Μόνο για αναφορά, όχι για το συνολικό άθροισμα
+            }
+        }
+    }
+    updateSupplierItem();
+});
+
+// Τιμολόγια
+onValue(invoicesRef, snapshot => {
+    const data = snapshot.val();
+    for (const date in data) {
+        for (const invoiceId in data[date]) {
+            if (data[date][invoiceId].supplier === supplierName) {
+                const amount = parseFloat(data[date][invoiceId].amount);
+                totalAmount += amount; // Προσθέτουμε το ποσό από το τιμολόγιο
+            }
+        }
+    }
+    updateSupplierItem();
+});
+
+
+            // Ενημέρωση στοιχείων προμηθευτή
+  // Ενημέρωση στοιχείων προμηθευτή
+function updateSupplierItem() {
+    supplierItem.querySelector('div:nth-child(2)').innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${totalAmount.toFixed(2)}`;
+    supplierItem.querySelector('div:nth-child(3)').innerHTML = `<strong>Πληρωμές με Μετρητά:</strong> €${cashPayments.toFixed(2)}`;
+    supplierItem.querySelector('div:nth-child(4)').innerHTML = `<strong>Πληρωμές μέσω Τράπεζας:</strong> €${bankPayments.toFixed(2)}`;
+}
+
+
+        }
+    });
+}
+
+
+        function openTransactionModal(supplierName) {
+            modal.style.display = "block";
+            const tableBody = document.querySelector('#transaction-table tbody');
+            tableBody.innerHTML = ''; // Clear previous data
+
+            const transactionsRef = ref(database, 'transactions');
+            const paymentsRef = ref(database, 'bank-payments');
+            const invoicesRef = ref(database, 'credit-invoices');
+
+            // Fetch and display all transactions, payments, and invoices for the supplier
+            let allTransactions = [];
+
             onValue(transactionsRef, snapshot => {
                 const data = snapshot.val();
                 for (const date in data) {
                     for (const transactionId in data[date]) {
                         if (data[date][transactionId].supplier === supplierName) {
-                            const amount = parseFloat(data[date][transactionId].amount);
-                            totalAmount += amount;
-                            cashPayments += amount; // Υποθέτουμε ότι οι συναλλαγές είναι με μετρητά
+                            allTransactions.push({
+                                date: data[date][transactionId].date,
+                                amount: data[date][transactionId].amount,
+                                type: 'Συναλλαγή'
+                            });
                         }
                     }
                 }
-                updateSupplierItem();
             });
 
-            // Πληρωμές μέσω Τράπεζας
             onValue(paymentsRef, snapshot => {
                 const data = snapshot.val();
                 for (const date in data) {
                     for (const paymentId in data[date]) {
                         if (data[date][paymentId].supplier === supplierName) {
-                            const amount = parseFloat(data[date][paymentId].amount);
-                            totalAmount += amount;
-                            bankPayments += amount;
+                            allTransactions.push({
+                                date: data[date][paymentId].date,
+                                amount: data[date][paymentId].amount,
+                                type: 'Πληρωμή'
+                            });
                         }
                     }
                 }
-                updateSupplierItem();
             });
 
-            // Τιμολόγια
             onValue(invoicesRef, snapshot => {
                 const data = snapshot.val();
                 for (const date in data) {
                     for (const invoiceId in data[date]) {
                         if (data[date][invoiceId].supplier === supplierName) {
-                            const amount = parseFloat(data[date][invoiceId].amount);
-                            totalAmount += amount;
+                            allTransactions.push({
+                                date: data[date][invoiceId].date,
+                                amount: data[date][invoiceId].amount,
+                                type: 'Τιμολόγιο'
+                            });
                         }
                     }
                 }
-                updateSupplierItem();
-            });
+                // Sort transactions by date and display in the table
+                allTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            // Ενημέρωση στοιχείων προμηθευτή
-            function updateSupplierItem() {
-                supplierItem.querySelector('div:nth-child(2)').innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${totalAmount.toFixed(2)}`;
-                supplierItem.querySelector('div:nth-child(3)').innerHTML = `<strong>Πληρωμές με Μετρητά:</strong> €${cashPayments.toFixed(2)}`;
-                supplierItem.querySelector('div:nth-child(4)').innerHTML = `<strong>Πληρωμές μέσω Τράπεζας:</strong> €${bankPayments.toFixed(2)}`;
-            }
-        }
-    });
-}
-
-        // Open Transaction Modal
-        function openTransactionModal(supplierName) {
-            const tableBody = document.querySelector('#transaction-table tbody');
-            tableBody.innerHTML = ''; // Clear previous transactions
-            modal.style.display = 'block';
-
-            // Fetch Supplier Transactions and Payments
-            const transactionsRef = ref(database, 'transactions');
-            const paymentsRef = ref(database, 'bank-payments');
-            const invoicesRef = ref(database, 'credit-invoices');
-
-            // Loop through transactions and populate modal
-            onValue(transactionsRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const transactionId in data[date]) {
-                        if (data[date][transactionId].supplier === supplierName) {
-                            const row = tableBody.insertRow();
-                            row.innerHTML = `
-                                <td>${data[date][transactionId].date}</td>
-                                <td>€${parseFloat(data[date][transactionId].amount).toFixed(2)}</td>
-                                <td>${data[date][transactionId].paymentMethod}</td>
-                            `;
-                        }
-                    }
-                }
+                allTransactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${transaction.date}</td><td>€${transaction.amount}</td><td>${transaction.type}</td>`;
+                    tableBody.appendChild(row);
+                });
             });
         }
 
-        // Close Modal
-        span.onclick = () => modal.style.display = "none";
+        // Close modal when clicking on close button
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
 
-        // Load Suppliers when page loads
-        window.onload = loadSuppliers;
-
+        // Initialize the page
+        loadSuppliers();
     </script>
 </body>
 </html>
