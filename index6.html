@@ -217,7 +217,6 @@
         const modal = document.getElementById("transactionModal");
         const span = document.getElementsByClassName("close")[0];
 
-        // Fetch Suppliers, Transactions, Payments, and Invoices
       function loadSuppliers() {
     const suppliersRef = ref(database, 'suppliers');
     onValue(suppliersRef, snapshot => {
@@ -297,47 +296,6 @@
     });
 }
 
-                    // Fetch Transactions
-                    onValue(transactionsRef, snapshot => {
-                        const data = snapshot.val();
-                        for (const date in data) {
-                            for (const transactionId in data[date]) {
-                                if (data[date][transactionId].supplier === supplierName) {
-                                    totalAmount += parseFloat(data[date][transactionId].amount);
-                                }
-                            }
-                        }
-                    });
-
-                    // Fetch Payments
-                    onValue(paymentsRef, snapshot => {
-                        const data = snapshot.val();
-                        for (const date in data) {
-                            for (const paymentId in data[date]) {
-                                if (data[date][paymentId].supplier === supplierName) {
-                                    totalAmount += parseFloat(data[date][paymentId].amount);
-                                }
-                            }
-                        }
-                    });
-
-                    // Fetch Invoices
-                    onValue(invoicesRef, snapshot => {
-                        const data = snapshot.val();
-                        for (const date in data) {
-                            for (const invoiceId in data[date]) {
-                                if (data[date][invoiceId].supplier === supplierName) {
-                                    totalAmount += parseFloat(data[date][invoiceId].amount);
-                                }
-                            }
-                        }
-                    });
-
-                    // Update the total amount for the supplier
-                    supplierItem.querySelector('div:nth-child(2)').innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${totalAmount}`;
-                }
-            });
-        }
 
         function openTransactionModal(supplierName) {
             modal.style.display = "block";
