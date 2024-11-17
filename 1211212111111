@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Καταγραφή Προμηθευτών και Συναλλαγών</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="11.png" type="image/png">
+    <style>
+        /* Style για την εμφάνιση των προμηθευτών */
+        #supplier-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        #supplier-list li {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        #supplier-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background-color: #343a40;
+        }
+
+        #supplier-list li div {
+            margin-bottom: 10px;
+        }
+
+        /* Style για τις συναλλαγές */
+        .transaction-list, .bank-payments-list, .credit-invoices-list {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .transaction-item, .bank-payment-item, .credit-invoice-item {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.delete-btn {
+            background-color: #e74c3c;
+        }
+
+        button.edit-btn {
+            background-color: #f39c12;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+        
+  <nav>
+        <img src="11.png" alt="Logo" class="logo">
+        <button class="menu-toggle">
+            &#9776;<br>Menu
+        </button>
+        <div class="menu-items">
+            <a href="index.html">Αρχική Σελίδα</a>
+            <a href="index1.html">Καταγραφή Εξόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+        </div>
+    </nav>
+
+    <h1>Καταγραφή Προμηθευτών και Συναλλαγών</h1>
+
+    <ul id="supplier-list"></ul>
+
+    <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+          authDomain: "speedy-bazaar-411110.firebaseapp.com",
+          databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+          projectId: "speedy-bazaar-411110",
+          storageBucket: "speedy-bazaar-411110.appspot.com",
+          messagingSenderId: "752456596300",
+          appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+          measurementId: "G-NGZHWDY6S5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore(app);
+        const database = getDatabase(app);
+
+        // Check User Authentication
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // DOM Elements
+        const supplierList = document.getElementById('supplier-list');
+
+        // Fetch Suppliers and Transactions from Firebase
+        function loadSuppliers() {
+            const suppliersRef = ref(database, 'suppliers');
+            onValue(suppliersRef, snapshot => {
+                const data = snapshot.val();
+                supplierList.innerHTML = '';
+                for (const supplierName in data) {
+                    const supplierItem = document.createElement('li');
+                    supplierItem.innerHTML = `<div><strong>Προμηθευτής:</strong> ${supplierName}</div>`;
+                    supplierItem.addEventListener('click', () => loadSupplierDetails(supplierName));
+                    supplierList.appendChild(supplierItem);
+
+                    // Append transactions, bank payments, and credit invoices below each supplier
+                    const transactionsList = document.createElement('div');
+                    transactionsList.classList.add('transaction-list');
+                    const bankPaymentsList = document.createElement('div');
+                    bankPaymentsList.classList.add('bank-payments-list');
+                    const creditInvoicesList = document.createElement('div');
+                    creditInvoicesList.classList.add('credit-invoices-list');
+                    supplierItem.appendChild(transactionsList);
+                    supplierItem.appendChild(bankPaymentsList);
+                    supplierItem.appendChild(creditInvoicesList);
+                }
+            });
+        }
+
+        // Load transactions, bank payments, and credit invoices for the selected supplier
+        function loadSupplierDetails(supplier) {
+            const transactionsRef = ref(database, 'transactions');
+            const bankPaymentsRef = ref(database, 'bank-payments');
+            const creditInvoicesRef = ref(database, 'credit-invoices');
+            
+            onValue(transactionsRef, snapshot => {
+                const data = snapshot.val();
+                const supplierTransactions = [];
+
+                // Filter transactions by the supplier
+                for (const date in data) {
+                    for (const transactionId in data[date]) {
+                        if (data[date][transactionId].supplier === supplier) {
+                            supplierTransactions.push(data[date][transactionId]);
+                        }
+                    }
+                }
+
+                // Display transactions under the selected supplier
+                const supplierItem = Array.from(supplierList.children).find(item => item.querySelector('div').textContent.includes(supplier));
+                const transactionListElement = supplierItem.querySelector('.transaction-list');
+                transactionListElement.innerHTML = '';  // Clear previous transactions
+
+                supplierTransactions.forEach(transaction => {
+                    const transactionItem = document.createElement('div');
+                    transactionItem.classList.add('transaction-item');
+                    transactionItem.innerHTML = `
+                        <div><strong>Αριθμός Τιμολογίου:</strong> ${transaction.invoiceNumber}</div>
+                        <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
+                        <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
+                    `;
+                    transactionListElement.appendChild(transactionItem);
+                });
+
+                // Show the transaction list
+                transactionListElement.style.display = 'flex';
+            });
+
+            onValue(bankPaymentsRef, snapshot => {
+                const data = snapshot.val();
+                const supplierBankPayments = [];
+
+                // Filter bank payments by the supplier
+                for (const date in data) {
+                    for (const paymentId in data[date]) {
+                        if (data[date][paymentId].supplier === supplier) {
+                            supplierBankPayments.push(data[date][paymentId]);
+                        }
+                    }
+                }
+
+                // Display bank payments under the selected supplier
+                const bankPaymentsListElement = supplierItem.querySelector('.bank-payments-list');
+                bankPaymentsListElement.innerHTML = '';  // Clear previous bank payments
+
+                supplierBankPayments.forEach(payment => {
+                    const paymentItem = document.createElement('div');
+                    paymentItem.classList.add('bank-payment-item');
+                    paymentItem.innerHTML = `
+                        <div><strong>Ημερομηνία:</strong> ${payment.date}</div>
+                        <div><strong>Ποσό:</strong> ${payment.amount} €</div>
+                    `;
+                    bankPaymentsListElement.appendChild(paymentItem);
+                });
+
+                // Show the bank payments list
+                bankPaymentsListElement.style.display = 'flex';
+            });
+
+            onValue(creditInvoicesRef, snapshot => {
+                const data = snapshot.val();
+                const supplierCreditInvoices = [];
+
+                // Filter credit invoices by the supplier
+                for (const date in data) {
+                    for (const invoiceId in data[date]) {
+                        if (data[date][invoiceId].supplier === supplier) {
+                            supplierCreditInvoices.push(data[date][invoiceId]);
+                        }
+                    }
+                }
+
+                // Display credit invoices under the selected supplier
+                const creditInvoicesListElement = supplierItem.querySelector('.credit-invoices-list');
+                creditInvoicesListElement.innerHTML = '';  // Clear previous credit invoices
+
+                supplierCreditInvoices.forEach(invoice => {
+                    const invoiceItem = document.createElement('div');
+                    invoiceItem.classList.add('credit-invoice-item');
+                    invoiceItem.innerHTML = `
+                        <div><strong>Τιμολόγιο #:</strong> ${invoice.invoiceNumber}</div>
+                        <div><strong>Περιγραφή:</strong> ${invoice.description}</div>
+                        <div><strong>Ποσό:</strong> ${invoice.amount} €</div>
+                    `;
+                    creditInvoicesListElement.appendChild(invoiceItem);
+                });
+
+                // Show the credit invoices list
+                creditInvoicesListElement.style.display = 'flex';
+            });
+        }
+
+        // Load initial suppliers data
+        loadSuppliers();
+    </script>
+</body>
+</html>
