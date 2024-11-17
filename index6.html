@@ -44,6 +44,7 @@
             margin-bottom: 10px;
         }
 
+        /* Style για τις συναλλαγές */
         .transaction-list {
             display: none;
             flex-direction: column;
@@ -147,12 +148,8 @@
                 supplierList.innerHTML = '';
                 for (const supplierName in data) {
                     const supplierItem = document.createElement('li');
-                    const supplierTotalAmount = calculateTotalAmount(supplierName);
-                    supplierItem.innerHTML = `
-                        <div><strong>Προμηθευτής:</strong> ${supplierName}</div>
-                        <div><strong>Σύνολο Συναλλαγών:</strong> ${supplierTotalAmount} €</div>
-                    `;
-                    supplierItem.addEventListener('click', () => loadSupplierDetails(supplierName));
+                    supplierItem.innerHTML = `<div><strong>Προμηθευτής:</strong> ${supplierName}</div><div><strong>Συνολικό Άθροισμα:</strong> €0</div>`;
+                    supplierItem.addEventListener('click', () => loadSupplierDetails(supplierName, supplierItem));
                     supplierList.appendChild(supplierItem);
 
                     // Append transaction, payment and invoice lists below each supplier
@@ -169,45 +166,15 @@
             });
         }
 
-        // Function to calculate total amount for each supplier
-        function calculateTotalAmount(supplier) {
-            let totalAmount = 0;
-
-            // Fetch transactions
-            const transactionsRef = ref(database, 'transactions');
-            onValue(transactionsRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const transactionId in data[date]) {
-                        if (data[date][transactionId].supplier === supplier) {
-                            totalAmount += parseFloat(data[date][transactionId].amount);
-                        }
-                    }
-                }
-            });
-
-            // Fetch invoices
-            const invoicesRef = ref(database, 'credit-invoices');
-            onValue(invoicesRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const invoiceId in data[date]) {
-                        if (data[date][invoiceId].supplier === supplier) {
-                            totalAmount += parseFloat(data[date][invoiceId].amount);
-                        }
-                    }
-                }
-            });
-
-            return totalAmount.toFixed(2);
-        }
-
-        // Load Details for the selected Supplier
-        function loadSupplierDetails(supplier) {
+        // Load Details for the selected Supplier and calculate total
+        function loadSupplierDetails(supplier, supplierItem) {
             const transactionsRef = ref(database, `transactions`);
             const paymentsRef = ref(database, `bank-payments`);
             const invoicesRef = ref(database, `credit-invoices`);
 
+            let totalAmount = 0;
+
+            // Calculate total transactions
             onValue(transactionsRef, snapshot => {
                 const data = snapshot.val();
                 const supplierTransactions = [];
@@ -215,32 +182,46 @@
                     for (const transactionId in data[date]) {
                         if (data[date][transactionId].supplier === supplier) {
                             supplierTransactions.push(data[date][transactionId]);
+                            totalAmount += parseFloat(data[date][transactionId].amount || 0);
                         }
                     }
                 }
 
-                // Display transactions
-                const supplierItem = Array.from(supplierList.children).find(item => item.querySelector('div').textContent.includes(supplier));
-                const transactionListElement = supplierItem.querySelector('.transaction-list');
-                transactionListElement.innerHTML = '';  // Clear previous transactions
+                // Calculate total payments
+                onValue(paymentsRef, snapshot => {
+                    const data = snapshot.val();
+                    const supplierPayments = [];
+                    for (const date in data) {
+                        for (const paymentId in data[date]) {
+                            if (data[date][paymentId].supplier === supplier) {
+                                supplierPayments.push(data[date][paymentId]);
+                                totalAmount += parseFloat(data[date][paymentId].amount || 0);
+                            }
+                        }
+                    }
 
-                supplierTransactions.forEach(transaction => {
-                    const transactionItem = document.createElement('div');
-                    transactionItem.classList.add('transaction-item');
-                    transactionItem.innerHTML = `
-                        <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
-                        <div><strong>Ημερομηνία:</strong> ${transaction.date}</div>
-                    `;
-                    transactionListElement.appendChild(transactionItem);
+                    // Calculate total invoices (credits)
+                    onValue(invoicesRef, snapshot => {
+                        const data = snapshot.val();
+                        const supplierInvoices = [];
+                        for (const date in data) {
+                            for (const invoiceId in data[date]) {
+                                if (data[date][invoiceId].supplier === supplier) {
+                                    supplierInvoices.push(data[date][invoiceId]);
+                                    totalAmount += parseFloat(data[date][invoiceId].amount || 0);
+                                }
+                            }
+                        }
+
+                        // Update the total amount in the supplier card
+                        const totalAmountElement = supplierItem.querySelector('div:nth-child(2)');
+                        totalAmountElement.innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${totalAmount.toFixed(2)}`;
+                    });
                 });
-                transactionListElement.style.display = 'flex';
             });
-
-            // Fetch and display payments and invoices similarly
-            // Similar logic can be applied for payments and invoices sections
         }
 
-        // Initialize
+        // Initialize the page
         loadSuppliers();
     </script>
 </body>
