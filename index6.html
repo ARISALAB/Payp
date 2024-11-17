@@ -134,76 +134,79 @@
         const supplierList = document.getElementById('supplier-list');
 
         // Fetch Suppliers and Transactions from Firebase
-        function loadSuppliers() {
-            const suppliersRef = ref(database, 'suppliers');
-          onValue(supplierRef, snapshot => {
-    const data = snapshot.val();
-    const suppliersListElement = document.getElementById('suppliers-list');
-    suppliersListElement.innerHTML = '';  // Clear any previous suppliers
+     // Fetch Suppliers and Transactions from Firebase
+function loadSuppliers() {
+    const suppliersRef = ref(database, 'suppliers');
+    onValue(suppliersRef, snapshot => {  // Use suppliersRef instead of supplierRef
+        const data = snapshot.val();
+        const suppliersListElement = document.getElementById('supplier-list'); // Use the correct element ID
 
-    // Iterate through suppliers and display them
-    for (const supplierId in data) {
-        const supplier = data[supplierId];
-        const supplierItem = document.createElement('div');
-        supplierItem.classList.add('supplier-item');
-        supplierItem.innerHTML = `
-            <div><strong>Προμηθευτής:</strong> ${supplier.name}</div>
-            <div><strong>Διεύθυνση:</strong> ${supplier.address}</div>
-        `;
+        suppliersListElement.innerHTML = '';  // Clear any previous suppliers
 
-        // Append the supplier item to the list
-        suppliersListElement.appendChild(supplierItem);
+        // Iterate through suppliers and display them
+        for (const supplierId in data) {
+            const supplier = data[supplierId];
+            const supplierItem = document.createElement('li'); // Use 'li' for list item as defined in the HTML
+            supplierItem.classList.add('supplier-item');
+            supplierItem.innerHTML = `
+                <div><strong>Προμηθευτής:</strong> ${supplier.name}</div>
+                <div><strong>Διεύθυνση:</strong> ${supplier.address}</div>
+            `;
 
-        // Now, you can add more onValue listeners inside the supplierItem scope
-        const bankPaymentsRef = ref(database, `bank-payments/${supplierId}`);
-        const creditInvoicesRef = ref(database, `credit-invoices/${supplierId}`);
-        
-        // Fetch and display bank payments
-        onValue(bankPaymentsRef, bankSnapshot => {
-            const bankPayments = bankSnapshot.val() || [];
-            const bankPaymentsListElement = supplierItem.querySelector('.bank-payments-list');
-            bankPaymentsListElement.innerHTML = '';  // Clear previous bank payments
+            // Append the supplier item to the list
+            suppliersListElement.appendChild(supplierItem);
 
-            bankPayments.forEach(payment => {
-                const paymentItem = document.createElement('div');
-                paymentItem.classList.add('payment-item');
-                paymentItem.innerHTML = `
-                    <div><strong>Ημερομηνία:</strong> ${payment.date}</div>
-                    <div><strong>Ποσό:</strong> ${payment.amount} €</div>
-                `;
-                bankPaymentsListElement.appendChild(paymentItem);
+            // Now, you can add more onValue listeners inside the supplierItem scope
+            const bankPaymentsRef = ref(database, `bank-payments/${supplierId}`);
+            const creditInvoicesRef = ref(database, `credit-invoices/${supplierId}`);
+            
+            // Fetch and display bank payments
+            onValue(bankPaymentsRef, bankSnapshot => {
+                const bankPayments = bankSnapshot.val() || [];
+                const bankPaymentsListElement = supplierItem.querySelector('.bank-payments-list');
+                bankPaymentsListElement.innerHTML = '';  // Clear previous bank payments
+
+                bankPayments.forEach(payment => {
+                    const paymentItem = document.createElement('div');
+                    paymentItem.classList.add('payment-item');
+                    paymentItem.innerHTML = `
+                        <div><strong>Ημερομηνία:</strong> ${payment.date}</div>
+                        <div><strong>Ποσό:</strong> ${payment.amount} €</div>
+                    `;
+                    bankPaymentsListElement.appendChild(paymentItem);
+                });
+
+                // Show the bank payments list
+                bankPaymentsListElement.style.display = 'flex';
             });
 
-            // Show the bank payments list
-            bankPaymentsListElement.style.display = 'flex';
-        });
+            // Fetch and display credit invoices
+            onValue(creditInvoicesRef, creditSnapshot => {
+                const creditInvoices = creditSnapshot.val() || [];
+                const creditInvoicesListElement = supplierItem.querySelector('.credit-invoices-list');
+                creditInvoicesListElement.innerHTML = '';  // Clear previous credit invoices
 
-        // Fetch and display credit invoices
-        onValue(creditInvoicesRef, creditSnapshot => {
-            const creditInvoices = creditSnapshot.val() || [];
-            const creditInvoicesListElement = supplierItem.querySelector('.credit-invoices-list');
-            creditInvoicesListElement.innerHTML = '';  // Clear previous credit invoices
+                creditInvoices.forEach(invoice => {
+                    const invoiceItem = document.createElement('div');
+                    invoiceItem.classList.add('credit-invoice-item');
+                    invoiceItem.innerHTML = `
+                        <div><strong>Τιμολόγιο #:</strong> ${invoice.invoiceNumber}</div>
+                        <div><strong>Περιγραφή:</strong> ${invoice.description}</div>
+                        <div><strong>Ποσό:</strong> ${invoice.amount} €</div>
+                    `;
+                    creditInvoicesListElement.appendChild(invoiceItem);
+                });
 
-            creditInvoices.forEach(invoice => {
-                const invoiceItem = document.createElement('div');
-                invoiceItem.classList.add('credit-invoice-item');
-                invoiceItem.innerHTML = `
-                    <div><strong>Τιμολόγιο #:</strong> ${invoice.invoiceNumber}</div>
-                    <div><strong>Περιγραφή:</strong> ${invoice.description}</div>
-                    <div><strong>Ποσό:</strong> ${invoice.amount} €</div>
-                `;
-                creditInvoicesListElement.appendChild(invoiceItem);
+                // Show the credit invoices list
+                creditInvoicesListElement.style.display = 'flex';
             });
+        }
+    });
+}
 
-            // Show the credit invoices list
-            creditInvoicesListElement.style.display = 'flex';
-        });
-    }
-});
+// Load initial suppliers data
+loadSuppliers();
 
-
-        // Load initial suppliers data
-        loadSuppliers();
     </script>
 </body>
 </html>
