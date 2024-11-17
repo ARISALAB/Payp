@@ -1,48 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="el">
 <head>
-  <title>Firebase Realtime Database Example</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script>
-    // Initialize Firebase
-   const firebaseConfig = {
-  apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-  authDomain: "speedy-bazaar-411110.firebaseapp.com",
-  databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-  projectId: "speedy-bazaar-411110",
-  storageBucket: "speedy-bazaar-411110.appspot.com",
-  messagingSenderId: "752456596300",
-  appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-  measurementId: "G-NGZHWDY6S5"
-};
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Συναλλαγές κατά Προμηθευτή</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="11.png" type="image/png">
+    <style>
+        /* Style για τις συναλλαγές ανά προμηθευτή */
+        #transaction-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
 
-    // Get a reference to the database
-    const dbRef = database.ref();
+        #transaction-list li {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
 
-    // Listen for changes in the database
-    dbRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      // Display the data in the HTML
-      const dataDiv = document.getElementById('data');
-      dataDiv.innerHTML = '';
-      for (const key in data) {
-        const itemDiv = document.createElement('div');
-        itemDiv.innerHTML = `
-          <h2>${key}</h2>
-          <ul>
-            ${Object.entries(data[key]).map(([key2, value]) => `<li>${key2}: ${value}</li>`).join('')}
-          </ul>
-        `;
-        dataDiv.appendChild(itemDiv);
-      }
-    });
-  </script>
+        #transaction-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background-color: #343a40;
+        }
+
+        #transaction-list li div {
+            margin-bottom: 10px;
+        }
+
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.delete-btn {
+            background-color: #e74c3c;
+        }
+
+        button.edit-btn {
+            background-color: #f39c12;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
-  <h1>Firebase Realtime Database Example</h1>
-  <div id="data"></div>
+
+    <nav>
+        <!-- Nav content here, same as in the original page -->
+    </nav>
+
+    <h1>Συναλλαγές ανά Προμηθευτή</h1>
+    <label for="supplier-filter">Επιλέξτε Προμηθευτή:</label>
+    <select id="supplier-filter">
+        <option value="">Επιλέξτε Προμηθευτή</option>
+    </select>
+
+    <ul id="transaction-list"></ul>
+    <footer>&copy; 2024 Συναλλαγές ανά Προμηθευτή</footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const supplierFilter = document.getElementById('supplier-filter');
+        const transactionList = document.getElementById('transaction-list');
+
+        // Load suppliers list
+        function loadSuppliers() {
+            const suppliersRef = ref(database, 'suppliers');
+            onValue(suppliersRef, snapshot => {
+                const data = snapshot.val();
+                supplierFilter.innerHTML = '<option value="">Επιλέξτε Προμηθευτή</option>';
+                for (const supplier in data) {
+                    const option = document.createElement('option');
+                    option.value = supplier;
+                    option.textContent = supplier;
+                    supplierFilter.appendChild(option);
+                }
+            });
+        }
+
+        // Load transactions based on selected supplier
+        function loadTransactionsBySupplier(supplier) {
+            const transactionsRef = ref(database, 'transactions');
+            onValue(transactionsRef, snapshot => {
+                const data = snapshot.val();
+                transactionList.innerHTML = '';
+                let totalAmount = 0;
+                for (const date in data) {
+                    const transactions = data[date];
+                    for (const key in transactions) {
+                        const transaction = transactions[key];
+                        if (transaction.supplier === supplier) {
+                            const transactionItem = document.createElement('li');
+                            transactionItem.innerHTML = `
+                                <div><strong>Ημερομηνία:</strong> ${date}</div>
+                                <div><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</div>
+                                <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
+                                <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
+                                <button class="edit-btn" data-key="${key}">Επεξεργασία</button>
+                                <button class="delete-btn" data-key="${key}">Διαγραφή</button>
+                            `;
+                            transactionList.appendChild(transactionItem);
+                            totalAmount += parseFloat(transaction.amount);
+                        }
+                    }
+                }
+
+                if (totalAmount > 0) {
+                    const totalAmountElement = document.createElement('p');
+                    totalAmountElement.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
+                    transactionList.appendChild(totalAmountElement);
+                }
+            });
+        }
+
+        supplierFilter.addEventListener('change', (e) => {
+            const supplier = e.target.value;
+            if (supplier) {
+                loadTransactionsBySupplier(supplier);
+            } else {
+                transactionList.innerHTML = '';
+            }
+        });
+
+        loadSuppliers(); // Initialize suppliers list
+
+    </script>
 </body>
 </html>
