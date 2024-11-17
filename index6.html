@@ -354,6 +354,11 @@ function updateSupplierItem() {
                         }
                     }
                 }
+                // Συνάρτηση για μετατροπή ημερομηνίας
+function formatDate(dateString) {
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`; // Από YYYY-MM-DD σε DD/MM/YYYY
+}
                 // Sort transactions by date and display in the table
                 allTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
 
