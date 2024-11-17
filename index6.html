@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Καρτέλες Προμηθευτών</title>
+    <title>Καταγραφή Προμηθευτών και Συναλλαγών</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="11.png" type="image/png">
     <style>
-        /* Στυλ για την εμφάνιση των προμηθευτών */
+        /* Style για την εμφάνιση των προμηθευτών */
         #supplier-list {
             display: flex;
             flex-direction: column;
@@ -27,6 +27,7 @@
             position: relative;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            cursor: pointer;
         }
 
         #supplier-list li::before {
@@ -36,7 +37,28 @@
             top: 0;
             height: 100%;
             width: 5px;
-            background-color: #343a40; /* Κάθετη γραμμή στην αρχή */
+            background-color: #343a40;
+        }
+
+        #supplier-list li div {
+            margin-bottom: 10px;
+        }
+
+        /* Style για τις συναλλαγές */
+        .transaction-list {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .transaction-item {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         button {
@@ -45,11 +67,11 @@
         }
 
         button.delete-btn {
-            background-color: #e74c3c; /* Κόκκινο για διαγραφή */
+            background-color: #e74c3c;
         }
 
         button.edit-btn {
-            background-color: #f39c12; /* Πορτοκαλί για επεξεργασία */
+            background-color: #f39c12;
         }
 
         button:hover {
@@ -58,36 +80,22 @@
     </style>
 </head>
 <body>
-    <nav>
+        
+  <nav>
         <img src="11.png" alt="Logo" class="logo">
         <button class="menu-toggle">
             &#9776;<br>Menu
         </button>
         <div class="menu-items">
             <a href="index.html">Αρχική Σελίδα</a>
-            <div class="dropdown">
-                <a href="#">Συναλλαγές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index1.html">Καταγραφή Εξόδων</a>
-                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
-                    <a href="index5.html">Πληρωμές Τράπεζας</a>
-                </div>
-            </div>
-            <a href="index3.html">Καταγραφή Εσόδων</a>
+            <a href="index1.html">Καταγραφή Εξόδων</a>
             <a href="index2.html">Καρτέλες Προμηθευτών</a>
-            <div class="dropdown">
-                <a href="#">Αναφορές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index7.html">Ημερήσια Αναφορά</a>
-                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
-                    <a href="index8.html">Μηνιαία Αναφορά</a>
-                    <a href="index9.html">Ετήσια Αναφορά</a>
-                </div>
-            </div>
+            <a href="index3.html">Καταγραφή Εσόδων</a>
         </div>
     </nav>
 
-    <h1>Καρτέλες Προμηθευτών</h1>
+    <h1>Καταγραφή Προμηθευτών και Συναλλαγών</h1>
+
     <ul id="supplier-list"></ul>
 
     <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
@@ -99,20 +107,20 @@
         import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-            authDomain: "speedy-bazaar-411110.firebaseapp.com",
-            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-            projectId: "speedy-bazaar-411110",
-            storageBucket: "speedy-bazaar-411110.appspot.com",
-            messagingSenderId: "752456596300",
-            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-            measurementId: "G-NGZHWDY6S5"
+          apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+          authDomain: "speedy-bazaar-411110.firebaseapp.com",
+          databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+          projectId: "speedy-bazaar-411110",
+          storageBucket: "speedy-bazaar-411110.appspot.com",
+          messagingSenderId: "752456596300",
+          appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+          measurementId: "G-NGZHWDY6S5"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
         const db = getFirestore(app);
-        const database = getDatabase(app); // Initialize Firebase Database
+        const database = getDatabase(app);
 
         // Check User Authentication
         onAuthStateChanged(auth, user => {
@@ -125,7 +133,7 @@
         // DOM Elements
         const supplierList = document.getElementById('supplier-list');
 
-        // Fetch Suppliers from Firebase
+        // Fetch Suppliers and Transactions from Firebase
         function loadSuppliers() {
             const suppliersRef = ref(database, 'suppliers');
             onValue(suppliersRef, snapshot => {
@@ -133,33 +141,60 @@
                 supplierList.innerHTML = '';
                 for (const supplierName in data) {
                     const supplierItem = document.createElement('li');
-                    supplierItem.innerHTML = `
-                        <div><strong>Προμηθευτής:</strong> ${supplierName}</div>
-                        <button class="edit-btn" data-supplier="${supplierName}">Επεξεργασία</button>
-                        <button class="delete-btn" data-supplier="${supplierName}">Διαγραφή</button>
-                    `;
-                    supplierItem.querySelector('.delete-btn').addEventListener('click', () => deleteSupplier(supplierName));
-                    supplierItem.querySelector('.edit-btn').addEventListener('click', () => editSupplier(supplierName));
+                    supplierItem.innerHTML = `<div><strong>Προμηθευτής:</strong> ${supplierName}</div>`;
+                    supplierItem.addEventListener('click', () => loadTransactions(supplierName));
                     supplierList.appendChild(supplierItem);
+
+                    // Append transactions below each supplier
+                    const transactionsList = document.createElement('div');
+                    transactionsList.classList.add('transaction-list');
+                    supplierItem.appendChild(transactionsList);
                 }
             });
         }
 
-        // Delete Supplier
-        function deleteSupplier(supplierName) {
-            const supplierRef = ref(database, `suppliers/${supplierName}`);
-            remove(supplierRef);
-            loadSuppliers();
+        // Fetch Transactions for the selected supplier
+        function loadTransactions(supplier) {
+            const transactionsRef = ref(database, `transactions`);
+            onValue(transactionsRef, snapshot => {
+                const data = snapshot.val();
+                const supplierTransactions = [];
+
+                // Filter transactions by the supplier
+                for (const date in data) {
+                    for (const transactionId in data[date]) {
+                        if (data[date][transactionId].supplier === supplier) {
+                            supplierTransactions.push(data[date][transactionId]);
+                        }
+                    }
+                }
+
+                // Display transactions under the selected supplier
+                const supplierItem = Array.from(supplierList.children).find(item => item.querySelector('div').textContent.includes(supplier));
+                const transactionListElement = supplierItem.querySelector('.transaction-list');
+                transactionListElement.innerHTML = '';  // Clear previous transactions
+
+                supplierTransactions.forEach(transaction => {
+                    const transactionItem = document.createElement('div');
+                    transactionItem.classList.add('transaction-item');
+                    transactionItem.innerHTML = `
+                        <div><strong>Αριθμός Τιμολογίου:</strong> ${transaction.invoiceNumber}</div>
+                        <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
+                        <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
+                        <button class="edit-btn">Επεξεργασία</button>
+                        <button class="delete-btn">Διαγραφή</button>
+                    `;
+                    transactionListElement.appendChild(transactionItem);
+                });
+
+                // Show the transaction list
+                transactionListElement.style.display = 'flex';
+            });
         }
 
-        // Edit Supplier
-        function editSupplier(supplierName) {
-            // Εδώ μπορείς να προσθέσεις λογική για την επεξεργασία προμηθευτών
-            alert(`Επεξεργασία προμηθευτή: ${supplierName}`);
-        }
-
-        // Load suppliers when page is loaded
+        // Load suppliers when the page is ready
         loadSuppliers();
     </script>
+
 </body>
 </html>
