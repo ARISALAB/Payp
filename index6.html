@@ -249,8 +249,8 @@ onValue(transactionsRef, snapshot => {
         for (const transactionId in data[date]) {
             if (data[date][transactionId].supplier === supplierName) {
                 const amount = parseFloat(data[date][transactionId].amount);
-                totalAmount += amount; // Συμπεριλαμβάνεται
-                cashPayments += amount; // Υποθέτουμε ότι οι συναλλαγές είναι με μετρητά
+                totalAmount += amount; // Περιλαμβάνουμε το ποσό
+                cashPayments += amount; // Θεωρούμε ότι αυτές είναι συναλλαγές με μετρητά
             }
         }
     }
@@ -278,7 +278,7 @@ onValue(invoicesRef, snapshot => {
         for (const invoiceId in data[date]) {
             if (data[date][invoiceId].supplier === supplierName) {
                 const amount = parseFloat(data[date][invoiceId].amount);
-                totalAmount += amount; // Συμπεριλαμβάνεται
+                totalAmount += amount; // Προσθέτουμε το ποσό από το τιμολόγιο
             }
         }
     }
@@ -287,12 +287,13 @@ onValue(invoicesRef, snapshot => {
 
 
             // Ενημέρωση στοιχείων προμηθευτή
-            function updateSupplierItem() {
-    const adjustedTotal = totalAmount - bankPayments; // Αφαιρούμε τις πληρωμές μέσω τράπεζας
-    supplierItem.querySelector('div:nth-child(2)').innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${adjustedTotal.toFixed(2)}`;
+  // Ενημέρωση στοιχείων προμηθευτή
+function updateSupplierItem() {
+    supplierItem.querySelector('div:nth-child(2)').innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${totalAmount.toFixed(2)}`;
     supplierItem.querySelector('div:nth-child(3)').innerHTML = `<strong>Πληρωμές με Μετρητά:</strong> €${cashPayments.toFixed(2)}`;
     supplierItem.querySelector('div:nth-child(4)').innerHTML = `<strong>Πληρωμές μέσω Τράπεζας:</strong> €${bankPayments.toFixed(2)}`;
 }
+
 
         }
     });
