@@ -5,43 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Συναλλαγές ανά Προμηθευτή</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="11.png" type="image/png">
     <style>
-        .supplier-card {
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        .tab-button {
             background-color: #f8f9fa;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .supplier-card h2 {
-            margin-bottom: 10px;
-        }
-        .transaction-list {
-            margin-top: 10px;
-        }
-        .transaction-item {
-            margin-bottom: 10px;
             padding: 10px;
-            background-color: #ffffff;
+            cursor: pointer;
+            margin-bottom: 5px;
             border-radius: 5px;
+        }
+
+        .tab-button.active {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .transactions-container {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+
+        .transactions-container.active {
+            display: block;
+        }
+
+        .transaction {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
     <h1>Συναλλαγές ανά Προμηθευτή</h1>
-    <div id="supplier-cards-container"></div>
-
-    <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
+    <div class="tabs-container" id="tabs-container"></div>
+    <div id="transactions-section"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
             authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -54,67 +74,78 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth();
-        const db = getFirestore(app);
         const database = getDatabase(app);
 
-        // Check User Authentication
-        onAuthStateChanged(auth, user => {
-            if (!user) {
-                alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
-                window.location.href = 'index.html';
-            }
-        });
+        const tabsContainer = document.getElementById('tabs-container');
+        const transactionsSection = document.getElementById('transactions-section');
 
-        // Fetch Transactions grouped by Supplier
-        function loadTransactionsBySupplier() {
+        // Fetch transactions grouped by supplier
+        function loadTransactions() {
             const transactionsRef = ref(database, 'transactions');
-            onValue(transactionsRef, snapshot => {
+            onValue(transactionsRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    const suppliers = {};
-                    for (const [key, transaction] of Object.entries(data)) {
-                        if (!suppliers[transaction.supplier]) {
-                            suppliers[transaction.supplier] = [];
-                        }
-                        suppliers[transaction.supplier].push(transaction);
-                    }
-                    renderSupplierCards(suppliers);
+                    renderTabs(data);
                 }
             });
         }
 
-        // Render Supplier Cards
-        function renderSupplierCards(suppliers) {
-            const container = document.getElementById('supplier-cards-container');
-            container.innerHTML = '';
+        // Render tabs and transactions
+        function renderTabs(data) {
+            tabsContainer.innerHTML = '';
+            transactionsSection.innerHTML = '';
 
-            for (const supplier in suppliers) {
-                const supplierCard = document.createElement('div');
-                supplierCard.className = 'supplier-card';
-                supplierCard.innerHTML = `<h2>Προμηθευτής: ${supplier}</h2>`;
-                
-                const transactionList = document.createElement('div');
-                transactionList.className = 'transaction-list';
+            const suppliers = Object.keys(data);
 
-                suppliers[supplier].forEach(transaction => {
-                    const transactionItem = document.createElement('div');
-                    transactionItem.className = 'transaction-item';
-                    transactionItem.innerHTML = `
-                        <p><strong>Αριθμός Τιμολογίου:</strong> ${transaction.invoiceNumber}</p>
+            suppliers.forEach((supplier, index) => {
+                // Create tab button
+                const tabButton = document.createElement('button');
+                tabButton.textContent = supplier;
+                tabButton.classList.add('tab-button');
+                if (index === 0) tabButton.classList.add('active');
+                tabButton.addEventListener('click', () => {
+                    activateTab(supplier);
+                });
+                tabsContainer.appendChild(tabButton);
+
+                // Create transactions container
+                const transactionsContainer = document.createElement('div');
+                transactionsContainer.id = `transactions-${supplier}`;
+                transactionsContainer.classList.add('transactions-container');
+                if (index === 0) transactionsContainer.classList.add('active');
+
+                const supplierTransactions = data[supplier];
+                for (const key in supplierTransactions) {
+                    const transaction = supplierTransactions[key];
+                    const transactionDiv = document.createElement('div');
+                    transactionDiv.classList.add('transaction');
+                    transactionDiv.innerHTML = `
+                        <p><strong>Ημερομηνία:</strong> ${transaction.date || 'N/A'}</p>
+                        <p><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</p>
                         <p><strong>Περιγραφή:</strong> ${transaction.description}</p>
                         <p><strong>Ποσό:</strong> ${transaction.amount} €</p>
                     `;
-                    transactionList.appendChild(transactionItem);
-                });
+                    transactionsContainer.appendChild(transactionDiv);
+                }
 
-                supplierCard.appendChild(transactionList);
-                container.appendChild(supplierCard);
-            }
+                transactionsSection.appendChild(transactionsContainer);
+            });
+        }
+
+        // Activate tab
+        function activateTab(supplier) {
+            const allTabs = document.querySelectorAll('.tab-button');
+            const allContainers = document.querySelectorAll('.transactions-container');
+
+            allTabs.forEach(tab => tab.classList.remove('active'));
+            allContainers.forEach(container => container.classList.remove('active'));
+
+            document.querySelector(`.tab-button:contains(${supplier})`).classList.add('active');
+            document.getElementById(`transactions-${supplier}`).classList.add('active');
         }
 
         // Load transactions on page load
-        loadTransactionsBySupplier();
+        loadTransactions();
     </script>
 </body>
 </html>
