@@ -48,9 +48,8 @@
                     <tr>
                         <th>Ημερομηνία</th>
                         <th>Αριθμός Τιμολογίου</th>
-                        <th>Τιμολόγια Επί Πιστώσει (€)</th>
-                        <th>Καταθέσεις (€)</th>
-                        <th>Υπόλοιπο (€)</th>
+                        <th>Περιγραφή</th>
+                        <th>Ποσό (€)</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -64,13 +63,13 @@
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-        authDomain: "speedy-bazaar-411110.firebaseapp.com",
-        databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-        projectId: "speedy-bazaar-411110",
-        storageBucket: "speedy-bazaar-411110.appspot.com",
-        messagingSenderId: "752456596300",
-        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-        measurementId: "G-NGZHWDY6S5"
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -82,55 +81,62 @@
         const supplierNameDisplay = document.getElementById('supplier-name');
         const closeModal = document.querySelector('.close');
 
-        function renderSuppliers(suppliers) {
+        function fetchTransactions() {
+            const transactionsRef = ref(database, 'transactions');
+            onValue(transactionsRef, (snapshot) => {
+                const transactionsByDate = snapshot.val() || {};
+                const supplierData = {};
+
+                // Ομαδοποίηση συναλλαγών ανά προμηθευτή
+                Object.entries(transactionsByDate).forEach(([date, transactions]) => {
+                    Object.entries(transactions).forEach(([id, transaction]) => {
+                        const supplier = transaction.supplier;
+                        if (!supplierData[supplier]) {
+                            supplierData[supplier] = [];
+                        }
+                        supplierData[supplier].push({ date, ...transaction });
+                    });
+                });
+
+                renderSupplierList(supplierData);
+            });
+        }
+
+        function renderSupplierList(suppliers) {
             supplierList.innerHTML = '';
-            Object.entries(suppliers).forEach(([supplier, data]) => {
+            Object.entries(suppliers).forEach(([supplier, transactions]) => {
                 const listItem = document.createElement('li');
                 listItem.className = 'supplier-item';
-                const balance = (data.creditAmount || 0) - (data.deposits || 0);
+                const totalAmount = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0);
 
                 listItem.innerHTML = `
                     <strong>${supplier}</strong><br>
-                    Τιμολόγια Επί Πιστώσει: ${(data.creditAmount || 0).toFixed(2)} €<br>
-                    Καταθέσεις: ${(data.deposits || 0).toFixed(2)} €<br>
-                    Υπόλοιπο: ${balance.toFixed(2)} €
+                    Συνολικό Ποσό Συναλλαγών: ${totalAmount.toFixed(2)} €
                 `;
 
-                listItem.addEventListener('click', () => openModal(supplier, data));
+                listItem.addEventListener('click', () => openModal(supplier, transactions));
                 supplierList.appendChild(listItem);
             });
         }
 
-        function openModal(supplier, data) {
+        function openModal(supplier, transactions) {
             supplierNameDisplay.textContent = `Συναλλαγές Προμηθευτή: ${supplier}`;
             transactionTableBody.innerHTML = '';
 
-            if (data.transactions) {
-                data.transactions.forEach((transaction) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${transaction.date}</td>
-                        <td>${transaction.invoiceNumber || '-'}</td>
-                        <td>${transaction.type === 'credit' ? transaction.amount.toFixed(2) : '-'}</td>
-                        <td>${transaction.type === 'deposit' ? transaction.amount.toFixed(2) : '-'}</td>
-                        <td>${transaction.balance.toFixed(2)}</td>
-                    `;
-                    transactionTableBody.appendChild(row);
-                });
-            }
+            transactions.forEach((transaction) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.invoiceNumber || '-'}</td>
+                    <td>${transaction.description || '-'}</td>
+                    <td>${transaction.amount.toFixed(2)} €</td>
+                `;
+                transactionTableBody.appendChild(row);
+            });
 
             transactionModal.style.display = 'block';
         }
 
-        function fetchSuppliersAndTransactions() {
-            const suppliersRef = ref(database, 'suppliers');
-            onValue(suppliersRef, (snapshot) => {
-                const suppliers = snapshot.val() || {};
-                renderSuppliers(suppliers);
-            });
-        }
-
-        // Κλείσιμο του modal
         closeModal.addEventListener('click', () => {
             transactionModal.style.display = 'none';
         });
@@ -141,8 +147,8 @@
             }
         });
 
-        // Φόρτωση προμηθευτών και συναλλαγών από Firebase
-        fetchSuppliersAndTransactions();
+        // Φόρτωση συναλλαγών από Firebase
+        fetchTransactions();
     </script>
 </body>
 </html>
