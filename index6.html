@@ -129,141 +129,111 @@
                 window.location.href = 'index.html';
             }
         });
+// Assuming you are iterating over a list of suppliers
+const supplierListContainer = document.querySelector('.supplier-list');
 
-        // DOM Elements
-        const supplierList = document.getElementById('supplier-list');
+// Function to load suppliers and display them
+function loadSuppliers() {
+    const suppliersRef = ref(getDatabase());
+    onValue(suppliersRef, snapshot => {
+        const suppliersData = snapshot.val();
+        if (suppliersData) {
+            // Clear previous data
+            supplierListContainer.innerHTML = '';
 
-        // Fetch Suppliers and Transactions from Firebase
-        function loadSuppliers() {
-            const suppliersRef = ref(database, 'suppliers');
-            onValue(suppliersRef, snapshot => {
-                const data = snapshot.val();
-                supplierList.innerHTML = '';
-                for (const supplierName in data) {
-                    const supplierItem = document.createElement('li');
-                    supplierItem.innerHTML = `<div><strong>Προμηθευτής:</strong> ${supplierName}</div>`;
-                    supplierItem.addEventListener('click', () => loadSupplierDetails(supplierName));
-                    supplierList.appendChild(supplierItem);
+            // Loop through each supplier
+            for (const supplierId in suppliersData) {
+                const supplier = suppliersData[supplierId];
+                const supplierItem = document.createElement('div');
+                supplierItem.classList.add('supplier-item');
+                supplierItem.innerHTML = `
+                    <div><strong>Προμηθευτής:</strong> ${supplier.name}</div>
+                    <button class="view-transactions">Δείτε Συναλλαγές</button>
+                    <div class="transactions-list"></div>
+                    <div class="bank-payments-list"></div>
+                    <div class="credit-invoices-list"></div>
+                `;
+                
+                // Append the supplier item to the supplier list
+                supplierListContainer.appendChild(supplierItem);
 
-                    // Append transactions, bank payments, and credit invoices below each supplier
-                    const transactionsList = document.createElement('div');
-                    transactionsList.classList.add('transaction-list');
-                    const bankPaymentsList = document.createElement('div');
-                    bankPaymentsList.classList.add('bank-payments-list');
-                    const creditInvoicesList = document.createElement('div');
-                    creditInvoicesList.classList.add('credit-invoices-list');
-                    supplierItem.appendChild(transactionsList);
-                    supplierItem.appendChild(bankPaymentsList);
-                    supplierItem.appendChild(creditInvoicesList);
-                }
-            });
+                // Add event listeners or data loading here
+                supplierItem.querySelector('.view-transactions').addEventListener('click', function() {
+                    // Load transactions, payments, and invoices for this supplier
+                    loadTransactions(supplierId, supplierItem);
+                    loadBankPayments(supplierId, supplierItem);
+                    loadCreditInvoices(supplierId, supplierItem);
+                });
+            }
         }
+    });
+}
 
-        // Load transactions, bank payments, and credit invoices for the selected supplier
-        function loadSupplierDetails(supplier) {
-            const transactionsRef = ref(database, 'transactions');
-            const bankPaymentsRef = ref(database, 'bank-payments');
-            const creditInvoicesRef = ref(database, 'credit-invoices');
-            
-            onValue(transactionsRef, snapshot => {
-                const data = snapshot.val();
-                const supplierTransactions = [];
+// Function to load transactions for the supplier
+function loadTransactions(supplierId, supplierItem) {
+    const transactionsRef = ref(getDatabase(), 'transactions/' + supplierId);
+    onValue(transactionsRef, snapshot => {
+        const transactionsData = snapshot.val();
+        const transactionsList = supplierItem.querySelector('.transactions-list');
+        transactionsList.innerHTML = '';  // Clear previous transactions
 
-                // Filter transactions by the supplier
-                for (const date in data) {
-                    for (const transactionId in data[date]) {
-                        if (data[date][transactionId].supplier === supplier) {
-                            supplierTransactions.push(data[date][transactionId]);
-                        }
-                    }
-                }
-
-                // Display transactions under the selected supplier
-                const supplierItem = Array.from(supplierList.children).find(item => item.querySelector('div').textContent.includes(supplier));
-                const transactionListElement = supplierItem.querySelector('.transaction-list');
-                transactionListElement.innerHTML = '';  // Clear previous transactions
-
-                supplierTransactions.forEach(transaction => {
-                    const transactionItem = document.createElement('div');
-                    transactionItem.classList.add('transaction-item');
-                    transactionItem.innerHTML = `
-                        <div><strong>Αριθμός Τιμολογίου:</strong> ${transaction.invoiceNumber}</div>
-                        <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
-                        <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
-                    `;
-                    transactionListElement.appendChild(transactionItem);
-                });
-
-                // Show the transaction list
-                transactionListElement.style.display = 'flex';
-            });
-
-            onValue(bankPaymentsRef, snapshot => {
-                const data = snapshot.val();
-                const supplierBankPayments = [];
-
-                // Filter bank payments by the supplier
-                for (const date in data) {
-                    for (const paymentId in data[date]) {
-                        if (data[date][paymentId].supplier === supplier) {
-                            supplierBankPayments.push(data[date][paymentId]);
-                        }
-                    }
-                }
-
-                // Display bank payments under the selected supplier
-                const bankPaymentsListElement = supplierItem.querySelector('.bank-payments-list');
-                bankPaymentsListElement.innerHTML = '';  // Clear previous bank payments
-
-                supplierBankPayments.forEach(payment => {
-                    const paymentItem = document.createElement('div');
-                    paymentItem.classList.add('bank-payment-item');
-                    paymentItem.innerHTML = `
-                        <div><strong>Ημερομηνία:</strong> ${payment.date}</div>
-                        <div><strong>Ποσό:</strong> ${payment.amount} €</div>
-                    `;
-                    bankPaymentsListElement.appendChild(paymentItem);
-                });
-
-                // Show the bank payments list
-                bankPaymentsListElement.style.display = 'flex';
-            });
-
-            onValue(creditInvoicesRef, snapshot => {
-                const data = snapshot.val();
-                const supplierCreditInvoices = [];
-
-                // Filter credit invoices by the supplier
-                for (const date in data) {
-                    for (const invoiceId in data[date]) {
-                        if (data[date][invoiceId].supplier === supplier) {
-                            supplierCreditInvoices.push(data[date][invoiceId]);
-                        }
-                    }
-                }
-
-                // Display credit invoices under the selected supplier
-                const creditInvoicesListElement = supplierItem.querySelector('.credit-invoices-list');
-                creditInvoicesListElement.innerHTML = '';  // Clear previous credit invoices
-
-                supplierCreditInvoices.forEach(invoice => {
-                    const invoiceItem = document.createElement('div');
-                    invoiceItem.classList.add('credit-invoice-item');
-                    invoiceItem.innerHTML = `
-                        <div><strong>Τιμολόγιο #:</strong> ${invoice.invoiceNumber}</div>
-                        <div><strong>Περιγραφή:</strong> ${invoice.description}</div>
-                        <div><strong>Ποσό:</strong> ${invoice.amount} €</div>
-                    `;
-                    creditInvoicesListElement.appendChild(invoiceItem);
-                });
-
-                // Show the credit invoices list
-                creditInvoicesListElement.style.display = 'flex';
-            });
+        for (const transactionId in transactionsData) {
+            const transaction = transactionsData[transactionId];
+            const transactionItem = document.createElement('div');
+            transactionItem.innerHTML = `
+                <div><strong>Αριθμός:</strong> ${transaction.number}</div>
+                <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
+                <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
+            `;
+            transactionsList.appendChild(transactionItem);
         }
+    });
+}
 
-        // Load initial suppliers data
-        loadSuppliers();
+// Function to load bank payments for the supplier
+function loadBankPayments(supplierId, supplierItem) {
+    const bankPaymentsRef = ref(getDatabase(), 'bank-payments/' + supplierId);
+    onValue(bankPaymentsRef, snapshot => {
+        const bankPaymentsData = snapshot.val();
+        const bankPaymentsList = supplierItem.querySelector('.bank-payments-list');
+        bankPaymentsList.innerHTML = '';  // Clear previous bank payments
+
+        for (const paymentId in bankPaymentsData) {
+            const payment = bankPaymentsData[paymentId];
+            const paymentItem = document.createElement('div');
+            paymentItem.innerHTML = `
+                <div><strong>Αριθμός Πληρωμής:</strong> ${payment.paymentNumber}</div>
+                <div><strong>Ποσό:</strong> ${payment.amount} €</div>
+            `;
+            bankPaymentsList.appendChild(paymentItem);
+        }
+    });
+}
+
+// Function to load credit invoices for the supplier
+function loadCreditInvoices(supplierId, supplierItem) {
+    const creditInvoicesRef = ref(getDatabase(), 'credit-invoices/' + supplierId);
+    onValue(creditInvoicesRef, snapshot => {
+        const creditInvoicesData = snapshot.val();
+        const creditInvoicesList = supplierItem.querySelector('.credit-invoices-list');
+        creditInvoicesList.innerHTML = '';  // Clear previous credit invoices
+
+        for (const invoiceId in creditInvoicesData) {
+            const invoice = creditInvoicesData[invoiceId];
+            const invoiceItem = document.createElement('div');
+            invoiceItem.innerHTML = `
+                <div><strong>Τιμολόγιο #:</strong> ${invoice.invoiceNumber}</div>
+                <div><strong>Περιγραφή:</strong> ${invoice.description}</div>
+                <div><strong>Ποσό:</strong> ${invoice.amount} €</div>
+            `;
+            creditInvoicesList.appendChild(invoiceItem);
+        }
+    });
+}
+
+// Initial loading of suppliers
+loadSuppliers();
+
     </script>
 </body>
 </html>
