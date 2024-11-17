@@ -126,23 +126,43 @@
 
     const supplierList = document.getElementById('supplier-list');
 
-    function loadSuppliers() {
-        const suppliersRef = ref(database, 'suppliers');
-        onValue(suppliersRef, snapshot => {
-            const data = snapshot.val();
-            supplierList.innerHTML = '';
-            for (const supplierName in data) {
-                const supplierItem = document.createElement('li');
-                supplierItem.innerHTML = `<div><strong>Προμηθευτής:</strong> ${supplierName}</div>`;
-                supplierItem.addEventListener('click', () => loadTransactions(supplierName));
-                supplierList.appendChild(supplierItem);
+  // Fetch Suppliers and Transactions from Firebase
+function loadSuppliers() {
+    const suppliersRef = ref(database, 'suppliers');
+    onValue(suppliersRef, snapshot => {
+        const data = snapshot.val();
+        supplierList.innerHTML = '';
+        for (const supplierName in data) {
+            const supplierItem = document.createElement('li');
+            supplierItem.innerHTML = `<div><strong>Προμηθευτής:</strong> ${supplierName}</div>`;
+            supplierItem.addEventListener('click', () => loadTransactions(supplierName));
+            supplierList.appendChild(supplierItem);
 
-                const transactionsList = document.createElement('div');
-                transactionsList.classList.add('transaction-list');
-                supplierItem.appendChild(transactionsList);
-            }
-        });
-    }
+            // Append transactions below each supplier
+            const transactionsList = document.createElement('div');
+            transactionsList.classList.add('transaction-list');
+            supplierItem.appendChild(transactionsList);
+
+            // Fetch invoices related to this supplier
+            const invoicesRef = ref(database, 'invoices');
+            onValue(invoicesRef, snapshot => {
+                const invoicesData = snapshot.val();
+                for (const invoiceId in invoicesData) {
+                    if (invoicesData[invoiceId].supplier === supplierName) {
+                        const invoiceItem = document.createElement('div');
+                        invoiceItem.classList.add('transaction-item');
+                        invoiceItem.innerHTML = `
+                            <div><strong>Αριθμός Τιμολογίου:</strong> ${invoicesData[invoiceId].invoiceNumber}</div>
+                            <div><strong>Περιγραφή:</strong> ${invoicesData[invoiceId].description}</div>
+                            <div><strong>Ποσό:</strong> ${invoicesData[invoiceId].amount} €</div>
+                        `;
+                        transactionsList.appendChild(invoiceItem);
+                    }
+                }
+            });
+        }
+    });
+}
 
     function loadTransactions(supplier) {
         const transactionsRef = ref(database, `transactions`);
