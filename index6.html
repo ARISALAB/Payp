@@ -3,65 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Συναλλαγές ανά Προμηθευτή</title>
+    <title>Καρτέλες Προμηθευτών</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="11.png" type="image/png">
     <style>
         body {
             font-family: Arial, sans-serif;
         }
 
-        .tabs-container {
-            display: flex;
-            flex-direction: column;
-            margin-top: 20px;
-        }
-
-        .tab-button {
-            background-color: #f8f9fa;
+        .supplier-card {
             border: 1px solid #ddd;
-            padding: 10px;
-            cursor: pointer;
-            margin-bottom: 5px;
-            border-radius: 5px;
-        }
-
-        .tab-button.active {
-            background-color: #343a40;
-            color: #fff;
-        }
-
-        .transactions-container {
-            display: none;
+            border-radius: 8px;
+            margin: 20px auto;
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            width: 80%;
             background-color: #f8f9fa;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .transactions-container.active {
+        .supplier-card h2 {
+            margin-bottom: 15px;
+            color: #343a40;
+        }
+
+        .transaction-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-item strong {
             display: block;
         }
 
-        .transaction {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        #total-per-supplier {
+            font-weight: bold;
+            color: #2ecc71;
         }
     </style>
 </head>
 <body>
-    <h1>Συναλλαγές ανά Προμηθευτή</h1>
-    <div class="tabs-container" id="tabs-container"></div>
-    <div id="transactions-section"></div>
+    <nav>
+        <!-- Μπορείτε να αντιγράψετε το υπάρχον μενού -->
+    </nav>
+
+    <h1>Καρτέλες Προμηθευτών</h1>
+    <div id="supplier-cards-container"></div>
+
+    <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
             authDomain: "speedy-bazaar-411110.firebaseapp.com",
@@ -75,77 +73,74 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        const supplierCardsContainer = document.getElementById('supplier-cards-container');
 
-        const tabsContainer = document.getElementById('tabs-container');
-        const transactionsSection = document.getElementById('transactions-section');
-
-        // Fetch transactions grouped by supplier
-        function loadTransactions() {
+        // Φόρτωση δεδομένων συναλλαγών
+        function loadSupplierTransactions() {
             const transactionsRef = ref(database, 'transactions');
-            onValue(transactionsRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    renderTabs(data);
-                }
+            onValue(transactionsRef, snapshot => {
+                const transactionsData = snapshot.val();
+                const groupedBySupplier = groupTransactionsBySupplier(transactionsData);
+                renderSupplierCards(groupedBySupplier);
             });
         }
 
-        // Render tabs and transactions
-        function renderTabs(data) {
-            tabsContainer.innerHTML = '';
-            transactionsSection.innerHTML = '';
+        // Ομαδοποίηση συναλλαγών ανά προμηθευτή
+        function groupTransactionsBySupplier(transactionsData) {
+            const grouped = {};
 
-            const suppliers = Object.keys(data);
+            for (const date in transactionsData) {
+                const transactionsOnDate = transactionsData[date];
+                for (const key in transactionsOnDate) {
+                    const transaction = transactionsOnDate[key];
+                    const supplier = transaction.supplier;
 
-            suppliers.forEach((supplier, index) => {
-                // Create tab button
-                const tabButton = document.createElement('button');
-                tabButton.textContent = supplier;
-                tabButton.classList.add('tab-button');
-                if (index === 0) tabButton.classList.add('active');
-                tabButton.addEventListener('click', () => {
-                    activateTab(supplier);
-                });
-                tabsContainer.appendChild(tabButton);
+                    if (!grouped[supplier]) {
+                        grouped[supplier] = [];
+                    }
 
-                // Create transactions container
-                const transactionsContainer = document.createElement('div');
-                transactionsContainer.id = `transactions-${supplier}`;
-                transactionsContainer.classList.add('transactions-container');
-                if (index === 0) transactionsContainer.classList.add('active');
-
-                const supplierTransactions = data[supplier];
-                for (const key in supplierTransactions) {
-                    const transaction = supplierTransactions[key];
-                    const transactionDiv = document.createElement('div');
-                    transactionDiv.classList.add('transaction');
-                    transactionDiv.innerHTML = `
-                        <p><strong>Ημερομηνία:</strong> ${transaction.date || 'N/A'}</p>
-                        <p><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</p>
-                        <p><strong>Περιγραφή:</strong> ${transaction.description}</p>
-                        <p><strong>Ποσό:</strong> ${transaction.amount} €</p>
-                    `;
-                    transactionsContainer.appendChild(transactionDiv);
+                    grouped[supplier].push({
+                        ...transaction,
+                        date
+                    });
                 }
+            }
 
-                transactionsSection.appendChild(transactionsContainer);
-            });
+            return grouped;
         }
 
-        // Activate tab
-        function activateTab(supplier) {
-            const allTabs = document.querySelectorAll('.tab-button');
-            const allContainers = document.querySelectorAll('.transactions-container');
+        // Δημιουργία καρτελών για προμηθευτές
+        function renderSupplierCards(groupedTransactions) {
+            supplierCardsContainer.innerHTML = '';
 
-            allTabs.forEach(tab => tab.classList.remove('active'));
-            allContainers.forEach(container => container.classList.remove('active'));
+            for (const supplier in groupedTransactions) {
+                const transactions = groupedTransactions[supplier];
+                const supplierCard = document.createElement('div');
+                supplierCard.classList.add('supplier-card');
 
-            document.querySelector(`.tab-button:contains(${supplier})`).classList.add('active');
-            document.getElementById(`transactions-${supplier}`).classList.add('active');
+                const totalAmount = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+                supplierCard.innerHTML = `
+                    <h2>Προμηθευτής: ${supplier}</h2>
+                    <div id="transactions-${supplier}">
+                        ${transactions.map(t => `
+                            <div class="transaction-item">
+                                <strong>Ημερομηνία:</strong> ${t.date}
+                                <strong>Τιμολόγιο:</strong> ${t.invoiceNumber}
+                                <strong>Περιγραφή:</strong> ${t.description}
+                                <strong>Ποσό:</strong> ${t.amount} €
+                            </div>
+                        `).join('')}
+                    </div>
+                    <p id="total-per-supplier">Συνολικό Ποσό: ${totalAmount.toFixed(2)} €</p>
+                `;
+
+                supplierCardsContainer.appendChild(supplierCard);
+            }
         }
 
-        // Load transactions on page load
-        loadTransactions();
+        // Φόρτωση αρχικών δεδομένων
+        loadSupplierTransactions();
     </script>
 </body>
 </html>
