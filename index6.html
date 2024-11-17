@@ -300,75 +300,87 @@ function updateSupplierItem() {
 }
 
 
-       function openTransactionModal(supplierName) {
+     function openTransactionModal(supplierName) {
     modal.style.display = "block";
     const tableBody = document.querySelector('#transaction-table tbody');
     tableBody.innerHTML = ''; // Clear previous data
 
     const transactionsRef = ref(database, 'transactions');
+    const paymentsRef = ref(database, 'bank-payments');
+    const invoicesRef = ref(database, 'credit-invoices');
 
+    let allTransactions = []; // Για να αποθηκεύσουμε όλες τις συναλλαγές και πληρωμές
+
+    // Συναλλαγές
     onValue(transactionsRef, snapshot => {
         const data = snapshot.val();
         for (const date in data) {
-            const formattedDate = formatDate(date); // Μετατροπή της ημερομηνίας
+            const formattedDate = formatDate(date);
             for (const transactionId in data[date]) {
                 const transaction = data[date][transactionId];
                 if (transaction.supplier === supplierName) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${formattedDate}</td>
-                        <td>€${parseFloat(transaction.amount).toFixed(2)}</td>
-                        <td>${transaction.description || 'Χωρίς Περιγραφή'}</td>
-                    `;
-                    tableBody.appendChild(row);
+                    allTransactions.push({
+                        date: formattedDate,
+                        amount: transaction.amount,
+                        type: 'Συναλλαγή'
+                    });
                 }
             }
         }
     });
-              // Συνάρτηση για μετατροπή ημερομηνίας
-function formatDate(dateString) {
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`; // Από YYYY-MM-DD σε DD/MM/YYYY
-}
-            onValue(paymentsRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const paymentId in data[date]) {
-                        if (data[date][paymentId].supplier === supplierName) {
-                            allTransactions.push({
-                                date: data[date][paymentId].date,
-                                amount: data[date][paymentId].amount,
-                                type: 'Πληρωμή'
-                            });
-                        }
-                    }
-                }
-            });
 
-            onValue(invoicesRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const invoiceId in data[date]) {
-                        if (data[date][invoiceId].supplier === supplierName) {
-                            allTransactions.push({
-                                date: data[date][invoiceId].date,
-                                amount: data[date][invoiceId].amount,
-                                type: 'Τιμολόγιο'
-                            });
-                        }
-                    }
+    // Πληρωμές μέσω Τράπεζας
+    onValue(paymentsRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const paymentId in data[date]) {
+                if (data[date][paymentId].supplier === supplierName) {
+                    allTransactions.push({
+                        date: formatDate(data[date][paymentId].date),
+                        amount: data[date][paymentId].amount,
+                        type: 'Πληρωμή μέσω Τράπεζας'
+                    });
                 }
-  
-                // Sort transactions by date and display in the table
-                allTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                allTransactions.forEach(transaction => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${transaction.date}</td><td>€${transaction.amount}</td><td>${transaction.type}</td>`;
-                    tableBody.appendChild(row);
-                });
-            });
+            }
         }
+    });
+
+    // Τιμολόγια
+    onValue(invoicesRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const invoiceId in data[date]) {
+                if (data[date][invoiceId].supplier === supplierName) {
+                    allTransactions.push({
+                        date: formatDate(data[date][invoiceId].date),
+                        amount: data[date][invoiceId].amount,
+                        type: 'Τιμολόγιο'
+                    });
+                }
+            }
+        }
+        // Όταν όλα τα δεδομένα φορτωθούν, τα εμφανίζουμε
+        allTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+        allTransactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${transaction.date}</td>
+                <td>€${parseFloat(transaction.amount).toFixed(2)}</td>
+                <td>${transaction.type}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    });
+}
+span.onclick = function() {
+    modal.style.display = "none";
+}
+
+window.onclick = function(event) {
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+}
 
         // Close modal when clicking on close button
         span.onclick = function() {
