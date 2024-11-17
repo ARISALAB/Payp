@@ -59,21 +59,25 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
+    // Firebase Config
     const firebaseConfig = {
-  apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-  authDomain: "speedy-bazaar-411110.firebaseapp.com",
-  databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-  projectId: "speedy-bazaar-411110",
-  storageBucket: "speedy-bazaar-411110.appspot.com",
-  messagingSenderId: "752456596300",
-  appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-  measurementId: "G-NGZHWDY6S5"
-};
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        databaseURL: "YOUR_DATABASE_URL",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
+    const auth = getAuth();
 
+    // DOM Elements
     const transactionForm = document.getElementById('transaction-form');
     const transactionDate = document.getElementById('transaction-date');
     const supplierInput = document.getElementById('supplier');
@@ -83,6 +87,15 @@
     const transactionList = document.getElementById('transaction-list');
     const totalAmountDisplay = document.getElementById('total-amount');
 
+    // Check Authentication
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            alert('Παρακαλώ συνδεθείτε για να συνεχίσετε!');
+            window.location.href = "index.html";
+        }
+    });
+
+    // Render Transactions
     function renderTransactionList(transactions) {
         transactionList.innerHTML = '';
         let totalAmount = 0;
@@ -108,6 +121,7 @@
         totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
     }
 
+    // Load Transactions
     function loadTransactions(date) {
         const transactionsRef = ref(database, `credit-invoices/${date}`);
         onValue(transactionsRef, (snapshot) => {
@@ -120,8 +134,15 @@
         });
     }
 
+    // Add Transaction
     function addTransaction(event) {
         event.preventDefault();
+
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Δεν έχετε συνδεθεί!');
+            return;
+        }
 
         const date = transactionDate.value;
         const supplier = supplierInput.value.trim();
@@ -149,16 +170,18 @@
         transactionDate.value = date; // Διατήρηση της ημερομηνίας
     }
 
+    // Delete Transaction
     function deleteTransaction(transactionId) {
         const date = transactionDate.value;
         const transactionRef = ref(database, `credit-invoices/${date}/${transactionId}`);
         remove(transactionRef);
     }
 
+    // Event Listeners
     transactionForm.addEventListener('submit', addTransaction);
     transactionDate.addEventListener('change', (e) => loadTransactions(e.target.value));
 
-    // Φόρτωση συναλλαγών κατά την αρχικοποίηση
+    // Load initial transactions
     const initialDate = new Date().toISOString().split('T')[0];
     transactionDate.value = initialDate;
     loadTransactions(initialDate);
