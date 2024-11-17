@@ -164,39 +164,44 @@ function loadSuppliers() {
     });
 }
 
-    function loadTransactions(supplier) {
-        const transactionsRef = ref(database, `transactions`);
-        onValue(transactionsRef, snapshot => {
-            const data = snapshot.val();
-            const supplierTransactions = [];
-            for (const date in data) {
-                for (const transactionId in data[date]) {
-                    if (data[date][transactionId].supplier === supplier) {
-                        supplierTransactions.push(data[date][transactionId]);
-                    }
-                }
+  // Λειτουργία για εμφάνιση των συναλλαγών όταν επιλέγεται ένας προμηθευτής
+function loadTransactions(supplier) {
+    const transactionsRef = ref(database, 'credit_invoices');
+    onValue(transactionsRef, snapshot => {
+        const data = snapshot.val();
+        const supplierTransactions = [];
+        
+        // Φιλτράρισμα των τιμολογίων από τον επιλεγμένο προμηθευτή
+        for (const transactionId in data) {
+            if (data[transactionId].supplier === supplier) {
+                supplierTransactions.push(data[transactionId]);
             }
+        }
 
-            const supplierItem = Array.from(supplierList.children).find(item => item.querySelector('div').textContent.includes(supplier));
-            const transactionListElement = supplierItem.querySelector('.transaction-list');
-            transactionListElement.innerHTML = '';
+        // Εμφάνιση των τιμολογίων στην καρτέλα του προμηθευτή
+        const supplierItem = Array.from(supplierList.children).find(item => 
+            item.querySelector('div').textContent.includes(supplier));
+        const transactionListElement = supplierItem.querySelector('.transaction-list');
+        transactionListElement.innerHTML = '';  // Καθαρισμός προηγούμενων τιμολογίων
 
-            supplierTransactions.forEach(transaction => {
-                const transactionItem = document.createElement('div');
-                transactionItem.classList.add('transaction-item');
-                transactionItem.innerHTML = `
-                    <div><strong>Αριθμός Τιμολογίου:</strong> ${transaction.invoiceNumber}</div>
-                    <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
-                    <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
-                    <button class="edit-btn">Επεξεργασία</button>
-                    <button class="delete-btn">Διαγραφή</button>
-                `;
-                transactionListElement.appendChild(transactionItem);
-            });
-
-            transactionListElement.style.display = 'flex';
+        supplierTransactions.forEach(transaction => {
+            const transactionItem = document.createElement('div');
+            transactionItem.classList.add('transaction-item');
+            transactionItem.innerHTML = `
+                <div><strong>Αριθμός Τιμολογίου:</strong> ${transaction.invoiceNumber}</div>
+                <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
+                <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
+                <button class="edit-btn">Επεξεργασία</button>
+                <button class="delete-btn">Διαγραφή</button>
+            `;
+            transactionListElement.appendChild(transactionItem);
         });
-    }
+
+        // Εμφάνιση της λίστας των συναλλαγών
+        transactionListElement.style.display = 'flex';
+    });
+}
+
 
     loadSuppliers();
   </script>
