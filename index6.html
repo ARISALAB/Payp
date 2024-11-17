@@ -3,22 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css"> <!-- Σύνδεσμος στο αρχείο CSS -->
+    <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="11.png" type="image/png">
-
-    <title>Εβδομαδιαία Αναφορά Πληρωμών</title>
-   
+    <title>Συναλλαγές Προμηθευτών</title>
 </head>
 <body>
-
-    <nav>
+  <nav>
         <img src="11.png" alt="Logo" class="logo">
-        <button class="menu-toggle">
-            &#9776;<br>Menu
-        </button>
+        <button class="menu-toggle">&#9776;<br>Menu</button>
         <div class="menu-items">
             <a href="index.html">Αρχική Σελίδα</a>
-    
             <div class="dropdown">
                 <a href="#">Συναλλαγές &#9662;</a>
                 <div class="dropdown-content">
@@ -27,10 +21,8 @@
                     <a href="index5.html">Πληρωμές Τράπεζας</a>
                 </div>
             </div>
-    
             <a href="index3.html">Καταγραφή Εσόδων</a>
             <a href="index2.html">Καρτέλες Προμηθευτών</a>
-    
             <div class="dropdown">
                 <a href="#">Αναφορές &#9662;</a>
                 <div class="dropdown-content">
@@ -40,254 +32,116 @@
                     <a href="index9.html">Ετήσια Αναφορά</a>
                 </div>
             </div>
-    
-            <div class="dropdown">
-                <a href="#">Προσωπικό &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
-                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
-                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία </a>
-                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
-                    
-
-                </div>
-            </div>
         </div>
     </nav>
-    
 
-    <div id="menuModal" class="modal">
-        <div class="modal-content">
+    <h1>Συναλλαγές Προμηθευτών</h1>
+    <ul class="supplier-list" id="supplier-list"></ul>
+
+    <!-- Modal -->
+    <div id="transaction-modal" class="modal1">
+        <div class="modal1-content">
             <span class="close">&times;</span>
-            <a href="index.html">Αρχική Σελίδα</a>
-            
-            <div class="dropdown">
-                <a href="#">Συναλλαγές</a>
-                <div class="dropdown-content">
-                    <a href="index1.html">Καταγραφή Εξόδων</a>
-                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
-                    <a href="index5.html">Πληρωμές Τράπεζας</a>
-                </div>
-            </div>
-            
-            <a href="index3.html">Καταγραφή Εσόδων</a>
-            <a href="index2.html">Καρτέλες Προμηθευτών</a>
-            
-            <div class="dropdown">
-                <a href="#">Αναφορές</a>
-                <div class="dropdown-content">
-                    <a href="index7.html">Ημερήσια Αναφορά</a>
-                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
-                    <a href="index8.html">Μηνιαία Αναφορά</a>
-                    <a href="index9.html">Ετήσια Αναφορά</a>
-                </div>
-            </div>
-            
-            <!-- Νέα ενότητα για Προσωπικό -->
-            <div class="dropdown">
-                <a href="#">Προσωπικό &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="employee-management.html">Καταγραφή Προσωπικού</a>
-                    <a href="salary.html">Καταγραφή Μισθοδοσίας</a>
-                    <a href="weekly-salary.html">Εβδομαδιαία Μισθοδοσία</a>
-                    <a href="salary-report.html">Αναφορά Μισθοδοσίας</a>
-                </div>
-            </div>
-            
+            <h2 id="supplier-name">Συναλλαγές Προμηθευτή</h2>
+            <table id="transaction-table">
+                <thead>
+                    <tr>
+                        <th>Ημερομηνία</th>
+                        <th>Αριθμός Τιμολογίου</th>
+                        <th>Τιμολόγια Επί Πιστώσει (€)</th>
+                        <th>Καταθέσεις (€)</th>
+                        <th>Υπόλοιπο (€)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
-    <h1>Εβδομαδιαία Αναφορά Πληρωμών</h1>
-    <form id="week-form">
-        <label for="start-date">Επιλέξτε Εβδομάδα (Ημερομηνία έναρξης)</label>
-        <input type="date" id="start-date" required>
-        <input type="submit" value="Προβολή Αναφοράς">
-    </form>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-    <table id="weekly-report">
-        <thead>
-            <tr>
-                <th>Ημερομηνία</th>
-                <th>Ταμείο (€)</th>
-                <th>Έσοδα από Κάρτα (€)</th>
-                <th>Έσοδα από Μετρητά (€)</th> <!-- Νέα Στήλη -->
-                <th>Πληρωμές (€)</th>
-                <th>Υπόλοιπο Μετρητών (€)</th> <!-- Νέα Στήλη -->
-                <th>Τιμολόγια Επί Πιστώσει (€)</th>
-                <th>Καταθέσεις (€)</th>
-            </tr>
-        </thead>
-        
-        
-        <tbody>
-            <!-- Rows will be dynamically added here -->
-        </tbody>
-    </table>
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-    <p id="total-cash-week">Ταμείο Εβδομάδας: 0.00 €</p>
-    <p id="total-card-income">Τραπεζικά Έσοδα: 0.00 €</p>
-    <p id="total-cash-balance">Μετρητά: 0.00 €</p>
-    <p id="total-credit-invoices">Εκκρεμότητες: 0.00 €</p>
-    
-    
-    <footer>&copy; 2024 Εβδομαδιαία Αναφορά Πληρωμών</footer>
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const weekForm = document.getElementById('week-form');
-            const startDateInput = document.getElementById('start-date');
-            const weeklyReportTableBody = document.querySelector('#weekly-report tbody');
-            const totalWeeklyAmountDisplay = document.getElementById('total-weekly-amount');
+        const supplierList = document.getElementById('supplier-list');
+        const transactionModal = document.getElementById('transaction-modal');
+        const transactionTableBody = document.querySelector('#transaction-table tbody');
+        const supplierNameDisplay = document.getElementById('supplier-name');
+        const closeModal = document.querySelector('.close');
 
-            // Data directories
-            const paymentDir = 'payments';
-            const revenueDir = 'revenueData';
-            const creditInvoicesDir = 'credit-invoices';
-            const depositDir = 'bank-payments';
+        function renderSuppliers(suppliers) {
+            supplierList.innerHTML = '';
+            Object.entries(suppliers).forEach(([supplier, data]) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'supplier-item';
+                const balance = (data.creditAmount || 0) - (data.deposits || 0);
 
-            // Load stored data
-            let payments = JSON.parse(localStorage.getItem(paymentDir)) || {};
-            let revenueData = JSON.parse(localStorage.getItem(revenueDir)) || {};
-            let creditInvoices = JSON.parse(localStorage.getItem(creditInvoicesDir)) || {};
-            let deposits = JSON.parse(localStorage.getItem(depositDir)) || {};
+                listItem.innerHTML = `
+                    <strong>${supplier}</strong><br>
+                    Τιμολόγια Επί Πιστώσει: ${(data.creditAmount || 0).toFixed(2)} €<br>
+                    Καταθέσεις: ${(data.deposits || 0).toFixed(2)} €<br>
+                    Υπόλοιπο: ${balance.toFixed(2)} €
+                `;
 
-            function getWeekRange(startDate) {
-                const start = new Date(startDate);
-                const end = new Date(start);
-                end.setDate(start.getDate() + 6);
-                return { start, end };
-            }
-
-            function formatDateString(date) {
-                return date.toISOString().split('T')[0];
-            }
-
-            function renderWeeklyReport(weekData) {
-    weeklyReportTableBody.innerHTML = '';
-
-    let totalCashIncome = 0;
-    let totalCardIncome = 0;
-    let totalCashIncomeFromCash = 0;
-    let totalPayments = 0;
-    let totalCashBalance = 0;
-    let totalCreditInvoices = 0;
-    let totalDeposits = 0;
-
-    weekData.forEach(data => {
-        const cashIncome = data.cashIncome;
-        const cardIncome = data.cardIncome;
-        const payments = data.payments;
-
-        const cashIncomeFromCash = cashIncome - cardIncome; // Υπολογισμός Έσοδα από Μετρητά
-        const cashBalance = cashIncome - cardIncome - payments; // Υπολογισμός Υπόλοιπο Μετρητών
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${data.date}</td>
-            <td>${cashIncome.toFixed(2)}</td>
-            <td>${cardIncome.toFixed(2)}</td>
-            <td>${cashIncomeFromCash.toFixed(2)}</td> <!-- Νέα Στήλη -->
-            <td>${payments.toFixed(2)}</td>
-            <td>${cashBalance.toFixed(2)}</td> <!-- Νέα Στήλη -->
-            <td>${data.creditInvoices.toFixed(2)}</td>
-            <td>${data.deposits.toFixed(2)}</td>
-        `;
-        weeklyReportTableBody.appendChild(row);
-
-        // Συγκέντρωση των συνολικών ποσών
-        totalCashIncome += cashIncome;
-        totalCardIncome += cardIncome;
-        totalCashIncomeFromCash += cashIncomeFromCash;
-        totalPayments += payments;
-        totalCashBalance += cashBalance;
-        totalCreditInvoices += data.creditInvoices;
-        totalDeposits += data.deposits;
-    });
-
-    // Δημιουργία γραμμής συνολικών
-    const totalRow = document.createElement('tr');
-    totalRow.innerHTML = `
-        <td><strong>Σύνολο:</strong></td>
-        <td><strong>${totalCashIncome.toFixed(2)}</strong></td>
-        <td><strong>${totalCardIncome.toFixed(2)}</strong></td>
-        <td><strong>${totalCashIncomeFromCash.toFixed(2)}</strong></td>
-        <td><strong>${totalPayments.toFixed(2)}</strong></td>
-        <td><strong>${totalCashBalance.toFixed(2)}</strong></td>
-        <td><strong>${totalCreditInvoices.toFixed(2)}</strong></td>
-        <td><strong>${totalDeposits.toFixed(2)}</strong></td>
-    `;
-    weeklyReportTableBody.appendChild(totalRow);
-
-    // Ενημέρωση των συνολικών ποσών
-    document.getElementById('total-cash-week').textContent = `Ταμείο Εβδομάδας: ${totalCashIncome.toFixed(2)} €`;
-    document.getElementById('total-card-income').textContent = `Τραπεζικά Έσοδα: ${totalCardIncome.toFixed(2)} €`;
-    document.getElementById('total-cash-balance').textContent = `Μετρητά: ${totalCashBalance.toFixed(2)} €`;
-    document.getElementById('total-credit-invoices').textContent = `Εκκρεμότητες: ${totalCreditInvoices.toFixed(2)} €`;
-}
-
-
-
-            function loadWeeklyReport(startDate) {
-                const { start, end } = getWeekRange(startDate);
-                const weekData = [];
-
-                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-                    const dateStr = formatDateString(d);
-
-                    const cashIncome = revenueData[dateStr]?.cash || 0;
-                    const cardIncome = revenueData[dateStr]?.card || 0;
-                    const paymentsForDate = payments[dateStr] || [];
-                    const creditInvoicesForDate = creditInvoices[dateStr] || [];
-                    const depositsForDate = deposits[dateStr] || [];
-
-                    const totalPayments = paymentsForDate.reduce((total, payment) => total + payment.amount, 0);
-                    const totalCreditInvoices = creditInvoicesForDate.reduce((total, invoice) => total + invoice.amount, 0);
-                    const totalDeposits = depositsForDate.reduce((total, deposit) => total + deposit.amount, 0);
-
-                    weekData.push({
-                        date: dateStr,
-                        cashIncome,
-                        cardIncome,
-                        payments: totalPayments,
-                        creditInvoices: totalCreditInvoices,
-                        deposits: totalDeposits
-                    });
-                }
-
-                renderWeeklyReport(weekData);
-            }
-
-            weekForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const startDate = startDateInput.value;
-                loadWeeklyReport(startDate);
+                listItem.addEventListener('click', () => openModal(supplier, data));
+                supplierList.appendChild(listItem);
             });
-        });
-    </script>
-    <script>
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            document.getElementById('menuModal').style.display = 'flex';
-        });
-        
-        document.querySelector('.close').addEventListener('click', function() {
-            document.getElementById('menuModal').style.display = 'none';
-        });
-        
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('menuModal')) {
-                document.getElementById('menuModal').style.display = 'none';
-            }
         }
-        
-        // Κώδικας για την απόκρυψη του toggle menu όταν μεγαλώνει η οθόνη
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                document.getElementById('menuModal').style.display = 'none';
+
+        function openModal(supplier, data) {
+            supplierNameDisplay.textContent = `Συναλλαγές Προμηθευτή: ${supplier}`;
+            transactionTableBody.innerHTML = '';
+
+            if (data.transactions) {
+                data.transactions.forEach((transaction) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>${transaction.invoiceNumber || '-'}</td>
+                        <td>${transaction.type === 'credit' ? transaction.amount.toFixed(2) : '-'}</td>
+                        <td>${transaction.type === 'deposit' ? transaction.amount.toFixed(2) : '-'}</td>
+                        <td>${transaction.balance.toFixed(2)}</td>
+                    `;
+                    transactionTableBody.appendChild(row);
+                });
+            }
+
+            transactionModal.style.display = 'block';
+        }
+
+        function fetchSuppliersAndTransactions() {
+            const suppliersRef = ref(database, 'suppliers');
+            onValue(suppliersRef, (snapshot) => {
+                const suppliers = snapshot.val() || {};
+                renderSuppliers(suppliers);
+            });
+        }
+
+        // Κλείσιμο του modal
+        closeModal.addEventListener('click', () => {
+            transactionModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === transactionModal) {
+                transactionModal.style.display = 'none';
             }
         });
-        
-        </script>
-        
-        
+
+        // Φόρτωση προμηθευτών και συναλλαγών από Firebase
+        fetchSuppliersAndTransactions();
+    </script>
 </body>
 </html>
