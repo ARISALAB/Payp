@@ -299,33 +299,39 @@ function updateSupplierItem() {
     });
 }
 
+function openTransactionModal(supplierName) {
+    modal.style.display = "block";
+    const tableBody = document.querySelector('#transaction-table tbody');
+    tableBody.innerHTML = ''; // Clear previous data
 
-        function openTransactionModal(supplierName) {
-            modal.style.display = "block";
-            const tableBody = document.querySelector('#transaction-table tbody');
-            tableBody.innerHTML = ''; // Clear previous data
+    const transactionsRef = ref(database, 'transactions');
 
-            const transactionsRef = ref(database, 'transactions');
-            const paymentsRef = ref(database, 'bank-payments');
-            const invoicesRef = ref(database, 'credit-invoices');
-
-            // Fetch and display all transactions, payments, and invoices for the supplier
-            let allTransactions = [];
-
-            onValue(transactionsRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const transactionId in data[date]) {
-                        if (data[date][transactionId].supplier === supplierName) {
-                            allTransactions.push({
-                                date: data[date][transactionId].date,
-                                amount: data[date][transactionId].amount,
-                                type: 'Συναλλαγή'
-                            });
-                        }
-                    }
+    onValue(transactionsRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            const formattedDate = formatDate(date); // Μετατροπή της ημερομηνίας
+            for (const transactionId in data[date]) {
+                const transaction = data[date][transactionId];
+                if (transaction.supplier === supplierName) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>€${parseFloat(transaction.amount).toFixed(2)}</td>
+                        <td>${transaction.description || 'Χωρίς Περιγραφή'}</td>
+                    `;
+                    tableBody.appendChild(row);
                 }
-            });
+            }
+        }
+    });
+}
+
+// Συνάρτηση για μετατροπή ημερομηνίας
+function formatDate(dateString) {
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`; // Από YYYY-MM-DD σε DD/MM/YYYY
+}
+
 
             onValue(paymentsRef, snapshot => {
                 const data = snapshot.val();
