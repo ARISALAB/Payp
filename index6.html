@@ -3,192 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Συναλλαγές Ανά Προμηθευτή</title>
+    <title>Συναλλαγές ανά Προμηθευτή</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="11.png" type="image/png">
     <style>
-        #supplier-transaction-list {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        #supplier-transaction-list li {
+        .supplier-card {
             background-color: #f8f9fa;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
-            width: 80%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            margin: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
         }
-
-        #supplier-transaction-list li::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 5px;
-            background-color: #343a40;
-        }
-
-        #supplier-transaction-list li div {
+        .supplier-card h2 {
             margin-bottom: 10px;
         }
-
-        button {
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+        .transaction-list {
+            margin-top: 10px;
         }
-
-        button.delete-btn {
-            background-color: #e74c3c;
-        }
-
-        button.edit-btn {
-            background-color: #f39c12;
-        }
-
-        button:hover {
-            opacity: 0.8;
+        .transaction-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-
-    <nav>
-        <img src="11.png" alt="Logo" class="logo">
-        <button class="menu-toggle">
-            &#9776;<br>Menu
-        </button>
-        <div class="menu-items">
-            <a href="index.html">Αρχική Σελίδα</a>
-            <div class="dropdown">
-                <a href="#">Συναλλαγές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index1.html">Καταγραφή Εξόδων</a>
-                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
-                    <a href="index5.html">Πληρωμές Τράπεζας</a>
-                </div>
-            </div>
-            <a href="index3.html">Καταγραφή Εσόδων</a>
-            <a href="index2.html">Καρτέλες Προμηθευτών</a>
-            <div class="dropdown">
-                <a href="#">Αναφορές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index7.html">Ημερήσια Αναφορά</a>
-                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
-                    <a href="index8.html">Μηνιαία Αναφορά</a>
-                    <a href="index9.html">Ετήσια Αναφορά</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <h1>Συναλλαγές Ανά Προμηθευτή</h1>
-    
-    <div id="supplier-list">
-        <h2>Επιλέξτε Προμηθευτή</h2>
-        <select id="supplier-select">
-            <option value="">Επιλέξτε Προμηθευτή</option>
-        </select>
-        <ul id="supplier-transaction-list"></ul>
-    </div>
+    <h1>Συναλλαγές ανά Προμηθευτή</h1>
+    <div id="supplier-cards-container"></div>
 
     <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-    import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-        authDomain: "speedy-bazaar-411110.firebaseapp.com",
-        databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-        projectId: "speedy-bazaar-411110",
-        storageBucket: "speedy-bazaar-411110.appspot.com",
-        messagingSenderId: "752456596300",
-        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-        measurementId: "G-NGZHWDY6S5"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore(app);
-    const database = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore(app);
+        const database = getDatabase(app);
 
-    // Check User Authentication
-    onAuthStateChanged(auth, user => {
-        if (!user) {
-            alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
-            window.location.href = 'index.html';
-        }
-    });
-
-    const supplierSelect = document.getElementById('supplier-select');
-    const supplierTransactionList = document.getElementById('supplier-transaction-list');
-
-    // Fetch Suppliers from Firebase
-    function loadSuppliers() {
-        const suppliersRef = ref(database, 'suppliers');
-        onValue(suppliersRef, snapshot => {
-            const data = snapshot.val();
-            supplierSelect.innerHTML = '<option value="">Επιλέξτε Προμηθευτή</option>'; // Reset options
-            for (const supplierName in data) {
-                const option = document.createElement('option');
-                option.value = supplierName;
-                option.textContent = supplierName;
-                supplierSelect.appendChild(option);
+        // Check User Authentication
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
+                window.location.href = 'index.html';
             }
         });
-    }
 
-    // Fetch Transactions for selected supplier
-    function loadTransactionsForSupplier(supplierName) {
-        const transactionsRef = ref(database, 'transactions');
-        onValue(transactionsRef, snapshot => {
-            const data = snapshot.val();
-            const filteredTransactions = Object.values(data).filter(transaction => transaction.supplier === supplierName);
-            renderTransactionList(filteredTransactions);
-        });
-    }
-
-    // Render Transactions
-    function renderTransactionList(transactions) {
-        supplierTransactionList.innerHTML = '';
-        transactions.forEach(transaction => {
-            const transactionItem = document.createElement('li');
-            transactionItem.innerHTML = `
-                <div><strong>Προμηθευτής:</strong> ${transaction.supplier}</div>
-                <div><strong>Τιμολόγιο:</strong> ${transaction.invoiceNumber}</div>
-                <div><strong>Περιγραφή:</strong> ${transaction.description}</div>
-                <div><strong>Ποσό:</strong> ${transaction.amount} €</div>
-            `;
-            supplierTransactionList.appendChild(transactionItem);
-        });
-    }
-
-    // Event listener for selecting a supplier
-    supplierSelect.addEventListener('change', (e) => {
-        const selectedSupplier = e.target.value;
-        if (selectedSupplier) {
-            loadTransactionsForSupplier(selectedSupplier);
-        } else {
-            supplierTransactionList.innerHTML = '';
+        // Fetch Transactions grouped by Supplier
+        function loadTransactionsBySupplier() {
+            const transactionsRef = ref(database, 'transactions');
+            onValue(transactionsRef, snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    const suppliers = {};
+                    for (const [key, transaction] of Object.entries(data)) {
+                        if (!suppliers[transaction.supplier]) {
+                            suppliers[transaction.supplier] = [];
+                        }
+                        suppliers[transaction.supplier].push(transaction);
+                    }
+                    renderSupplierCards(suppliers);
+                }
+            });
         }
-    });
 
-    // Load suppliers when the page loads
-    loadSuppliers();
+        // Render Supplier Cards
+        function renderSupplierCards(suppliers) {
+            const container = document.getElementById('supplier-cards-container');
+            container.innerHTML = '';
 
-</script>
+            for (const supplier in suppliers) {
+                const supplierCard = document.createElement('div');
+                supplierCard.className = 'supplier-card';
+                supplierCard.innerHTML = `<h2>Προμηθευτής: ${supplier}</h2>`;
+                
+                const transactionList = document.createElement('div');
+                transactionList.className = 'transaction-list';
+
+                suppliers[supplier].forEach(transaction => {
+                    const transactionItem = document.createElement('div');
+                    transactionItem.className = 'transaction-item';
+                    transactionItem.innerHTML = `
+                        <p><strong>Αριθμός Τιμολογίου:</strong> ${transaction.invoiceNumber}</p>
+                        <p><strong>Περιγραφή:</strong> ${transaction.description}</p>
+                        <p><strong>Ποσό:</strong> ${transaction.amount} €</p>
+                    `;
+                    transactionList.appendChild(transactionItem);
+                });
+
+                supplierCard.appendChild(transactionList);
+                container.appendChild(supplierCard);
+            }
+        }
+
+        // Load transactions on page load
+        loadTransactionsBySupplier();
+    </script>
 </body>
 </html>
