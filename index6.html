@@ -1,144 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suppliers and Transactions</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-    </style>
+  <title>Firebase Realtime Database Example</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      // Your Firebase config here
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Get a reference to the database
+    const dbRef = database.ref();
+
+    // Listen for changes in the database
+    dbRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      // Display the data in the HTML
+      const dataDiv = document.getElementById('data');
+      dataDiv.innerHTML = '';
+      for (const key in data) {
+        const itemDiv = document.createElement('div');
+        itemDiv.innerHTML = `
+          <h2>${key}</h2>
+          <ul>
+            ${Object.entries(data[key]).map(([key2, value]) => `<li>${key2}: ${value}</li>`).join('')}
+          </ul>
+        `;
+        dataDiv.appendChild(itemDiv);
+      }
+    });
+  </script>
 </head>
 <body>
-    <h1>Suppliers and Transactions</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Type</th>
-                <th>Name / Description</th>
-                <th>Amount</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody id="data-table">
-            <!-- Τα δεδομένα θα προστεθούν εδώ δυναμικά -->
-        </tbody>
-    </table>
-
-    <script type="module">
-        // Εισαγωγή των απαραίτητων Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js";
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-            authDomain: "speedy-bazaar-411110.firebaseapp.com",
-            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-            projectId: "speedy-bazaar-411110",
-            storageBucket: "speedy-bazaar-411110.appspot.com",
-            messagingSenderId: "752456596300",
-            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-            measurementId: "G-NGZHWDY6S5"
-        };
-
-        // Αρχικοποίηση Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Αναφορές στις διαδρομές
-        const suppliersRef = ref(database, 'suppliers');
-        const paymentsRef = ref(database, 'bank-payments');
-        const invoicesRef = ref(database, 'credit-invoices');
-
-        // Συνδυασμός δεδομένων από όλες τις διαδρομές
-        const allData = [];
-
-        // Ανάκτηση προμηθευτών
-        onValue(suppliersRef, (snapshot) => {
-            const suppliers = snapshot.val();
-            if (suppliers) {
-                for (const key in suppliers) {
-                    allData.push({
-                        type: "Supplier",
-                        name: suppliers[key].supplierName,
-                        amount: "-",
-                        date: "-"
-                    });
-                }
-            }
-            renderTable();
-        });
-
-        // Ανάκτηση πληρωμών
-        onValue(paymentsRef, (snapshot) => {
-            const payments = snapshot.val();
-            if (payments) {
-                for (const date in payments) {
-                    for (const key in payments[date]) {
-                        allData.push({
-                            type: "Payment",
-                            name: payments[date][key].supplier,
-                            amount: payments[date][key].amount,
-                            date: payments[date][key].date
-                        });
-                    }
-                }
-            }
-            renderTable();
-        });
-
-        // Ανάκτηση τιμολογίων
-        onValue(invoicesRef, (snapshot) => {
-            const invoices = snapshot.val();
-            if (invoices) {
-                for (const date in invoices) {
-                    for (const key in invoices[date]) {
-                        allData.push({
-                            type: "Invoice",
-                            name: invoices[date][key].description,
-                            amount: invoices[date][key].amount,
-                            date: invoices[date][key].date
-                        });
-                    }
-                }
-            }
-            renderTable();
-        });
-
-        // Συνάρτηση εμφάνισης δεδομένων στον πίνακα
-        const renderTable = () => {
-            const dataTable = document.getElementById('data-table');
-            dataTable.innerHTML = ""; // Καθαρισμός πίνακα
-
-            allData.forEach((entry, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${entry.type}</td>
-                    <td>${entry.name}</td>
-                    <td>${entry.amount}</td>
-                    <td>${entry.date}</td>
-                `;
-                dataTable.appendChild(row);
-            });
-        };
-    </script>
+  <h1>Firebase Realtime Database Example</h1>
+  <div id="data"></div>
 </body>
 </html>
