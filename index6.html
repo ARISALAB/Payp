@@ -8,54 +8,8 @@
     <title>Συναλλαγές Προμηθευτών</title>
 </head>
 <body>
-  <nav>
-        <img src="11.png" alt="Logo" class="logo">
-        <button class="menu-toggle">&#9776;<br>Menu</button>
-        <div class="menu-items">
-            <a href="index.html">Αρχική Σελίδα</a>
-            <div class="dropdown">
-                <a href="#">Συναλλαγές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index1.html">Καταγραφή Εξόδων</a>
-                    <a href="index4.html">Τιμολόγια Επί Πιστώσει</a>
-                    <a href="index5.html">Πληρωμές Τράπεζας</a>
-                </div>
-            </div>
-            <a href="index3.html">Καταγραφή Εσόδων</a>
-            <a href="index2.html">Καρτέλες Προμηθευτών</a>
-            <div class="dropdown">
-                <a href="#">Αναφορές &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="index7.html">Ημερήσια Αναφορά</a>
-                    <a href="index6.html">Εβδομαδιαία Αναφορά</a>
-                    <a href="index8.html">Μηνιαία Αναφορά</a>
-                    <a href="index9.html">Ετήσια Αναφορά</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
     <h1>Συναλλαγές Προμηθευτών</h1>
     <ul class="supplier-list" id="supplier-list"></ul>
-
-    <!-- Modal -->
-    <div id="transaction-modal" class="modal1">
-        <div class="modal1-content">
-            <span class="close">&times;</span>
-            <h2 id="supplier-name">Συναλλαγές Προμηθευτή</h2>
-            <table id="transaction-table">
-                <thead>
-                    <tr>
-                        <th>Ημερομηνία</th>
-                        <th>Αριθμός Τιμολογίου</th>
-                        <th>Περιγραφή</th>
-                        <th>Ποσό (€)</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -76,18 +30,19 @@
         const database = getDatabase(app);
 
         const supplierList = document.getElementById('supplier-list');
-        const transactionModal = document.getElementById('transaction-modal');
-        const transactionTableBody = document.querySelector('#transaction-table tbody');
-        const supplierNameDisplay = document.getElementById('supplier-name');
-        const closeModal = document.querySelector('.close');
 
         function fetchTransactions() {
             const transactionsRef = ref(database, 'transactions');
             onValue(transactionsRef, (snapshot) => {
-                const transactionsByDate = snapshot.val() || {};
+                const transactionsByDate = snapshot.val();
+                if (!transactionsByDate) {
+                    supplierList.innerHTML = '<li>Δεν υπάρχουν δεδομένα</li>';
+                    return;
+                }
+
                 const supplierData = {};
 
-                // Ομαδοποίηση συναλλαγών ανά προμηθευτή
+                // Διασχίζουμε τα δεδομένα και τα οργανώνουμε ανά προμηθευτή
                 Object.entries(transactionsByDate).forEach(([date, transactions]) => {
                     Object.entries(transactions).forEach(([id, transaction]) => {
                         const supplier = transaction.supplier;
@@ -106,7 +61,6 @@
             supplierList.innerHTML = '';
             Object.entries(suppliers).forEach(([supplier, transactions]) => {
                 const listItem = document.createElement('li');
-                listItem.className = 'supplier-item';
                 const totalAmount = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0);
 
                 listItem.innerHTML = `
@@ -114,38 +68,9 @@
                     Συνολικό Ποσό Συναλλαγών: ${totalAmount.toFixed(2)} €
                 `;
 
-                listItem.addEventListener('click', () => openModal(supplier, transactions));
                 supplierList.appendChild(listItem);
             });
         }
-
-        function openModal(supplier, transactions) {
-            supplierNameDisplay.textContent = `Συναλλαγές Προμηθευτή: ${supplier}`;
-            transactionTableBody.innerHTML = '';
-
-            transactions.forEach((transaction) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${transaction.date}</td>
-                    <td>${transaction.invoiceNumber || '-'}</td>
-                    <td>${transaction.description || '-'}</td>
-                    <td>${transaction.amount.toFixed(2)} €</td>
-                `;
-                transactionTableBody.appendChild(row);
-            });
-
-            transactionModal.style.display = 'block';
-        }
-
-        closeModal.addEventListener('click', () => {
-            transactionModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === transactionModal) {
-                transactionModal.style.display = 'none';
-            }
-        });
 
         // Φόρτωση συναλλαγών από Firebase
         fetchTransactions();
