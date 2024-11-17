@@ -39,90 +39,95 @@
   <div class="tabs" id="tabs"></div>
   <div id="tabs-content"></div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-  <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-  authDomain: "speedy-bazaar-411110.firebaseapp.com",
-  databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-  projectId: "speedy-bazaar-411110",
-  storageBucket: "speedy-bazaar-411110.appspot.com",
-  messagingSenderId: "752456596300",
-  appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-  measurementId: "G-NGZHWDY6S5"
-    };
+ <script type="module">
+  // Firebase configuration
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+  
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
 
-    database.ref('transactions').on('value', (snapshot) => {
-      const data = snapshot.val();
-      const suppliersData = {};
+  // Ανάκτηση δεδομένων
+  const transactionsRef = ref(database, 'transactions');
+  onValue(transactionsRef, (snapshot) => {
+    const data = snapshot.val();
+    const suppliersData = {};
 
-      for (const id in data) {
-        const transaction = data[id];
-        const supplierName = transaction.supplier;
-        const amount = transaction.amount;
+    for (const id in data) {
+      const transaction = data[id];
+      const supplierName = transaction.supplier;
+      const amount = transaction.amount;
 
-        if (!suppliersData[supplierName]) {
-          suppliersData[supplierName] = {
-            totalAmount: 0,
-            transactions: []
-          };
-        }
-        suppliersData[supplierName].totalAmount += amount;
-        suppliersData[supplierName].transactions.push(transaction);
+      if (!suppliersData[supplierName]) {
+        suppliersData[supplierName] = {
+          totalAmount: 0,
+          transactions: []
+        };
       }
-
-      displaySuppliers(suppliersData);
-    });
-
-    function displaySuppliers(suppliersData) {
-      const tabsContainer = document.getElementById('tabs');
-      const contentContainer = document.getElementById('tabs-content');
-
-      tabsContainer.innerHTML = '';
-      contentContainer.innerHTML = '';
-
-      let tabIndex = 0;
-      for (const supplier in suppliersData) {
-        const tabButton = document.createElement('button');
-        tabButton.textContent = supplier;
-        tabButton.setAttribute('data-index', tabIndex);
-        tabButton.addEventListener('click', function() {
-          const allTabs = document.querySelectorAll('.tab');
-          allTabs.forEach(tab => tab.classList.remove('active'));
-          document.getElementById('tab-' + tabIndex).classList.add('active');
-        });
-
-        tabsContainer.appendChild(tabButton);
-
-        const tabContent = document.createElement('div');
-        tabContent.id = 'tab-' + tabIndex;
-        tabContent.classList.add('tab');
-
-        const supplierData = suppliersData[supplier];
-        const totalAmount = supplierData.totalAmount;
-        const transactions = supplierData.transactions;
-
-        let transactionList = '<ul>';
-        transactions.forEach(tx => {
-          transactionList += `<li>Invoice: ${tx.invoiceNumber}, Amount: ${tx.amount}, Description: ${tx.description}</li>`;
-        });
-        transactionList += '</ul>';
-
-        tabContent.innerHTML = `
-          <div class="card">
-            <h3>Total Amount: ${totalAmount}</h3>
-            ${transactionList}
-          </div>
-        `;
-
-        contentContainer.appendChild(tabContent);
-        tabIndex++;
-      }
+      suppliersData[supplierName].totalAmount += amount;
+      suppliersData[supplierName].transactions.push(transaction);
     }
-  </script>
+
+    displaySuppliers(suppliersData);
+  });
+
+  function displaySuppliers(suppliersData) {
+    const tabsContainer = document.getElementById('tabs');
+    const contentContainer = document.getElementById('tabs-content');
+
+    tabsContainer.innerHTML = '';
+    contentContainer.innerHTML = '';
+
+    let tabIndex = 0;
+    for (const supplier in suppliersData) {
+      const tabButton = document.createElement('button');
+      tabButton.textContent = supplier;
+      tabButton.setAttribute('data-index', tabIndex);
+      tabButton.addEventListener('click', function() {
+        const allTabs = document.querySelectorAll('.tab');
+        allTabs.forEach(tab => tab.classList.remove('active'));
+        document.getElementById('tab-' + tabIndex).classList.add('active');
+      });
+
+      tabsContainer.appendChild(tabButton);
+
+      const tabContent = document.createElement('div');
+      tabContent.id = 'tab-' + tabIndex;
+      tabContent.classList.add('tab');
+
+      const supplierData = suppliersData[supplier];
+      const totalAmount = supplierData.totalAmount;
+      const transactions = supplierData.transactions;
+
+      let transactionList = '<ul>';
+      transactions.forEach(tx => {
+        transactionList += `<li>Invoice: ${tx.invoiceNumber}, Amount: ${tx.amount}, Description: ${tx.description}</li>`;
+      });
+      transactionList += '</ul>';
+
+      tabContent.innerHTML = `
+        <div class="card">
+          <h3>Total Amount: ${totalAmount}</h3>
+          ${transactionList}
+        </div>
+      `;
+
+      contentContainer.appendChild(tabContent);
+      tabIndex++;
+    }
+  }
+</script>
+
 </body>
 </html>
