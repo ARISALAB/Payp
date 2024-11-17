@@ -81,6 +81,7 @@
         const supplierNameDisplay = document.getElementById('supplier-name');
         const closeModal = document.querySelector('.close');
 
+        // Διαβάζει τις συναλλαγές από το Firebase και ομαδοποιεί ανά προμηθευτή
         function fetchTransactions() {
             const transactionsRef = ref(database, 'transactions');
             onValue(transactionsRef, (snapshot) => {
@@ -102,6 +103,7 @@
             });
         }
 
+        // Εμφάνιση λίστας προμηθευτών
         function renderSupplierList(suppliers) {
             supplierList.innerHTML = '';
             Object.entries(suppliers).forEach(([supplier, transactions]) => {
@@ -119,6 +121,7 @@
             });
         }
 
+        // Άνοιγμα modal για έναν προμηθευτή
         function openModal(supplier, transactions) {
             supplierNameDisplay.textContent = `Συναλλαγές Προμηθευτή: ${supplier}`;
             transactionTableBody.innerHTML = '';
@@ -137,6 +140,7 @@
             transactionModal.style.display = 'block';
         }
 
+        // Κλείσιμο modal
         closeModal.addEventListener('click', () => {
             transactionModal.style.display = 'none';
         });
@@ -147,7 +151,7 @@
             }
         });
 
-        // Φόρτωση συναλλαγών από Firebase
+        // Φόρτωση δεδομένων από Firebase
         fetchTransactions();
     </script>
 </body>
