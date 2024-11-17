@@ -85,6 +85,8 @@
             const transactionsRef = ref(database, 'transactions');
             onValue(transactionsRef, (snapshot) => {
                 const transactionsByDate = snapshot.val() || {};
+                    console.log(transactionsByDate);  // Προσθήκη για να ελέγξεις τα δεδομένα
+
                 const supplierData = {};
 
                 // Ομαδοποίηση συναλλαγών ανά προμηθευτή
