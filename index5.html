@@ -55,21 +55,25 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-  authDomain: "speedy-bazaar-411110.firebaseapp.com",
-  databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-  projectId: "speedy-bazaar-411110",
-  storageBucket: "speedy-bazaar-411110.appspot.com",
-  messagingSenderId: "752456596300",
-  appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-  measurementId: "G-NGZHWDY6S5"
-};
+        authDomain: "speedy-bazaar-411110.firebaseapp.com",
+        databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+        projectId: "speedy-bazaar-411110",
+        storageBucket: "speedy-bazaar-411110.appspot.com",
+        messagingSenderId: "752456596300",
+        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+        measurementId: "G-NGZHWDY6S5"
+    };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
+    const auth = getAuth();
 
+    // DOM Elements
     const paymentForm = document.getElementById('payment-form');
     const paymentDate = document.getElementById('payment-date');
     const supplierInput = document.getElementById('supplier');
@@ -77,6 +81,15 @@
     const paymentList = document.getElementById('payment-list');
     const totalAmountDisplay = document.getElementById('total-amount');
 
+    // Check Authentication
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            alert('Παρακαλώ συνδεθείτε για να συνεχίσετε!');
+            window.location.href = "index.html";
+        }
+    });
+
+    // Render Payments
     function renderPaymentList(payments) {
         paymentList.innerHTML = '';
         let totalAmount = 0;
@@ -100,6 +113,7 @@
         totalAmountDisplay.textContent = `Συνολικό Ποσό: ${totalAmount.toFixed(2)} €`;
     }
 
+    // Load Payments
     function loadPayments(date) {
         const paymentsRef = ref(database, `bank-payments/${date}`);
         onValue(paymentsRef, snapshot => {
@@ -112,8 +126,15 @@
         });
     }
 
+    // Add Payment
     function addPayment(event) {
         event.preventDefault();
+
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Δεν έχετε συνδεθεί!');
+            return;
+        }
 
         const date = paymentDate.value;
         const supplier = supplierInput.value.trim();
@@ -132,16 +153,18 @@
         paymentDate.value = date; // Διατήρηση της ημερομηνίας
     }
 
+    // Delete Payment
     function deletePayment(paymentId) {
         const date = paymentDate.value;
         const paymentRef = ref(database, `bank-payments/${date}/${paymentId}`);
         remove(paymentRef);
     }
 
+    // Event Listeners
     paymentForm.addEventListener('submit', addPayment);
     paymentDate.addEventListener('change', e => loadPayments(e.target.value));
 
-    // Φόρτωση πληρωμών κατά την αρχικοποίηση
+    // Load initial payments
     const initialDate = new Date().toISOString().split('T')[0];
     paymentDate.value = initialDate;
     loadPayments(initialDate);
