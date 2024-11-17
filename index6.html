@@ -305,6 +305,8 @@ function openTransactionModal(supplierName) {
     tableBody.innerHTML = ''; // Clear previous data
 
     const transactionsRef = ref(database, 'transactions');
+    const paymentsRef = ref(database, 'bank-payments'); // Declare paymentsRef here
+    const invoicesRef = ref(database, 'credit-invoices');
 
     onValue(transactionsRef, snapshot => {
         const data = snapshot.val();
@@ -325,42 +327,48 @@ function openTransactionModal(supplierName) {
         }
     });
 
+    // Same for bank payments and invoices
+    onValue(paymentsRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const paymentId in data[date]) {
+                if (data[date][paymentId].supplier === supplierName) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data[date][paymentId].date}</td>
+                        <td>€${parseFloat(data[date][paymentId].amount).toFixed(2)}</td>
+                        <td>Πληρωμή μέσω Τράπεζας</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            }
+        }
+    });
 
-// Συνάρτηση για μετατροπή ημερομηνίας
-function formatDate(dateString) {
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`; // Από YYYY-MM-DD σε DD/MM/YYYY
+    onValue(invoicesRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const invoiceId in data[date]) {
+                if (data[date][invoiceId].supplier === supplierName) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data[date][invoiceId].date}</td>
+                        <td>€${parseFloat(data[date][invoiceId].amount).toFixed(2)}</td>
+                        <td>Τιμολόγιο</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            }
+        }
+    });
+
+    // Function for date formatting
+    function formatDate(dateString) {
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`; // Από YYYY-MM-DD σε DD/MM/YYYY
+    }
 }
 
-
-            onValue(paymentsRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const paymentId in data[date]) {
-                        if (data[date][paymentId].supplier === supplierName) {
-                            allTransactions.push({
-                                date: data[date][paymentId].date,
-                                amount: data[date][paymentId].amount,
-                                type: 'Πληρωμή'
-                            });
-                        }
-                    }
-                }
-            });
-
-            onValue(invoicesRef, snapshot => {
-                const data = snapshot.val();
-                for (const date in data) {
-                    for (const invoiceId in data[date]) {
-                        if (data[date][invoiceId].supplier === supplierName) {
-                            allTransactions.push({
-                                date: data[date][invoiceId].date,
-                                amount: data[date][invoiceId].amount,
-                                type: 'Τιμολόγιο'
-                            });
-                        }
-                    }
-                }
                 // Sort transactions by date and display in the table
                 allTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
 
