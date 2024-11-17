@@ -129,6 +129,12 @@
       tabIndex++;
     }
   }
+   if (Object.keys(suppliersData).length === 0) {
+  contentContainer.innerHTML = "<p>No data available</p>";
+} else {
+  displaySuppliers(suppliersData);
+}
+
 </script>
 
 </body>
