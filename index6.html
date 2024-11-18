@@ -6,6 +6,11 @@
     <title>Καταγραφή Προμηθευτών και Συναλλαγών</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="11.png" type="image/png">
+    <!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<!-- autoTable Plugin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         /* Style για την εμφάνιση των προμηθευτών */
         #supplier-list {
@@ -429,7 +434,10 @@ window.onclick = function (event) {
 };
 
 // Εξαγωγή σε PDF
-document.getElementById('export-pdf-btn').addEventListener('click', function () {
+document.getElementById('export-pdf-btn').addEventListener('click', async function () {
+    // Φόρτωσε το jsPDF
+    const { jsPDF } = window.jspdf;
+
     const doc = new jsPDF();
     const supplierName = document.getElementById('modal-supplier-name').innerText;
 
@@ -454,6 +462,7 @@ document.getElementById('export-pdf-btn').addEventListener('click', function () 
     const fileName = supplierName.replace('Προμηθευτής: ', '').trim() + '_Συναλλαγές.pdf';
     doc.save(fileName);
 });
+
 
 // Load Suppliers on Page Load
 loadSuppliers();
