@@ -3,109 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="11.png" type="image/png">
     <title>Ημερήσια Αναφορά</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
-            color: #333;
+            background-color: #f9f9f9;
             margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            padding: 20px;
         }
-
         h1 {
-            margin-top: 20px;
-            color: #343a40;
+            color: #333;
         }
-
-        form {
-            margin: 20px 0;
-        }
-
         table {
+            width: 100%;
             border-collapse: collapse;
-            width: 80%;
-            margin: 20px 0;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th, td {
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #b2dbe7;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        footer {
             margin-top: 20px;
-            font-size: 14px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            text-align: center;
+            padding: 10px;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .summary {
+            margin-top: 20px;
+            font-size: 1.2em;
         }
     </style>
 </head>
-<body style="display: none;"> <!-- Απόκρυψη περιεχομένου μέχρι να γίνει επιβεβαίωση -->
-    <h1>Ημερήσια Αναφορά</h1>
-    <form id="daily-report-form">
-        <label for="report-date">Επιλέξτε Ημερομηνία:</label>
-        <input type="date" id="report-date" required>
-        <button type="submit">Προβολή Αναφοράς</button>
-    </form>
-
-    <table id="report-table" style="display: none;">
+<body>
+    <h1>Ημερήσια Αναφορά Εσόδων</h1>
+    <div id="daily-summary" class="summary">
+        <p><strong>Ταμείο Ημέρας:</strong> <span id="total-cash">0.00 €</span></p>
+        <p><strong>Συνολικά Έσοδα από Κάρτες:</strong> <span id="total-cards">0.00 €</span></p>
+        <p><strong>Συνολικό Υπόλοιπο:</strong> <span id="total-balance">0.00 €</span></p>
+    </div>
+    <table>
         <thead>
             <tr>
-                <th>Κατηγορία</th>
-                <th>Ποσό (€)</th>
+                <th>Ημερομηνία</th>
+                <th>Ταμείο Ημέρας (€)</th>
+                <th>Έσοδα από Κάρτες (€)</th>
+                <th>Σύνολο (€)</th>
             </tr>
         </thead>
-        <tbody>
-            <tr>
-                <td><strong>Ταμείο Ημέρας</strong></td>
-                <td id="daily-total">0.00</td>
-            </tr>
-            <tr>
-                <td>Έσοδα από Κάρτες</td>
-                <td id="card-revenue">0.00</td>
-            </tr>
-            <tr>
-                <td>Μετρητά</td>
-                <td id="cash-revenue">0.00</td>
-            </tr>
-            <tr>
-                <td>Πληρωμές με Μετρητά</td>
-                <td id="cash-payments">0.00</td>
-            </tr>
-            <tr>
-                <td>Υπόλοιπο Μετρητών</td>
-                <td id="cash-balance">0.00</td>
-            </tr>
-            <tr>
-                <td>Πληρωμές μέσω Τράπεζας</td>
-                <td id="bank-payments">0.00</td>
-            </tr>
-            <tr>
-                <td>Πιστωτικά Τιμολόγια</td>
-                <td id="credit-invoices">0.00</td>
-            </tr>
+        <tbody id="revenue-table">
+            <!-- Τα δεδομένα θα εισαχθούν δυναμικά -->
         </tbody>
     </table>
-
-    <footer>&copy; 2024 Ημερήσια Αναφορά</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -127,48 +76,60 @@
         const auth = getAuth();
         const db = getFirestore(app);
 
-        async function fetchDailyReport(date) {
+        async function loadDailyReport() {
             const user = auth.currentUser;
-            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
-            const reportDoc = doc(db, "dailyReports", user.uid);
-            const reportSnapshot = await getDoc(reportDoc);
-            const reportData = reportSnapshot.data() || {};
-            return reportData[date] || {};
-        }
-
-        async function updateReportTable(date) {
-            const reportData = await fetchDailyReport(date);
-
-            const cardRevenue = reportData.cardRevenue || 0;
-            const cashRevenue = reportData.cashRevenue || 0;
-            const cashPayments = reportData.cashPayments || 0;
-
-            const dailyTotal = cardRevenue + cashRevenue - cashPayments;
-
-            document.getElementById("daily-total").textContent = dailyTotal.toFixed(2);
-            document.getElementById("card-revenue").textContent = cardRevenue.toFixed(2);
-            document.getElementById("cash-revenue").textContent = cashRevenue.toFixed(2);
-            document.getElementById("cash-payments").textContent = cashPayments.toFixed(2);
-            document.getElementById("cash-balance").textContent = (cashRevenue - cashPayments).toFixed(2);
-            document.getElementById("bank-payments").textContent = (reportData.bankPayments || 0).toFixed(2);
-            document.getElementById("credit-invoices").textContent = (reportData.creditInvoices || 0).toFixed(2);
-
-            document.getElementById("report-table").style.display = "table";
-        }
-
-        document.getElementById("daily-report-form").addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const date = document.getElementById("report-date").value;
-            if (date) {
-                await updateReportTable(date);
+            if (!user) {
+                alert("Παρακαλώ συνδεθείτε!");
+                window.location.href = "index.html";
+                return;
             }
-        });
+
+            const revenueDoc = doc(db, "revenues", user.uid);
+            const revenueSnapshot = await getDoc(revenueDoc);
+
+            if (!revenueSnapshot.exists()) {
+                alert("Δεν βρέθηκαν δεδομένα!");
+                return;
+            }
+
+            const revenues = revenueSnapshot.data();
+            const tableBody = document.getElementById("revenue-table");
+            const totalCashEl = document.getElementById("total-cash");
+            const totalCardsEl = document.getElementById("total-cards");
+            const totalBalanceEl = document.getElementById("total-balance");
+
+            let totalCash = 0;
+            let totalCards = 0;
+
+            tableBody.innerHTML = ""; // Καθαρισμός του πίνακα
+
+            Object.keys(revenues).sort().forEach(date => {
+                const { cash, card } = revenues[date];
+                const total = cash + card;
+
+                totalCash += cash;
+                totalCards += card;
+
+                const row = `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${cash.toFixed(2)} €</td>
+                        <td>${card.toFixed(2)} €</td>
+                        <td>${total.toFixed(2)} €</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+
+            totalCashEl.textContent = `${totalCash.toFixed(2)} €`;
+            totalCardsEl.textContent = `${totalCards.toFixed(2)} €`;
+            totalBalanceEl.textContent = `${(totalCash + totalCards).toFixed(2)} €`;
+        }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.body.style.display = "block";
+                loadDailyReport();
             } else {
-                document.body.style.display = "none";
                 alert("Παρακαλώ συνδεθείτε!");
                 window.location.href = "index.html";
             }
