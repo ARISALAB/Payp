@@ -3,56 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="11.png" type="image/png">
     <title>Ημερήσια Αναφορά</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
+            background-color: #f0f8ff;
             color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-        th, td {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 10px;
         }
+
+        table {
+            width: 80%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
         th {
-            background-color: #f0f0f0;
-        }
-        .summary {
-            margin-top: 20px;
-            font-size: 1.2em;
+            background-color: #f2f2f2;
         }
     </style>
 </head>
 <body>
-    <h1>Ημερήσια Αναφορά Εσόδων</h1>
-    <div id="daily-summary" class="summary">
-        <p><strong>Ταμείο Ημέρας:</strong> <span id="total-cash">0.00 €</span></p>
-        <p><strong>Συνολικά Έσοδα από Κάρτες:</strong> <span id="total-cards">0.00 €</span></p>
-        <p><strong>Συνολικό Υπόλοιπο:</strong> <span id="total-balance">0.00 €</span></p>
-    </div>
-    <table>
+    <h1>Ημερήσια Αναφορά</h1>
+    <form id="filter-form">
+        <label for="filter-date">Επιλέξτε Ημερομηνία:</label>
+        <input type="date" id="filter-date">
+        <button type="button" id="filter-button">Φιλτράρισμα</button>
+    </form>
+
+    <table id="revenue-table">
         <thead>
             <tr>
                 <th>Ημερομηνία</th>
                 <th>Ταμείο Ημέρας (€)</th>
                 <th>Έσοδα από Κάρτες (€)</th>
-                <th>Σύνολο (€)</th>
+                <th>Συνολικό Ποσό Συναλλαγών (€)</th>
+                <th>Υπόλοιπο Μετρητών (€)</th>
             </tr>
         </thead>
-        <tbody id="revenue-table">
-            <!-- Τα δεδομένα θα εισαχθούν δυναμικά -->
+        <tbody>
+            <!-- Δεδομένα θα εισαχθούν δυναμικά -->
         </tbody>
     </table>
 
@@ -64,71 +68,61 @@
         const firebaseConfig = {
             apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
             authDomain: "speedy-bazaar-411110.firebaseapp.com",
-            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
             projectId: "speedy-bazaar-411110",
-            storageBucket: "speedy-bazaar-411110.appspot.com",
-            messagingSenderId: "752456596300",
-            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-            measurementId: "G-NGZHWDY6S5"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
         const db = getFirestore(app);
 
-        async function loadDailyReport() {
+        // Φόρτωση δεδομένων από Firestore
+        async function loadRevenues() {
             const user = auth.currentUser;
-            if (!user) {
-                alert("Παρακαλώ συνδεθείτε!");
-                window.location.href = "index.html";
-                return;
-            }
-
+            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
             const revenueDoc = doc(db, "revenues", user.uid);
             const revenueSnapshot = await getDoc(revenueDoc);
-
-            if (!revenueSnapshot.exists()) {
-                alert("Δεν βρέθηκαν δεδομένα!");
-                return;
-            }
-
-            const revenues = revenueSnapshot.data();
-            const tableBody = document.getElementById("revenue-table");
-            const totalCashEl = document.getElementById("total-cash");
-            const totalCardsEl = document.getElementById("total-cards");
-            const totalBalanceEl = document.getElementById("total-balance");
-
-            let totalCash = 0;
-            let totalCards = 0;
-
-            tableBody.innerHTML = ""; // Καθαρισμός του πίνακα
-
-            Object.keys(revenues).sort().forEach(date => {
-                const { cash, card } = revenues[date];
-                const total = cash + card;
-
-                totalCash += cash;
-                totalCards += card;
-
-                const row = `
-                    <tr>
-                        <td>${date}</td>
-                        <td>${cash.toFixed(2)} €</td>
-                        <td>${card.toFixed(2)} €</td>
-                        <td>${total.toFixed(2)} €</td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-
-            totalCashEl.textContent = `${totalCash.toFixed(2)} €`;
-            totalCardsEl.textContent = `${totalCards.toFixed(2)} €`;
-            totalBalanceEl.textContent = `${(totalCash + totalCards).toFixed(2)} €`;
+            return revenueSnapshot.data() || {};
         }
 
-        onAuthStateChanged(auth, (user) => {
+        // Ενημέρωση πίνακα
+        function updateTable(revenues, selectedDate = null) {
+            const tableBody = document.querySelector("#revenue-table tbody");
+            tableBody.innerHTML = ""; // Εκκαθάριση πίνακα
+
+            Object.entries(revenues).forEach(([date, data]) => {
+                if (!selectedDate || date === selectedDate) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${data.cash.toFixed(2)}</td>
+                        <td>${data.card.toFixed(2)}</td>
+                        <td>${(data.cash + data.card).toFixed(2)}</td>
+                        <td>${(data.cash - data.card).toFixed(2)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+
+            // Μήνυμα αν δεν υπάρχουν δεδομένα
+            if (!tableBody.innerHTML) {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td colspan="5">Δεν βρέθηκαν δεδομένα για την επιλεγμένη ημερομηνία.</td>`;
+                tableBody.appendChild(row);
+            }
+        }
+
+        // Διαχείριση φιλτραρίσματος
+        document.getElementById("filter-button").addEventListener("click", async () => {
+            const filterDate = document.getElementById("filter-date").value;
+            const revenues = await loadRevenues();
+            updateTable(revenues, filterDate);
+        });
+
+        // Αυτόματη φόρτωση δεδομένων όταν συνδέεται ο χρήστης
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                loadDailyReport();
+                const revenues = await loadRevenues();
+                updateTable(revenues); // Εμφάνιση όλων των δεδομένων αρχικά
             } else {
                 alert("Παρακαλώ συνδεθείτε!");
                 window.location.href = "index.html";
