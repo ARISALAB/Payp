@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 <!-- autoTable Plugin -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+<script src="greekFont.js"></script>
 
     <style>
         /* Style για την εμφάνιση των προμηθευτών */
@@ -433,12 +434,16 @@ window.onclick = function (event) {
     }
 };
 
-// Εξαγωγή σε PDF
 document.getElementById('export-pdf-btn').addEventListener('click', async function () {
-    // Φόρτωσε το jsPDF
     const { jsPDF } = window.jspdf;
 
     const doc = new jsPDF();
+
+    // Φόρτωσε την ελληνική γραμματοσειρά
+    doc.addFileToVFS("Roboto-Regular.ttf", robotoRegular); // Το "robotoRegular" προέρχεται από το greekFont.js
+    doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+    doc.setFont("Roboto");
+
     const supplierName = document.getElementById('modal-supplier-name').innerText;
 
     // Τίτλος στο PDF
@@ -453,7 +458,7 @@ document.getElementById('export-pdf-btn').addEventListener('click', async functi
         }),
         startY: 20, // Αρχικό ύψος
         styles: {
-            font: 'helvetica',
+            font: 'Roboto',
             fontSize: 10,
         },
     });
