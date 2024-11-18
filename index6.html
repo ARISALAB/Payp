@@ -188,17 +188,15 @@
         <h2 id="modal-supplier-name"></h2>
         <button id="export-pdf-btn" class="btn-export">Εξαγωγή σε PDF</button> <!-- Κουμπί Εξαγωγής -->
         <table id="transaction-table">
-           <thead>
-    <tr>
-        <th>Ημερομηνία</th>
-        <th>Αριθμός Τιμολογίου</th>
-        <th>Ποσό</th>
-        <th>Πληρωμή</th>
-        <th>Υπόλοιπο</th>
-        <th>Τύπος</th>
-    </tr>
-</thead>
-
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th>Ποσό</th>
+                    <th>Πληρωμή</th>
+                    <th>Υπόλοιπο</th>
+                    <th>Τύπος</th>
+                </tr>
+            </thead>
             <tbody>
                 <!-- Οι γραμμές εισάγονται δυναμικά -->
             </tbody>
@@ -327,6 +325,7 @@ function updateSupplierItem() {
     });
 }
 
+
 // Open Transaction Modal
 function openTransactionModal(supplierName) {
     modal.style.display = "block";
@@ -338,48 +337,91 @@ function openTransactionModal(supplierName) {
     tableBody.innerHTML = '';
 
     const transactionsRef = ref(database, 'transactions');
+    const paymentsRef = ref(database, 'bank-payments');
+    const invoicesRef = ref(database, 'credit-invoices');
 
+    let allTransactions = [];
+    let currentBalance = 0; // Διατηρούμε το τρέχον υπόλοιπο
+
+    // Transactions
     onValue(transactionsRef, snapshot => {
         const data = snapshot.val();
         for (const date in data) {
             for (const transactionId in data[date]) {
                 const transaction = data[date][transactionId];
                 if (transaction.supplier === supplierName) {
-                    const row = document.createElement('tr');
-
-                    // Δημιουργία κελιών
-                    const dateCell = document.createElement('td');
-                    const invoiceCell = document.createElement('td');
-                    const amountCell = document.createElement('td');
-                    const paymentCell = document.createElement('td');
-                    const balanceCell = document.createElement('td');
-                    const typeCell = document.createElement('td');
-
-                    // Εισαγωγή δεδομένων
-                    dateCell.textContent = transaction.date || '—';
-                    invoiceCell.textContent = transaction.invoiceNumber || '—';
-                    amountCell.textContent = `€${parseFloat(transaction.amount).toFixed(2)}`;
-                    paymentCell.textContent = transaction.payment || '—';
-                    balanceCell.textContent = `€${parseFloat(transaction.balance).toFixed(2)}`;
-                    typeCell.textContent = transaction.type || '—';
-
-                    // Προσθήκη κελιών στη σειρά
-                    row.appendChild(dateCell);
-                    row.appendChild(invoiceCell);
-                    row.appendChild(amountCell);
-                    row.appendChild(paymentCell);
-                    row.appendChild(balanceCell);
-                    row.appendChild(typeCell);
-
-                    // Προσθήκη σειράς στο σώμα του πίνακα
-                    tableBody.appendChild(row);
+                    allTransactions.push({
+                        date: new Date(date),
+                        amount: parseFloat(transaction.amount),
+                        payment: parseFloat(transaction.amount),
+                        balance: 0, // Υπολογίζεται παρακάτω
+                        type: 'Συναλλαγή'
+                    });
                 }
             }
         }
     });
-}
 
-        
+    // Bank Payments
+    onValue(paymentsRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const paymentId in data[date]) {
+                const payment = data[date][paymentId];
+                if (payment.supplier === supplierName) {
+                    allTransactions.push({
+                        date: new Date(payment.date),
+                        amount: 0,
+                        payment: parseFloat(payment.amount),
+                        balance: 0, // Υπολογίζεται παρακάτω
+                        type: 'Πληρωμή μέσω Τράπεζας'
+                    });
+                }
+            }
+        }
+    });
+
+    // Invoices
+    onValue(invoicesRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const invoiceId in data[date]) {
+                const invoice = data[date][invoiceId];
+                if (invoice.supplier === supplierName) {
+                    allTransactions.push({
+                        date: new Date(invoice.date),
+                        amount: parseFloat(invoice.amount),
+                        payment: 0,
+                        balance: 0, // Υπολογίζεται παρακάτω
+                        type: 'Πιστωτικό Τιμολόγιο'
+                    });
+                }
+            }
+        }
+
+        // Ταξινόμηση με βάση την ημερομηνία (παλαιότερα -> νεότερα)
+        allTransactions.sort((a, b) => a.date - b.date);
+
+        // Υπολογισμός υπολοίπου
+        allTransactions.forEach(transaction => {
+            currentBalance += transaction.amount - transaction.payment;
+            transaction.balance = currentBalance;
+        });
+
+        // Προσθήκη στο table
+        allTransactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${transaction.date.toLocaleDateString('el-GR')}</td>
+                <td>${transaction.amount.toFixed(2)}</td>
+                <td>${transaction.payment.toFixed(2)}</td>
+                <td>${transaction.balance.toFixed(2)}</td>
+                <td>${transaction.type}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    });
+}
 
 // Close Modal
 span.onclick = function () {
