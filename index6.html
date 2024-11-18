@@ -300,27 +300,27 @@ function updateSupplierItem() {
 }
 
 
-     function openTransactionModal(supplierName) {
+ // Open Transaction Modal
+function openTransactionModal(supplierName) {
     modal.style.display = "block";
     const tableBody = document.querySelector('#transaction-table tbody');
-    tableBody.innerHTML = ''; // Clear previous data
+    tableBody.innerHTML = '';
 
     const transactionsRef = ref(database, 'transactions');
     const paymentsRef = ref(database, 'bank-payments');
     const invoicesRef = ref(database, 'credit-invoices');
 
-    let allTransactions = []; // Για να αποθηκεύσουμε όλες τις συναλλαγές και πληρωμές
+    let allTransactions = [];
 
-    // Συναλλαγές
+    // Transactions
     onValue(transactionsRef, snapshot => {
         const data = snapshot.val();
         for (const date in data) {
-            const formattedDate = formatDate(date);
             for (const transactionId in data[date]) {
                 const transaction = data[date][transactionId];
                 if (transaction.supplier === supplierName) {
                     allTransactions.push({
-                        date: formattedDate,
+                        date: formatDate(date),
                         amount: transaction.amount,
                         type: 'Συναλλαγή'
                     });
@@ -329,7 +329,7 @@ function updateSupplierItem() {
         }
     });
 
-    // Πληρωμές μέσω Τράπεζας
+    // Bank Payments
     onValue(paymentsRef, snapshot => {
         const data = snapshot.val();
         for (const date in data) {
@@ -345,7 +345,7 @@ function updateSupplierItem() {
         }
     });
 
-    // Τιμολόγια
+    // Invoices
     onValue(invoicesRef, snapshot => {
         const data = snapshot.val();
         for (const date in data) {
@@ -359,36 +359,39 @@ function updateSupplierItem() {
                 }
             }
         }
-        // Όταν όλα τα δεδομένα φορτωθούν, τα εμφανίζουμε
-        allTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Display Transactions
         allTransactions.forEach(transaction => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${transaction.date}</td>
-                <td>€${parseFloat(transaction.amount).toFixed(2)}</td>
+                <td>${transaction.amount}</td>
                 <td>${transaction.type}</td>
             `;
             tableBody.appendChild(row);
         });
     });
 }
-span.onclick = function() {
-    modal.style.display = "none";
+
+// Format Date
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('el-GR');
 }
 
-window.onclick = function(event) {
+// Close Modal
+span.onclick = function () {
+    modal.style.display = "none";
+};
+
+window.onclick = function (event) {
     if (event.target === modal) {
         modal.style.display = "none";
     }
-}
+};
 
-        // Close modal when clicking on close button
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        // Initialize the page
-        loadSuppliers();
+// Load Suppliers on Page Load
+loadSuppliers();
     </script>
 </body>
 </html>
