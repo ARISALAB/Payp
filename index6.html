@@ -161,24 +161,27 @@
     <ul id="supplier-list"></ul>
 
     <!-- Modal for showing transactions -->
-    <div id="transactionModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Συναλλαγές Προμηθευτή</h2>
-            <table id="transaction-table">
-                <thead>
-                    <tr>
-                        <th>Ημερομηνία</th>
-                        <th>Ποσό</th>
-                        <th>Τύπος</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Transactions will go here -->
-                </tbody>
-            </table>
-        </div>
+<div id="transactionModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modal-supplier-name"></h2> <!-- Εμφάνιση ονόματος προμηθευτή -->
+        <table id="transaction-table">
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th>Ποσό</th>
+                    <th>Πληρωμή</th>
+                    <th>Υπόλοιπο</th>
+                    <th>Τύπος</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Οι γραμμές εισάγονται δυναμικά -->
+            </tbody>
+        </table>
     </div>
+</div>
+
 
     <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
 
@@ -300,9 +303,13 @@ function updateSupplierItem() {
 }
 
 
- // Open Transaction Modal
+// Open Transaction Modal
 function openTransactionModal(supplierName) {
     modal.style.display = "block";
+
+    // Εμφανίζουμε το όνομα του προμηθευτή
+    document.getElementById('modal-supplier-name').innerText = `Προμηθευτής: ${supplierName}`;
+
     const tableBody = document.querySelector('#transaction-table tbody');
     tableBody.innerHTML = '';
 
@@ -311,6 +318,7 @@ function openTransactionModal(supplierName) {
     const invoicesRef = ref(database, 'credit-invoices');
 
     let allTransactions = [];
+    let currentBalance = 0; // Διατηρούμε το τρέχον υπόλοιπο
 
     // Transactions
     onValue(transactionsRef, snapshot => {
@@ -320,8 +328,10 @@ function openTransactionModal(supplierName) {
                 const transaction = data[date][transactionId];
                 if (transaction.supplier === supplierName) {
                     allTransactions.push({
-                        date: formatDate(date),
-                        amount: transaction.amount,
+                        date: new Date(date),
+                        amount: parseFloat(transaction.amount),
+                        payment: parseFloat(transaction.amount),
+                        balance: 0, // Υπολογίζεται παρακάτω
                         type: 'Συναλλαγή'
                     });
                 }
@@ -334,10 +344,13 @@ function openTransactionModal(supplierName) {
         const data = snapshot.val();
         for (const date in data) {
             for (const paymentId in data[date]) {
-                if (data[date][paymentId].supplier === supplierName) {
+                const payment = data[date][paymentId];
+                if (payment.supplier === supplierName) {
                     allTransactions.push({
-                        date: formatDate(data[date][paymentId].date),
-                        amount: data[date][paymentId].amount,
+                        date: new Date(payment.date),
+                        amount: 0,
+                        payment: parseFloat(payment.amount),
+                        balance: 0, // Υπολογίζεται παρακάτω
                         type: 'Πληρωμή μέσω Τράπεζας'
                     });
                 }
@@ -350,33 +363,41 @@ function openTransactionModal(supplierName) {
         const data = snapshot.val();
         for (const date in data) {
             for (const invoiceId in data[date]) {
-                if (data[date][invoiceId].supplier === supplierName) {
+                const invoice = data[date][invoiceId];
+                if (invoice.supplier === supplierName) {
                     allTransactions.push({
-                        date: formatDate(data[date][invoiceId].date),
-                        amount: data[date][invoiceId].amount,
-                        type: 'Τιμολόγιο'
+                        date: new Date(invoice.date),
+                        amount: parseFloat(invoice.amount),
+                        payment: 0,
+                        balance: 0, // Υπολογίζεται παρακάτω
+                        type: 'Πιστωτικό Τιμολόγιο'
                     });
                 }
             }
         }
 
-        // Display Transactions
+        // Ταξινόμηση με βάση την ημερομηνία (παλαιότερα -> νεότερα)
+        allTransactions.sort((a, b) => a.date - b.date);
+
+        // Υπολογισμός υπολοίπου
+        allTransactions.forEach(transaction => {
+            currentBalance += transaction.amount - transaction.payment;
+            transaction.balance = currentBalance;
+        });
+
+        // Προσθήκη στο table
         allTransactions.forEach(transaction => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${transaction.date}</td>
-                <td>${transaction.amount}</td>
+                <td>${transaction.date.toLocaleDateString('el-GR')}</td>
+                <td>${transaction.amount.toFixed(2)}</td>
+                <td>${transaction.payment.toFixed(2)}</td>
+                <td>${transaction.balance.toFixed(2)}</td>
                 <td>${transaction.type}</td>
             `;
             tableBody.appendChild(row);
         });
     });
-}
-
-// Format Date
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('el-GR');
 }
 
 // Close Modal
@@ -389,6 +410,7 @@ window.onclick = function (event) {
         modal.style.display = "none";
     }
 };
+
 
 // Load Suppliers on Page Load
 loadSuppliers();
