@@ -139,6 +139,21 @@
             background-color: #343a40;
             color: white;
         }
+        .btn-export {
+    background-color: #28A745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.btn-export:hover {
+    background-color: #218838;
+}
+
     </style>
 </head>
 <body>
@@ -164,7 +179,8 @@
 <div id="transactionModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
-        <h2 id="modal-supplier-name"></h2> <!-- Εμφάνιση ονόματος προμηθευτή -->
+        <h2 id="modal-supplier-name"></h2>
+        <button id="export-pdf-btn" class="btn-export">Εξαγωγή σε PDF</button> <!-- Κουμπί Εξαγωγής -->
         <table id="transaction-table">
             <thead>
                 <tr>
@@ -181,6 +197,7 @@
         </table>
     </div>
 </div>
+
 
 
     <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
@@ -411,9 +428,36 @@ window.onclick = function (event) {
     }
 };
 
+// Εξαγωγή σε PDF
+document.getElementById('export-pdf-btn').addEventListener('click', function () {
+    const doc = new jsPDF();
+    const supplierName = document.getElementById('modal-supplier-name').innerText;
+
+    // Τίτλος στο PDF
+    doc.setFontSize(16);
+    doc.text(supplierName, 10, 10); // Εμφάνιση προμηθευτή
+
+    // Μετατροπή του πίνακα σε PDF
+    doc.autoTable({
+        head: [['Ημερομηνία', 'Ποσό', 'Πληρωμή', 'Υπόλοιπο', 'Τύπος']],
+        body: [...document.querySelectorAll('#transaction-table tbody tr')].map(row => {
+            return [...row.querySelectorAll('td')].map(cell => cell.innerText);
+        }),
+        startY: 20, // Αρχικό ύψος
+        styles: {
+            font: 'helvetica',
+            fontSize: 10,
+        },
+    });
+
+    // Αποθήκευση PDF
+    const fileName = supplierName.replace('Προμηθευτής: ', '').trim() + '_Συναλλαγές.pdf';
+    doc.save(fileName);
+});
 
 // Load Suppliers on Page Load
 loadSuppliers();
+        
     </script>
 </body>
 </html>
