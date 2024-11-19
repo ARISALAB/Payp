@@ -75,33 +75,29 @@
         </thead>
         <tbody>
             <tr>
-                <td><strong>Συνολικά Έσοδα</strong></td>
-                <td id="total-revenue">0.00</td>
+                <td><strong>Ταμείο Ημέρας</strong></td>
+                <td id="daily-cash">0.00</td>
             </tr>
             <tr>
-                <td>Έσοδα από Κάρτες</td>
-                <td id="card-revenue">0.00</td>
-            </tr>
-            <tr>
-                <td>Μετρητά</td>
+                <td>Εισπράξεις Μετρητά</td>
                 <td id="cash-revenue">0.00</td>
             </tr>
-        </tbody>
-    </table>
-
-    <h2>Αναλυτικές Συναλλαγές</h2>
-    <table id="transactions-table" style="display: none;">
-        <thead>
             <tr>
-                <th>Ημερομηνία</th>
-                <th>Προμηθευτής</th>
-                <th>Αριθμός Τιμολογίου</th>
-                <th>Περιγραφή</th>
-                <th>Ποσό (€)</th>
+                <td>Έξοδα Μετρητά</td>
+                <td id="cash-expenses">0.00</td>
             </tr>
-        </thead>
-        <tbody id="transactions-body">
-            <!-- Οι συναλλαγές θα εισαχθούν δυναμικά -->
+            <tr>
+                <td>Υπόλοιπο Μετρητών</td>
+                <td id="cash-balance">0.00</td>
+            </tr>
+            <tr>
+                <td>Πιστωτικά Τιμολόγια</td>
+                <td id="credit-invoices">0.00</td>
+            </tr>
+            <tr>
+                <td>Πληρωμές μέσω Τράπεζας</td>
+                <td id="bank-payments">0.00</td>
+            </tr>
         </tbody>
     </table>
 
@@ -137,61 +133,41 @@
             });
         }
 
-        function updateRevenueTable(transactions) {
-            let totalRevenue = 0;
-            let cardRevenue = 0;
+        function calculateSummary(transactions) {
+            let dailyCash = 0;
             let cashRevenue = 0;
+            let cashExpenses = 0;
+            let creditInvoices = 0;
+            let bankPayments = 0;
 
             Object.values(transactions).forEach(transaction => {
                 const amount = transaction.amount || 0;
-                totalRevenue += amount;
 
-                if (transaction.paymentMethod === "card") {
-                    cardRevenue += amount;
-                } else if (transaction.paymentMethod === "cash") {
+                if (transaction.type === "revenue" && transaction.paymentMethod === "cash") {
                     cashRevenue += amount;
+                } else if (transaction.type === "expense" && transaction.paymentMethod === "cash") {
+                    cashExpenses += amount;
+                } else if (transaction.type === "credit-invoice") {
+                    creditInvoices += amount;
+                } else if (transaction.paymentMethod === "bank") {
+                    bankPayments += amount;
                 }
             });
 
-            document.getElementById("total-revenue").textContent = totalRevenue.toFixed(2);
-            document.getElementById("card-revenue").textContent = cardRevenue.toFixed(2);
-            document.getElementById("cash-revenue").textContent = cashRevenue.toFixed(2);
+            dailyCash = cashRevenue - cashExpenses;
 
-            document.getElementById("report-table").style.display = "table";
+            return { dailyCash, cashRevenue, cashExpenses, creditInvoices, bankPayments };
         }
 
-        function populateTransactionsTable(transactions) {
-            const tableBody = document.getElementById("transactions-body");
-            tableBody.innerHTML = ""; // Καθαρισμός προηγούμενων δεδομένων
+        function updateReportTable(summary) {
+            document.getElementById("daily-cash").textContent = summary.dailyCash.toFixed(2);
+            document.getElementById("cash-revenue").textContent = summary.cashRevenue.toFixed(2);
+            document.getElementById("cash-expenses").textContent = summary.cashExpenses.toFixed(2);
+            document.getElementById("cash-balance").textContent = summary.dailyCash.toFixed(2);
+            document.getElementById("credit-invoices").textContent = summary.creditInvoices.toFixed(2);
+            document.getElementById("bank-payments").textContent = summary.bankPayments.toFixed(2);
 
-            Object.entries(transactions).forEach(([key, transaction]) => {
-                const row = document.createElement("tr");
-
-                const dateCell = document.createElement("td");
-                dateCell.textContent = transaction.date || "-";
-
-                const supplierCell = document.createElement("td");
-                supplierCell.textContent = transaction.supplier || "-";
-
-                const invoiceCell = document.createElement("td");
-                invoiceCell.textContent = transaction.invoiceNumber || "-";
-
-                const descriptionCell = document.createElement("td");
-                descriptionCell.textContent = transaction.description || "-";
-
-                const amountCell = document.createElement("td");
-                amountCell.textContent = transaction.amount ? transaction.amount.toFixed(2) : "0.00";
-
-                row.appendChild(dateCell);
-                row.appendChild(supplierCell);
-                row.appendChild(invoiceCell);
-                row.appendChild(descriptionCell);
-                row.appendChild(amountCell);
-
-                tableBody.appendChild(row);
-            });
-
-            document.getElementById("transactions-table").style.display = "table";
+            document.getElementById("report-table").style.display = "table";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -201,8 +177,8 @@
 
                 if (date) {
                     const transactions = await fetchTransactions(date);
-                    updateRevenueTable(transactions);
-                    populateTransactionsTable(transactions);
+                    const summary = calculateSummary(transactions);
+                    updateReportTable(summary);
                 }
             });
 
