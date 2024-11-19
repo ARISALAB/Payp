@@ -108,7 +108,8 @@
     <footer>&copy; 2024 Ημερήσια Αναφορά</footer>
 
     
-<script type="module">
+
+    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
@@ -152,45 +153,6 @@
             totalCardRevenue,
             totalCashPayments
         };
-    }
-
-    async function updateReportTable(date) {
-        try {
-            const { totalCashRevenue, totalCardRevenue, totalCashPayments } = await fetchDailyRevenues(date);
-
-            const dailyTotal = totalCashRevenue + totalCardRevenue - totalCashPayments;
-
-            document.getElementById("daily-total").textContent = dailyTotal.toFixed(2);
-            document.getElementById("card-revenue").textContent = totalCardRevenue.toFixed(2);
-            document.getElementById("cash-revenue").textContent = totalCashRevenue.toFixed(2);
-            document.getElementById("cash-payments").textContent = totalCashPayments.toFixed(2);
-            document.getElementById("cash-balance").textContent = (totalCashRevenue - totalCashPayments).toFixed(2);
-
-            document.getElementById("report-table").style.display = "table";
-        } catch (error) {
-            console.error("Σφάλμα κατά την ανάκτηση δεδομένων:", error);
-            alert("Αποτυχία φόρτωσης δεδομένων. Δοκιμάστε ξανά.");
-        }
-    }
-
-    document.getElementById("daily-report-form").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const date = document.getElementById("report-date").value;
-        if (date) {
-            await updateReportTable(date);
-        }
-    });
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.body.style.display = "block";
-        } else {
-            document.body.style.display = "none";
-            alert("Παρακαλώ συνδεθείτε!");
-            window.location.href = "index.html";
-        }
-    });
-</script>
     
 </body>
 </html>
