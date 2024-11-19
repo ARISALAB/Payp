@@ -107,105 +107,89 @@
 
     <footer>&copy; 2024 Ημερήσια Αναφορά</footer>
 
- <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-        authDomain: "speedy-bazaar-411110.firebaseapp.com",
-        databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-        projectId: "speedy-bazaar-411110",
-        storageBucket: "speedy-bazaar-411110.appspot.com",
-        messagingSenderId: "752456596300",
-        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-        measurementId: "G-NGZHWDY6S5"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+            authDomain: "speedy-bazaar-411110.firebaseapp.com",
+            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+            projectId: "speedy-bazaar-411110",
+            storageBucket: "speedy-bazaar-411110.appspot.com",
+            messagingSenderId: "752456596300",
+            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+            measurementId: "G-NGZHWDY6S5"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore(app);
-    const database = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore(app);
+        const database = getDatabase(app);
 
-    async function saveRevenueToFirestore(date, cash, card) {
-        const user = auth.currentUser;
-        if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
-        const revenueDoc = doc(db, "revenues", user.uid);
-        const currentData = (await getDoc(revenueDoc)).data() || {};
-        currentData[date] = { cash, card };
-        await setDoc(revenueDoc, currentData);
-    }
+        async function saveRevenueToFirestore(date, cash, card) {
+            const user = auth.currentUser;
+            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+            const revenueDoc = doc(db, "revenues", user.uid);
+            const currentData = (await getDoc(revenueDoc)).data() || {};
+            currentData[date] = { cash, card };
+            await setDoc(revenueDoc, currentData);
+        }
 
-    async function getAllRevenues() {
-        const user = auth.currentUser;
-        if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
-        const revenueDoc = doc(db, "revenues", user.uid);
-        const revenueSnapshot = await getDoc(revenueDoc);
-        return revenueSnapshot.data() || {};
-    }
+        async function getAllRevenues() {
+            const user = auth.currentUser;
+            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+            const revenueDoc = doc(db, "revenues", user.uid);
+            const revenueSnapshot = await getDoc(revenueDoc);
+            return revenueSnapshot.data() || {};
+        }
 
-    async function loadTransactionsTotal(date) {
-        const transactionsRef = ref(database, `transactions/${date}`);
-        return new Promise((resolve) => {
-            onValue(transactionsRef, (snapshot) => {
-                const data = snapshot.val();
-                let totalTransactions = 0;
-                if (data) {
-                    for (const transaction of Object.values(data)) {
-                        totalTransactions += parseFloat(transaction.amount);
+        async function loadTransactionsTotal(date) {
+            const transactionsRef = ref(database, `transactions/${date}`);
+            return new Promise((resolve) => {
+                onValue(transactionsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    let totalTransactions = 0;
+                    if (data) {
+                        for (const transaction of Object.values(data)) {
+                            totalTransactions += parseFloat(transaction.amount);
+                        }
                     }
+                    resolve(totalTransactions);
+                });
+            });
+        }
+
+        async function updateSummary() {
+            const revenueDate = document.getElementById("report-date").value;
+            if (revenueDate) {
+                const revenues = await getAllRevenues();
+                const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
+                const totalTransactions = await loadTransactionsTotal(revenueDate);
+                const cashBalance = revenue.cash - revenue.card - totalTransactions;
+
+                document.getElementById("daily-total").textContent = revenue.cash.toFixed(2);
+                document.getElementById("card-revenue").textContent = revenue.card.toFixed(2);
+                document.getElementById("cash-balance").textContent = cashBalance.toFixed(2);
+                document.getElementById("report-table").style.display = "table";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("report-date").addEventListener("change", updateSummary);
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    document.body.style.display = "block";
+                } else {
+                    document.body.style.display = "none";
+                    alert("Παρακαλώ συνδεθείτε!");
+                    window.location.href = "index.html";
                 }
-                resolve(totalTransactions);
             });
         });
-    }
-
-    async function updateSummary() {
-        const revenueDate = document.getElementById("revenue-date").value;
-        const revenueDateDisplay = document.getElementById("revenue-date-display");
-        const cashRevenueDisplay = document.getElementById("cash-revenue-display");
-        const cardRevenueDisplay = document.getElementById("card-revenue-display");
-        const transactionsTotalDisplay = document.getElementById("transactions-total-display");
-        const cashBalanceDisplay = document.getElementById("cash-balance-display");
-
-        if (revenueDate) {
-            const revenues = await getAllRevenues();
-            const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
-            const totalTransactions = await loadTransactionsTotal(revenueDate);
-            const cashBalance = revenue.cash - revenue.card - totalTransactions;
-
-            revenueDateDisplay.textContent = `Ημερομηνία: ${revenueDate}`;
-            cashRevenueDisplay.textContent = `Ταμείο Ημέρας: ${revenue.cash.toFixed(2)} €`;
-            cardRevenueDisplay.textContent = `Έσοδα από Κάρτες: ${revenue.card.toFixed(2)} €`;
-            transactionsTotalDisplay.textContent = `Συνολικό Ποσό Συναλλαγών: ${totalTransactions.toFixed(2)} €`;
-            cashBalanceDisplay.textContent = `Υπόλοιπο Μετρητών Ημέρας: ${cashBalance.toFixed(2)} €`;
-        }
-    }
-
-    document.getElementById("revenue-date").addEventListener("change", updateSummary);
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.body.style.display = "block";
-            getAllRevenues().then(updateSummary);
-        } else {
-            document.body.style.display = "none";
-            alert("Παρακαλώ συνδεθείτε!");
-            window.location.href = "index.html";
-        }
-    });
-
-    document.getElementById("revenue-form").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const date = document.getElementById("revenue-date").value;
-        const cash = parseFloat(document.getElementById("cash-revenue").value);
-        const card = parseFloat(document.getElementById("card-revenue").value);
-        await saveRevenueToFirestore(date, cash, card);
-        await updateSummary();
-    });
-</script>
-
+    </script>
 </body>
 </html>
