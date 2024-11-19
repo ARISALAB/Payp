@@ -3,36 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Καταγραφή Προμηθευτών και Συναλλαγών</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="11.png" type="image/png">
-    <title>Ημερήσια Αναφορά</title>
+    <!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<!-- autoTable Plugin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+<script src="greekFont.js"></script>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
-            color: #333;
-            margin: 0;
-            padding: 0;
+        /* Style για την εμφάνιση των προμηθευτών */
+        #supplier-list {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        h1 {
+            gap: 20px;
             margin-top: 20px;
-            color: #343a40;
         }
 
-        form {
-            margin: 20px 0;
+        #supplier-list li {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(19, 68, 255, 1);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        #supplier-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background-color: #343a40;
+        }
+
+        #supplier-list li div {
+            margin-bottom: 10px;
+        }
+
+        /* Style για τις συναλλαγές */
+        .transaction-list {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .transaction-item {
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.delete-btn {
+            background-color: #e74c3c;
+        }
+
+        button.edit-btn {
+            background-color: #f39c12;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .payment-list, .invoice-list {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            display: none;
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
 
         table {
+            width: 100%;
             border-collapse: collapse;
-            width: 80%;
-            margin: 20px 0;
         }
 
         table, th, td {
@@ -40,174 +137,341 @@
         }
 
         th, td {
-            padding: 8px;
-            text-align: center;
+            padding: 10px;
+            text-align: left;
         }
 
         th {
-            background-color: #b2dbe7;
+            background-color: #343a40;
+            color: white;
         }
+        .btn-export {
+    background-color: #28A745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
 
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
+.btn-export:hover {
+    background-color: #218838;
+}
 
-        footer {
-            margin-top: 20px;
-            font-size: 14px;
-        }
     </style>
 </head>
-<body style="display: none;"> <!-- Απόκρυψη περιεχομένου μέχρι να γίνει επιβεβαίωση -->
-    <h1>Ημερήσια Αναφορά</h1>
-    <form id="daily-report-form">
-        <label for="report-date">Επιλέξτε Ημερομηνία:</label>
-        <input type="date" id="report-date" required>
-        <button type="submit">Προβολή Αναφοράς</button>
-    </form>
+<body>
+        
+  <nav>
+        <img src="11.png" alt="Logo" class="logo">
+        <button class="menu-toggle">
+            &#9776;<br>Menu
+        </button>
+        <div class="menu-items">
+            <a href="index.html">Αρχική Σελίδα</a>
+            <a href="index1.html">Καταγραφή Εξόδων</a>
+            <a href="index2.html">Καρτέλες Προμηθευτών</a>
+            <a href="index3.html">Καταγραφή Εσόδων</a>
+        </div>
+    </nav>
 
-    <table id="report-table" style="display: none;">
-        <thead>
-            <tr>
-                <th>Κατηγορία</th>
-                <th>Ποσό (€)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>Ταμείο Ημέρας</strong></td>
-                <td id="daily-total">0.00</td>
-            </tr>
-            <tr>
-                <td>Έσοδα από Κάρτες</td>
-                <td id="card-revenue">0.00</td>
-            </tr>
-            <tr>
-                <td>Μετρητά</td>
-                <td id="cash-revenue">0.00</td>
-            </tr>
-            <tr>
-                <td>Πληρωμές με Μετρητά</td>
-                <td id="cash-payments">0.00</td>
-            </tr>
-            <tr>
-                <td>Υπόλοιπο Μετρητών</td>
-                <td id="cash-balance">0.00</td>
-            </tr>
-            <tr>
-                <td>Πληρωμές μέσω Τράπεζας</td>
-                <td id="bank-payments">0.00</td>
-            </tr>
-            <tr>
-                <td>Πιστωτικά Τιμολόγια</td>
-                <td id="credit-invoices">0.00</td>
-            </tr>
-        </tbody>
-    </table>
+    <h1>Καταγραφή Προμηθευτών και Συναλλαγών</h1>
 
-    <h2>Αναλυτικές Συναλλαγές</h2>
-    <table id="transactions-table" style="display: none;">
-        <thead>
-            <tr>
-                <th>Ημερομηνία</th>
-                <th>Προμηθευτής</th>
-                <th>Αριθμός Τιμολογίου</th>
-                <th>Περιγραφή</th>
-                <th>Ποσό (€)</th>
-            </tr>
-        </thead>
-        <tbody id="transactions-body">
-            <!-- Οι συναλλαγές θα εισαχθούν δυναμικά -->
-        </tbody>
-    </table>
+    <ul id="supplier-list"></ul>
 
-    <footer>&copy; 2024 Ημερήσια Αναφορά</footer>
+    <!-- Modal for showing transactions -->
+<div id="transactionModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modal-supplier-name"></h2>
+        <button id="export-pdf-btn" class="btn-export">Εξαγωγή σε PDF</button> <!-- Κουμπί Εξαγωγής -->
+        <table id="transaction-table">
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th>Ποσό</th>
+                    <th>Πληρωμή</th>
+                    <th>Υπόλοιπο</th>
+                    <th>Τύπος</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Οι γραμμές εισάγονται δυναμικά -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+    <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-            authDomain: "speedy-bazaar-411110.firebaseapp.com",
-            databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-            projectId: "speedy-bazaar-411110",
-            storageBucket: "speedy-bazaar-411110.appspot.com",
-            messagingSenderId: "752456596300",
-            appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-            measurementId: "G-NGZHWDY6S5"
+          apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+          authDomain: "speedy-bazaar-411110.firebaseapp.com",
+          databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+          projectId: "speedy-bazaar-411110",
+          storageBucket: "speedy-bazaar-411110.appspot.com",
+          messagingSenderId: "752456596300",
+          appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+          measurementId: "G-NGZHWDY6S5"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
+        const db = getFirestore(app);
         const database = getDatabase(app);
 
-        async function fetchTransactions(date) {
-            const transactionsRef = ref(database, `transactions/${date}`);
-            return new Promise((resolve) => {
-                onValue(transactionsRef, (snapshot) => {
-                    const data = snapshot.val();
-                    resolve(data || {});
-                });
-            });
-        }
-
-        function populateTransactionsTable(transactions) {
-            const tableBody = document.getElementById("transactions-body");
-            tableBody.innerHTML = ""; // Καθαρισμός προηγούμενων δεδομένων
-
-            Object.entries(transactions).forEach(([key, transaction]) => {
-                const row = document.createElement("tr");
-
-                const dateCell = document.createElement("td");
-                dateCell.textContent = transaction.date || "-";
-
-                const supplierCell = document.createElement("td");
-                supplierCell.textContent = transaction.supplier || "-";
-
-                const invoiceCell = document.createElement("td");
-                invoiceCell.textContent = transaction.invoiceNumber || "-";
-
-                const descriptionCell = document.createElement("td");
-                descriptionCell.textContent = transaction.description || "-";
-
-                const amountCell = document.createElement("td");
-                amountCell.textContent = transaction.amount ? transaction.amount.toFixed(2) : "0.00";
-
-                row.appendChild(dateCell);
-                row.appendChild(supplierCell);
-                row.appendChild(invoiceCell);
-                row.appendChild(descriptionCell);
-                row.appendChild(amountCell);
-
-                tableBody.appendChild(row);
-            });
-
-            document.getElementById("transactions-table").style.display = "table";
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("daily-report-form").addEventListener("submit", async (event) => {
-                event.preventDefault();
-                const date = document.getElementById("report-date").value;
-
-                if (date) {
-                    const transactions = await fetchTransactions(date);
-                    populateTransactionsTable(transactions);
-                }
-            });
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    document.body.style.display = "block";
-                } else {
-                    document.body.style.display = "none";
-                    alert("Παρακαλώ συνδεθείτε!");
-                    window.location.href = "index.html";
-                }
-            });
+        // Check User Authentication
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
+                window.location.href = 'index.html';
+            }
         });
+
+        // DOM Elements
+        const supplierList = document.getElementById('supplier-list');
+        const modal = document.getElementById("transactionModal");
+        const span = document.getElementsByClassName("close")[0];
+
+      function loadSuppliers() {
+    const suppliersRef = ref(database, 'suppliers');
+    onValue(suppliersRef, snapshot => {
+        const data = snapshot.val();
+        supplierList.innerHTML = '';
+        for (const supplierName in data) {
+            const supplierItem = document.createElement('li');
+            supplierItem.innerHTML = `
+                <div><strong>Προμηθευτής:</strong> ${supplierName}</div>
+                <div><strong>Συνολικό Άθροισμα:</strong> €0</div>
+                <div><strong>Πληρωμές με Μετρητά:</strong> €0</div>
+                <div><strong>Πληρωμές μέσω Τράπεζας:</strong> €0</div>
+            `;
+            supplierItem.addEventListener('click', () => openTransactionModal(supplierName));
+            supplierList.appendChild(supplierItem);
+
+            // Υπολογισμός ποσών
+            const transactionsRef = ref(database, 'transactions');
+            const paymentsRef = ref(database, 'bank-payments');
+            const invoicesRef = ref(database, 'credit-invoices');
+
+            let totalAmount = 0;
+            let cashPayments = 0;
+            let bankPayments = 0;
+
+          // Συναλλαγές
+onValue(transactionsRef, snapshot => {
+    const data = snapshot.val();
+    for (const date in data) {
+        for (const transactionId in data[date]) {
+            if (data[date][transactionId].supplier === supplierName) {
+                const amount = parseFloat(data[date][transactionId].amount);
+                totalAmount += amount; // Περιλαμβάνουμε το ποσό
+                cashPayments += amount; // Θεωρούμε ότι αυτές είναι συναλλαγές με μετρητά
+            }
+        }
+    }
+    updateSupplierItem();
+});
+
+// Πληρωμές μέσω Τράπεζας
+onValue(paymentsRef, snapshot => {
+    const data = snapshot.val();
+    for (const date in data) {
+        for (const paymentId in data[date]) {
+            if (data[date][paymentId].supplier === supplierName) {
+                const amount = parseFloat(data[date][paymentId].amount);
+                bankPayments += amount; // Μόνο για αναφορά, όχι για το συνολικό άθροισμα
+            }
+        }
+    }
+    updateSupplierItem();
+});
+
+// Τιμολόγια
+onValue(invoicesRef, snapshot => {
+    const data = snapshot.val();
+    for (const date in data) {
+        for (const invoiceId in data[date]) {
+            if (data[date][invoiceId].supplier === supplierName) {
+                const amount = parseFloat(data[date][invoiceId].amount);
+                totalAmount += amount; // Προσθέτουμε το ποσό από το τιμολόγιο
+            }
+        }
+    }
+    updateSupplierItem();
+});
+
+
+            // Ενημέρωση στοιχείων προμηθευτή
+  // Ενημέρωση στοιχείων προμηθευτή
+function updateSupplierItem() {
+    supplierItem.querySelector('div:nth-child(2)').innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${totalAmount.toFixed(2)}`;
+    supplierItem.querySelector('div:nth-child(3)').innerHTML = `<strong>Πληρωμές με Μετρητά:</strong> €${cashPayments.toFixed(2)}`;
+    supplierItem.querySelector('div:nth-child(4)').innerHTML = `<strong>Πληρωμές μέσω Τράπεζας:</strong> €${bankPayments.toFixed(2)}`;
+}
+
+
+        }
+    });
+}
+
+
+// Open Transaction Modal
+function openTransactionModal(supplierName) {
+    modal.style.display = "block";
+
+    // Εμφανίζουμε το όνομα του προμηθευτή
+    document.getElementById('modal-supplier-name').innerText = `Προμηθευτής: ${supplierName}`;
+
+    const tableBody = document.querySelector('#transaction-table tbody');
+    tableBody.innerHTML = '';
+
+    const transactionsRef = ref(database, 'transactions');
+    const paymentsRef = ref(database, 'bank-payments');
+    const invoicesRef = ref(database, 'credit-invoices');
+
+    let allTransactions = [];
+    let currentBalance = 0; // Διατηρούμε το τρέχον υπόλοιπο
+
+    // Transactions
+    onValue(transactionsRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const transactionId in data[date]) {
+                const transaction = data[date][transactionId];
+                if (transaction.supplier === supplierName) {
+                    allTransactions.push({
+                        date: new Date(date),
+                        amount: parseFloat(transaction.amount),
+                        payment: parseFloat(transaction.amount),
+                        balance: 0, // Υπολογίζεται παρακάτω
+                        type: 'Συναλλαγή'
+                    });
+                }
+            }
+        }
+    });
+
+    // Bank Payments
+    onValue(paymentsRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const paymentId in data[date]) {
+                const payment = data[date][paymentId];
+                if (payment.supplier === supplierName) {
+                    allTransactions.push({
+                        date: new Date(payment.date),
+                        amount: 0,
+                        payment: parseFloat(payment.amount),
+                        balance: 0, // Υπολογίζεται παρακάτω
+                        type: 'Πληρωμή μέσω Τράπεζας'
+                    });
+                }
+            }
+        }
+    });
+
+    // Invoices
+    onValue(invoicesRef, snapshot => {
+        const data = snapshot.val();
+        for (const date in data) {
+            for (const invoiceId in data[date]) {
+                const invoice = data[date][invoiceId];
+                if (invoice.supplier === supplierName) {
+                    allTransactions.push({
+                        date: new Date(invoice.date),
+                        amount: parseFloat(invoice.amount),
+                        payment: 0,
+                        balance: 0, // Υπολογίζεται παρακάτω
+                        type: 'Πιστωτικό Τιμολόγιο'
+                    });
+                }
+            }
+        }
+
+        // Ταξινόμηση με βάση την ημερομηνία (παλαιότερα -> νεότερα)
+        allTransactions.sort((a, b) => a.date - b.date);
+
+        // Υπολογισμός υπολοίπου
+        allTransactions.forEach(transaction => {
+            currentBalance += transaction.amount - transaction.payment;
+            transaction.balance = currentBalance;
+        });
+
+        // Προσθήκη στο table
+        allTransactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${transaction.date.toLocaleDateString('el-GR')}</td>
+                <td>${transaction.amount.toFixed(2)}</td>
+                <td>${transaction.payment.toFixed(2)}</td>
+                <td>${transaction.balance.toFixed(2)}</td>
+                <td>${transaction.type}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    });
+}
+
+// Close Modal
+span.onclick = function () {
+    modal.style.display = "none";
+};
+
+window.onclick = function (event) {
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+};
+
+document.getElementById('export-pdf-btn').addEventListener('click', async function () {
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF();
+
+    // Φόρτωσε την ελληνική γραμματοσειρά
+    doc.addFileToVFS("Roboto-Regular.ttf", robotoRegular); // Το "robotoRegular" προέρχεται από το greekFont.js
+    doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+    doc.setFont("Roboto");
+
+    const supplierName = document.getElementById('modal-supplier-name').innerText;
+
+    // Τίτλος στο PDF
+    doc.setFontSize(16);
+    doc.text(supplierName, 10, 10); // Εμφάνιση προμηθευτή
+
+    // Μετατροπή του πίνακα σε PDF
+    doc.autoTable({
+        head: [['Ημερομηνία', 'Ποσό', 'Πληρωμή', 'Υπόλοιπο', 'Τύπος']],
+        body: [...document.querySelectorAll('#transaction-table tbody tr')].map(row => {
+            return [...row.querySelectorAll('td')].map(cell => cell.innerText);
+        }),
+        startY: 20, // Αρχικό ύψος
+        styles: {
+            font: 'Roboto',
+            fontSize: 10,
+        },
+    });
+
+    // Αποθήκευση PDF
+    const fileName = supplierName.replace('Προμηθευτής: ', '').trim() + '_Συναλλαγές.pdf';
+    doc.save(fileName);
+});
+
+
+// Load Suppliers on Page Load
+loadSuppliers();
+        
     </script>
 </body>
 </html>
