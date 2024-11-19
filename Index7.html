@@ -58,7 +58,7 @@
         }
     </style>
 </head>
-<body style="display: none;"> <!-- Απόκρυψη περιεχομένου μέχρι να γίνει επιβεβαίωση -->
+<body style="display: none;">
     <h1>Ημερήσια Αναφορά</h1>
     <form id="daily-report-form">
         <label for="report-date">Επιλέξτε Ημερομηνία:</label>
@@ -75,8 +75,8 @@
         </thead>
         <tbody>
             <tr>
-                <td><strong>Ταμείο Ημέρας</strong></td>
-                <td id="daily-total">0.00</td>
+                <td><strong>Συνολικά Έσοδα</strong></td>
+                <td id="total-revenue">0.00</td>
             </tr>
             <tr>
                 <td>Έσοδα από Κάρτες</td>
@@ -85,22 +85,6 @@
             <tr>
                 <td>Μετρητά</td>
                 <td id="cash-revenue">0.00</td>
-            </tr>
-            <tr>
-                <td>Πληρωμές με Μετρητά</td>
-                <td id="cash-payments">0.00</td>
-            </tr>
-            <tr>
-                <td>Υπόλοιπο Μετρητών</td>
-                <td id="cash-balance">0.00</td>
-            </tr>
-            <tr>
-                <td>Πληρωμές μέσω Τράπεζας</td>
-                <td id="bank-payments">0.00</td>
-            </tr>
-            <tr>
-                <td>Πιστωτικά Τιμολόγια</td>
-                <td id="credit-invoices">0.00</td>
             </tr>
         </tbody>
     </table>
@@ -153,6 +137,29 @@
             });
         }
 
+        function updateRevenueTable(transactions) {
+            let totalRevenue = 0;
+            let cardRevenue = 0;
+            let cashRevenue = 0;
+
+            Object.values(transactions).forEach(transaction => {
+                const amount = transaction.amount || 0;
+                totalRevenue += amount;
+
+                if (transaction.paymentMethod === "card") {
+                    cardRevenue += amount;
+                } else if (transaction.paymentMethod === "cash") {
+                    cashRevenue += amount;
+                }
+            });
+
+            document.getElementById("total-revenue").textContent = totalRevenue.toFixed(2);
+            document.getElementById("card-revenue").textContent = cardRevenue.toFixed(2);
+            document.getElementById("cash-revenue").textContent = cashRevenue.toFixed(2);
+
+            document.getElementById("report-table").style.display = "table";
+        }
+
         function populateTransactionsTable(transactions) {
             const tableBody = document.getElementById("transactions-body");
             tableBody.innerHTML = ""; // Καθαρισμός προηγούμενων δεδομένων
@@ -194,6 +201,7 @@
 
                 if (date) {
                     const transactions = await fetchTransactions(date);
+                    updateRevenueTable(transactions);
                     populateTransactionsTable(transactions);
                 }
             });
