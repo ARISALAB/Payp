@@ -3,475 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Καταγραφή Προμηθευτών και Συναλλαγών</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="11.png" type="image/png">
-    <!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-<!-- autoTable Plugin -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-<script src="greekFont.js"></script>
-
+    <title>Καλώς Ήρθατε - Πληρωμή PayPal</title>
     <style>
-        /* Style για την εμφάνιση των προμηθευτών */
-        #supplier-list {
+        /* Βασικό στυλ για ευχάριστη εμφάνιση */
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 20px;
+            background-color: #f9f9f9;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 95%;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: white;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        h1 {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+            border-radius: 8px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: #0056b3;
             margin-top: 20px;
         }
-
-        #supplier-list li {
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
+        .section {
+            margin: 20px 0;
+        }
+        .section img {
+            width: 96%;
+            height: auto;
             border-radius: 8px;
-            padding: 20px;
-            width: 80%;
+            margin-top: 10px;
+        }
+        .paypal-button {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        /* Στυλ για τα κουμπιά εγγραφής και σύνδεσης */
+        .google-button, .email-signup-button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .google-button:hover, .email-signup-button:hover {
+            background-color: #357ae8;
+        }
+
+        /* Στυλ για τη φόρμα εγγραφής */
+        .form-container {
             display: flex;
             flex-direction: column;
-            position: relative;
-            box-shadow: 0 4px 6px rgba(19, 68, 255, 1);
-            overflow: hidden;
-            cursor: pointer;
+            gap: 15px;
         }
-
-        #supplier-list li::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 5px;
-            background-color: #343a40;
-        }
-
-        #supplier-list li div {
-            margin-bottom: 10px;
-        }
-
-        /* Style για τις συναλλαγές */
-        .transaction-list {
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-        }
-
-        .transaction-item {
-            background-color: #f1f1f1;
-            border-radius: 8px;
+        .form-container input {
             padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
-
-        button {
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        button.delete-btn {
-            background-color: #e74c3c;
-        }
-
-        button.edit-btn {
-            background-color: #f39c12;
-        }
-
-        button:hover {
-            opacity: 0.8;
-        }
-
-        .payment-list, .invoice-list {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-            display: none;
-        }
-
-        /* Modal Styling */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #343a40;
-            color: white;
-        }
-        .btn-export {
-    background-color: #28A745;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
-.btn-export:hover {
-    background-color: #218838;
-}
-
     </style>
+    <script src="https://www.paypal.com/sdk/js?client-id=AbP8aGEBpUSbe7x2frrXYzb502UdR7uL3CjpNb-Sp6lk7hy0j9sYRAJORgfzT01owV39NlnKlycB1mcj"></script>
 </head>
 <body>
-        
-  <nav>
-        <img src="11.png" alt="Logo" class="logo">
-        <button class="menu-toggle">
-            &#9776;<br>Menu
-        </button>
-        <div class="menu-items">
-            <a href="index.html">Αρχική Σελίδα</a>
-            <a href="index1.html">Καταγραφή Εξόδων</a>
-            <a href="index2.html">Καρτέλες Προμηθευτών</a>
-            <a href="index3.html">Καταγραφή Εσόδων</a>
+    <div class="container">
+        <!-- Χαιρετισμός -->
+        <section class="section">
+            <h1>Καλώς Ήρθατε στη Σελίδα Πληρωμής μας</h1>
+            <p>Εδώ θα βρείτε τις πληροφορίες που χρειάζεστε για να προχωρήσετε σε ασφαλή πληρωμή μέσω PayPal.</p>
+        </section>
+
+        <!-- Περιγραφή Υπηρεσίας -->
+        <section class="section">
+            <h2>Τι Θα Συναντήσετε Εδώ</h2>
+            <p>Στη σελίδα μας μπορείτε να δείτε όλες τις λεπτομέρειες για την υπηρεσία που προσφέρουμε. Παρακάτω ακολουθεί ένα σύντομο βίντεο που εξηγεί πώς λειτουργεί η διαδικασία πληρωμής και τι πρέπει να γνωρίζετε πριν προχωρήσετε.</p>
+            <!-- Νέο βίντεο -->
+            <iframe width="100%" height="315" src="https://www.youtube.com/embed/jl5yQsj5duI?start=8" frameborder="0" allowfullscreen></iframe>
+        </section>
+   <section class="section">
+            <h2>Ποιοι Είμαστε</h2>
+            <p>Η ομάδα μας αποτελείται από ειδικούς που εργάζονται για να σας παρέχουν τις καλύτερες δυνατές υπηρεσίες. Παρακάτω μπορείτε να δείτε μερικές φωτογραφίες της ομάδας μας και του χώρου μας.</p>
+            <div>
+                <img src="cash-register-377039_1280.jpg" alt="Φωτογραφία Ομάδας">
+                <p><em>Θα μείνετε κολλημένοι στο παρελθόν; Οι παλιές ταμειακές μηχανές είναι η υπενθύμιση μιας εποχής που έχει περάσει. Ήρθε η ώρα να αφήσουμε πίσω τις παραδοσιακές πρακτικές και να προχωρήσουμε μπροστά.</em></p>
+            </div>
+            <div>
+                <img src="finger-3389914_1280.jpg" alt="Φωτογραφία Γραφείου">
+                <p><em>Το μέλλον είναι εδώ! Σημασία δεν έχει πια η απλή ταμειακή μηχανή, αλλά ο τρόπος που διαχειριζόμαστε τις επιχειρήσεις μας. Επενδύστε στην ανάπτυξη, με τη δύναμη της τεχνολογίας δίπλα σας.</em></p>
+            </div>
+        </section>
+        <!-- Εδώ προστίθεται η εικόνα του χρήστη -->
+        <div id="userInfo" style="display: none; text-align: center;">
+            <h2>Καλώς Ήρθες!</h2>
+            <img id="userImage" src="" alt="Εικόνα Χρήστη" style="border-radius: 50%; width: 100px; height: 100px;">
+            <p id="userName"></p>
         </div>
-    </nav>
+        <!-- Κουμπί για πρόσβαση στην εφαρμογή, αρχικά κρυφό -->
+<button id="accessAppButton" style="display: none; background-color: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+    Μετάβαση στην Εφαρμογή
+</button>
 
-    <h1>Καταγραφή Προμηθευτών και Συναλλαγών</h1>
+<!-- Κουμπί αποσύνδεσης -->
+<button class="google-button" id="googleSignOut" style="display: none;">Αποσύνδεση</button>
 
-    <ul id="supplier-list"></ul>
+        <!-- Κουμπί PayPal -->
+        <div class="paypal-button" id="paypal-button-container"></div>
 
-    <!-- Modal for showing transactions -->
-<div id="transactionModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modal-supplier-name"></h2>
-        <button id="export-pdf-btn" class="btn-export">Εξαγωγή σε PDF</button> <!-- Κουμπί Εξαγωγής -->
-        <table id="transaction-table">
-            <thead>
-                <tr>
-                    <th>Ημερομηνία</th>
-                    <th>Ποσό</th>
-                    <th>Πληρωμή</th>
-                    <th>Υπόλοιπο</th>
-                    <th>Τύπος</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Οι γραμμές εισάγονται δυναμικά -->
-            </tbody>
-        </table>
+        <!-- Εγγραφή και Σύνδεση -->
+        <div id="auth-section" style="margin-top: 20px;">
+            <h2>Σύνδεση ή Εγγραφή</h2>
+            <!-- Κουμπί Google Sign-In -->
+            <button class="google-button" id="googleSignIn">Σύνδεση με Google</button>
+
+            <!-- Εγγραφή με email -->
+            <div id="signup-section" style="margin-top: 20px;">
+                <h3>Ή Εγγραφείτε με Email</h3>
+                <div class="form-container">
+                    <input type="email" id="email" placeholder="Ηλεκτρονικό Ταχυδρομείο" required>
+                    <input type="password" id="password" placeholder="Κωδικός Πρόσβασης" required>
+                    <button class="email-signup-button" id="emailSignUp">Εγγραφή</button>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
 
+    const firebaseConfig = {
+        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+        authDomain: "speedy-bazaar-411110.firebaseapp.com",
+        projectId: "speedy-bazaar-411110",
+        storageBucket: "speedy-bazaar-411110.appspot.com",
+        messagingSenderId: "752456596300",
+        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+        measurementId: "G-NGZHWDY6S5"
+    };
 
-    <footer>&copy; 2024 Καταγραφή Συναλλαγών</footer>
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-        import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    const checkPaymentStatus = async (user) => {
+        if (user) {
+            const userPaymentDoc = doc(db, "users", user.uid);
+            const docSnap = await getDoc(userPaymentDoc);
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-          authDomain: "speedy-bazaar-411110.firebaseapp.com",
-          databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
-          projectId: "speedy-bazaar-411110",
-          storageBucket: "speedy-bazaar-411110.appspot.com",
-          messagingSenderId: "752456596300",
-          appId: "1:752456596300:web:f920df7be01ba63d66ede9",
-          measurementId: "G-NGZHWDY6S5"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth();
-        const db = getFirestore(app);
-        const database = getDatabase(app);
-
-        // Check User Authentication
-        onAuthStateChanged(auth, user => {
-            if (!user) {
-                alert('Παρακαλώ συνδεθείτε για να συνεχίσετε.');
-                window.location.href = 'index.html';
+            if (docSnap.exists() && docSnap.data().isPaid) {
+                document.getElementById('paypal-button-container').style.display = 'none';
+                document.getElementById('accessAppButton').style.display = 'inline-block';
+                alert('Η εφαρμογή είναι διαθέσιμη για πάντα. Ευχαριστούμε για την πληρωμή σας!');
+            } else {
+                document.getElementById('paypal-button-container').style.display = 'block';
+                document.getElementById('accessAppButton').style.display = 'none';
             }
-        });
-
-        // DOM Elements
-        const supplierList = document.getElementById('supplier-list');
-        const modal = document.getElementById("transactionModal");
-        const span = document.getElementsByClassName("close")[0];
-
-      function loadSuppliers() {
-    const suppliersRef = ref(database, 'suppliers');
-    onValue(suppliersRef, snapshot => {
-        const data = snapshot.val();
-        supplierList.innerHTML = '';
-        for (const supplierName in data) {
-            const supplierItem = document.createElement('li');
-            supplierItem.innerHTML = `
-                <div><strong>Προμηθευτής:</strong> ${supplierName}</div>
-                <div><strong>Συνολικό Άθροισμα:</strong> €0</div>
-                <div><strong>Πληρωμές με Μετρητά:</strong> €0</div>
-                <div><strong>Πληρωμές μέσω Τράπεζας:</strong> €0</div>
-            `;
-            supplierItem.addEventListener('click', () => openTransactionModal(supplierName));
-            supplierList.appendChild(supplierItem);
-
-            // Υπολογισμός ποσών
-            const transactionsRef = ref(database, 'transactions');
-            const paymentsRef = ref(database, 'bank-payments');
-            const invoicesRef = ref(database, 'credit-invoices');
-
-            let totalAmount = 0;
-            let cashPayments = 0;
-            let bankPayments = 0;
-
-          // Συναλλαγές
-onValue(transactionsRef, snapshot => {
-    const data = snapshot.val();
-    for (const date in data) {
-        for (const transactionId in data[date]) {
-            if (data[date][transactionId].supplier === supplierName) {
-                const amount = parseFloat(data[date][transactionId].amount);
-                totalAmount += amount; // Περιλαμβάνουμε το ποσό
-                cashPayments += amount; // Θεωρούμε ότι αυτές είναι συναλλαγές με μετρητά
-            }
+        } else {
+            document.getElementById('paypal-button-container').style.display = 'block';
+            document.getElementById('accessAppButton').style.display = 'none';
         }
-    }
-    updateSupplierItem();
-});
+    };
 
-// Πληρωμές μέσω Τράπεζας
-onValue(paymentsRef, snapshot => {
-    const data = snapshot.val();
-    for (const date in data) {
-        for (const paymentId in data[date]) {
-            if (data[date][paymentId].supplier === supplierName) {
-                const amount = parseFloat(data[date][paymentId].amount);
-                bankPayments += amount; // Μόνο για αναφορά, όχι για το συνολικό άθροισμα
-            }
-        }
-    }
-    updateSupplierItem();
-});
+    document.getElementById('googleSignIn').addEventListener('click', () => {
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                const user = result.user;
+                alert(`Καλωσήρθες, ${user.displayName}!`);
+                document.getElementById('userImage').src = user.photoURL;
+                document.getElementById('userName').innerText = `Όνομα: ${user.displayName}`;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('googleSignOut').style.display = 'inline-block';
 
-// Τιμολόγια
-onValue(invoicesRef, snapshot => {
-    const data = snapshot.val();
-    for (const date in data) {
-        for (const invoiceId in data[date]) {
-            if (data[date][invoiceId].supplier === supplierName) {
-                const amount = parseFloat(data[date][invoiceId].amount);
-                totalAmount += amount; // Προσθέτουμε το ποσό από το τιμολόγιο
-            }
-        }
-    }
-    updateSupplierItem();
-});
-
-
-            // Ενημέρωση στοιχείων προμηθευτή
-  // Ενημέρωση στοιχείων προμηθευτή
-function updateSupplierItem() {
-    supplierItem.querySelector('div:nth-child(2)').innerHTML = `<strong>Συνολικό Άθροισμα:</strong> €${totalAmount.toFixed(2)}`;
-    supplierItem.querySelector('div:nth-child(3)').innerHTML = `<strong>Πληρωμές με Μετρητά:</strong> €${cashPayments.toFixed(2)}`;
-    supplierItem.querySelector('div:nth-child(4)').innerHTML = `<strong>Πληρωμές μέσω Τράπεζας:</strong> €${bankPayments.toFixed(2)}`;
-}
-
-
-        }
-    });
-}
-
-
-// Open Transaction Modal
-function openTransactionModal(supplierName) {
-    modal.style.display = "block";
-
-    // Εμφανίζουμε το όνομα του προμηθευτή
-    document.getElementById('modal-supplier-name').innerText = `Προμηθευτής: ${supplierName}`;
-
-    const tableBody = document.querySelector('#transaction-table tbody');
-    tableBody.innerHTML = '';
-
-    const transactionsRef = ref(database, 'transactions');
-    const paymentsRef = ref(database, 'bank-payments');
-    const invoicesRef = ref(database, 'credit-invoices');
-
-    let allTransactions = [];
-    let currentBalance = 0; // Διατηρούμε το τρέχον υπόλοιπο
-
-    // Transactions
-    onValue(transactionsRef, snapshot => {
-        const data = snapshot.val();
-        for (const date in data) {
-            for (const transactionId in data[date]) {
-                const transaction = data[date][transactionId];
-                if (transaction.supplier === supplierName) {
-                    allTransactions.push({
-                        date: new Date(date),
-                        amount: parseFloat(transaction.amount),
-                        payment: parseFloat(transaction.amount),
-                        balance: 0, // Υπολογίζεται παρακάτω
-                        type: 'Συναλλαγή'
-                    });
-                }
-            }
-        }
+                checkPaymentStatus(user);
+            })
+            .catch((error) => {
+                console.log(error);
+                alert('Σφάλμα στην σύνδεση!');
+            });
     });
 
-    // Bank Payments
-    onValue(paymentsRef, snapshot => {
-        const data = snapshot.val();
-        for (const date in data) {
-            for (const paymentId in data[date]) {
-                const payment = data[date][paymentId];
-                if (payment.supplier === supplierName) {
-                    allTransactions.push({
-                        date: new Date(payment.date),
-                        amount: 0,
-                        payment: parseFloat(payment.amount),
-                        balance: 0, // Υπολογίζεται παρακάτω
-                        type: 'Πληρωμή μέσω Τράπεζας'
-                    });
-                }
-            }
-        }
+    document.getElementById('emailSignUp').addEventListener('click', () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                alert(`Εγγραφή ολοκληρώθηκε για τον χρήστη: ${user.email}`);
+                document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+                document.getElementById('userName').innerText = `Όνομα: ${user.email}`;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('googleSignOut').style.display = 'inline-block';
+
+                checkPaymentStatus(user);
+            })
+            .catch((error) => {
+                console.log(error);
+                alert('Σφάλμα στην εγγραφή!');
+            });
     });
 
-    // Invoices
-    onValue(invoicesRef, snapshot => {
-        const data = snapshot.val();
-        for (const date in data) {
-            for (const invoiceId in data[date]) {
-                const invoice = data[date][invoiceId];
-                if (invoice.supplier === supplierName) {
-                    allTransactions.push({
-                        date: new Date(invoice.date),
-                        amount: parseFloat(invoice.amount),
-                        payment: 0,
-                        balance: 0, // Υπολογίζεται παρακάτω
-                        type: 'Πιστωτικό Τιμολόγιο'
-                    });
-                }
-            }
-        }
-
-        // Ταξινόμηση με βάση την ημερομηνία (παλαιότερα -> νεότερα)
-        allTransactions.sort((a, b) => a.date - b.date);
-
-        // Υπολογισμός υπολοίπου
-        allTransactions.forEach(transaction => {
-            currentBalance += transaction.amount - transaction.payment;
-            transaction.balance = currentBalance;
-        });
-
-        // Προσθήκη στο table
-        allTransactions.forEach(transaction => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${transaction.date.toLocaleDateString('el-GR')}</td>
-                <td>${transaction.amount.toFixed(2)}</td>
-                <td>${transaction.payment.toFixed(2)}</td>
-                <td>${transaction.balance.toFixed(2)}</td>
-                <td>${transaction.type}</td>
-            `;
-            tableBody.appendChild(row);
+    document.getElementById('googleSignOut').addEventListener('click', () => {
+        auth.signOut().then(() => {
+            alert('Αποσυνδεθήκατε επιτυχώς!');
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('googleSignOut').style.display = 'none';
+            document.getElementById('accessAppButton').style.display = 'none';
+            document.getElementById('googleSignIn').style.display = 'inline-block';
+        }).catch((error) => {
+            console.log(error);
+            alert('Σφάλμα στην αποσύνδεση!');
         });
     });
-}
 
-// Close Modal
-span.onclick = function () {
-    modal.style.display = "none";
-};
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            document.getElementById('googleSignOut').style.display = 'inline-block';
+            document.getElementById('googleSignIn').style.display = 'none';
+            document.getElementById('userImage').src = user.photoURL || 'default-profile.png';
+            document.getElementById('userName').innerText = `Όνομα: ${user.displayName || user.email}`;
+            document.getElementById('userInfo').style.display = 'block';
 
-window.onclick = function (event) {
-    if (event.target === modal) {
-        modal.style.display = "none";
-    }
-};
+            await checkPaymentStatus(user);
+        } else {
+            document.getElementById('googleSignIn').style.display = 'inline-block';
+            document.getElementById('googleSignOut').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('accessAppButton').style.display = 'none';
+        }
+    });
 
-document.getElementById('export-pdf-btn').addEventListener('click', async function () {
-    const { jsPDF } = window.jspdf;
-
-    const doc = new jsPDF();
-
-    // Φόρτωσε την ελληνική γραμματοσειρά
-    doc.addFileToVFS("Roboto-Regular.ttf", robotoRegular); // Το "robotoRegular" προέρχεται από το greekFont.js
-    doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
-    doc.setFont("Roboto");
-
-    const supplierName = document.getElementById('modal-supplier-name').innerText;
-
-    // Τίτλος στο PDF
-    doc.setFontSize(16);
-    doc.text(supplierName, 10, 10); // Εμφάνιση προμηθευτή
-
-    // Μετατροπή του πίνακα σε PDF
-    doc.autoTable({
-        head: [['Ημερομηνία', 'Ποσό', 'Πληρωμή', 'Υπόλοιπο', 'Τύπος']],
-        body: [...document.querySelectorAll('#transaction-table tbody tr')].map(row => {
-            return [...row.querySelectorAll('td')].map(cell => cell.innerText);
-        }),
-        startY: 20, // Αρχικό ύψος
-        styles: {
-            font: 'Roboto',
-            fontSize: 10,
+    paypal.Buttons({
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: '10.00'
+                    }
+                }]
+            });
         },
-    });
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(async function(details) {
+                alert('Η πληρωμή ολοκληρώθηκε από τον ' + details.payer.name.given_name);
 
-    // Αποθήκευση PDF
-    const fileName = supplierName.replace('Προμηθευτής: ', '').trim() + '_Συναλλαγές.pdf';
-    doc.save(fileName);
+                const user = auth.currentUser;
+                if (user) {
+                    const userPaymentDoc = doc(db, "users", user.uid);
+                    await setDoc(userPaymentDoc, { isPaid: true }, { merge: true });
+
+                    // Επανεμφανίζουμε το κουμπί και το μήνυμα μετά την πληρωμή
+                    await checkPaymentStatus(user);
+                } else {
+                    alert('Σφάλμα: Ο χρήστης δεν είναι συνδεδεμένος!');
+                }
+            });
+        }
+    }).render('#paypal-button-container');
+
+  document.getElementById('accessAppButton').addEventListener('click', () => {
+    window.location.href = 'index2.html';  // Αν είναι στον ίδιο φάκελο
 });
 
+</script>
 
-// Load Suppliers on Page Load
-loadSuppliers();
-        
-    </script>
 </body>
 </html>
