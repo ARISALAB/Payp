@@ -58,7 +58,7 @@
         }
     </style>
 </head>
-<body style="display: none;">
+<body style="display: none;"> <!-- Απόκρυψη περιεχομένου μέχρι να γίνει επιβεβαίωση -->
     <h1>Ημερήσια Αναφορά</h1>
     <form id="daily-report-form">
         <label for="report-date">Επιλέξτε Ημερομηνία:</label>
@@ -76,27 +76,31 @@
         <tbody>
             <tr>
                 <td><strong>Ταμείο Ημέρας</strong></td>
-                <td id="daily-cash">0.00</td>
+                <td id="daily-total">0.00</td>
             </tr>
             <tr>
-                <td>Εισπράξεις Μετρητά</td>
+                <td>Έσοδα από Κάρτες</td>
+                <td id="card-revenue">0.00</td>
+            </tr>
+            <tr>
+                <td>Μετρητά</td>
                 <td id="cash-revenue">0.00</td>
             </tr>
             <tr>
-                <td>Έξοδα Μετρητά</td>
-                <td id="cash-expenses">0.00</td>
+                <td>Πληρωμές με Μετρητά</td>
+                <td id="cash-payments">0.00</td>
             </tr>
             <tr>
                 <td>Υπόλοιπο Μετρητών</td>
                 <td id="cash-balance">0.00</td>
             </tr>
             <tr>
-                <td>Πιστωτικά Τιμολόγια</td>
-                <td id="credit-invoices">0.00</td>
-            </tr>
-            <tr>
                 <td>Πληρωμές μέσω Τράπεζας</td>
                 <td id="bank-payments">0.00</td>
+            </tr>
+            <tr>
+                <td>Πιστωτικά Τιμολόγια</td>
+                <td id="credit-invoices">0.00</td>
             </tr>
         </tbody>
     </table>
@@ -106,6 +110,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -121,66 +126,59 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
+        const db = getFirestore(app);
         const database = getDatabase(app);
 
-        async function fetchTransactions(date) {
+        async function saveRevenueToFirestore(date, cash, card) {
+            const user = auth.currentUser;
+            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+            const revenueDoc = doc(db, "revenues", user.uid);
+            const currentData = (await getDoc(revenueDoc)).data() || {};
+            currentData[date] = { cash, card };
+            await setDoc(revenueDoc, currentData);
+        }
+
+        async function getAllRevenues() {
+            const user = auth.currentUser;
+            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+            const revenueDoc = doc(db, "revenues", user.uid);
+            const revenueSnapshot = await getDoc(revenueDoc);
+            return revenueSnapshot.data() || {};
+        }
+
+        async function loadTransactionsTotal(date) {
             const transactionsRef = ref(database, `transactions/${date}`);
             return new Promise((resolve) => {
                 onValue(transactionsRef, (snapshot) => {
                     const data = snapshot.val();
-                    resolve(data || {});
+                    let totalTransactions = 0;
+                    if (data) {
+                        for (const transaction of Object.values(data)) {
+                            totalTransactions += parseFloat(transaction.amount);
+                        }
+                    }
+                    resolve(totalTransactions);
                 });
             });
         }
 
-        function calculateSummary(transactions) {
-            let dailyCash = 0;
-            let cashRevenue = 0;
-            let cashExpenses = 0;
-            let creditInvoices = 0;
-            let bankPayments = 0;
+        async function updateSummary() {
+            const revenueDate = document.getElementById("report-date").value;
+            if (revenueDate) {
+                const revenues = await getAllRevenues();
+                const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
+                const totalTransactions = await loadTransactionsTotal(revenueDate);
+                const cashBalance = revenue.cash - revenue.card - totalTransactions;
 
-            Object.values(transactions).forEach(transaction => {
-                const amount = transaction.amount || 0;
-
-                if (transaction.type === "revenue" && transaction.paymentMethod === "cash") {
-                    cashRevenue += amount;
-                } else if (transaction.type === "expense" && transaction.paymentMethod === "cash") {
-                    cashExpenses += amount;
-                } else if (transaction.type === "credit-invoice") {
-                    creditInvoices += amount;
-                } else if (transaction.paymentMethod === "bank") {
-                    bankPayments += amount;
-                }
-            });
-
-            dailyCash = cashRevenue - cashExpenses;
-
-            return { dailyCash, cashRevenue, cashExpenses, creditInvoices, bankPayments };
-        }
-
-        function updateReportTable(summary) {
-            document.getElementById("daily-cash").textContent = summary.dailyCash.toFixed(2);
-            document.getElementById("cash-revenue").textContent = summary.cashRevenue.toFixed(2);
-            document.getElementById("cash-expenses").textContent = summary.cashExpenses.toFixed(2);
-            document.getElementById("cash-balance").textContent = summary.dailyCash.toFixed(2);
-            document.getElementById("credit-invoices").textContent = summary.creditInvoices.toFixed(2);
-            document.getElementById("bank-payments").textContent = summary.bankPayments.toFixed(2);
-
-            document.getElementById("report-table").style.display = "table";
+                document.getElementById("daily-total").textContent = revenue.cash.toFixed(2);
+                document.getElementById("card-revenue").textContent = revenue.card.toFixed(2);
+                document.getElementById("cash-balance").textContent = cashBalance.toFixed(2);
+                document.getElementById("report-table").style.display = "table";
+            }
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("daily-report-form").addEventListener("submit", async (event) => {
-                event.preventDefault();
-                const date = document.getElementById("report-date").value;
-
-                if (date) {
-                    const transactions = await fetchTransactions(date);
-                    const summary = calculateSummary(transactions);
-                    updateReportTable(summary);
-                }
-            });
+            document.getElementById("report-date").addEventListener("change", updateSummary);
 
             onAuthStateChanged(auth, (user) => {
                 if (user) {
