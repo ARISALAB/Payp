@@ -105,12 +105,27 @@
         </tbody>
     </table>
 
+    <h2>Αναλυτικές Συναλλαγές</h2>
+    <table id="transactions-table" style="display: none;">
+        <thead>
+            <tr>
+                <th>Ημερομηνία</th>
+                <th>Προμηθευτής</th>
+                <th>Αριθμός Τιμολογίου</th>
+                <th>Περιγραφή</th>
+                <th>Ποσό (€)</th>
+            </tr>
+        </thead>
+        <tbody id="transactions-body">
+            <!-- Οι συναλλαγές θα εισαχθούν δυναμικά -->
+        </tbody>
+    </table>
+
     <footer>&copy; 2024 Ημερήσια Αναφορά</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -126,59 +141,62 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
-        const db = getFirestore(app);
         const database = getDatabase(app);
 
-        async function saveRevenueToFirestore(date, cash, card) {
-            const user = auth.currentUser;
-            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
-            const revenueDoc = doc(db, "revenues", user.uid);
-            const currentData = (await getDoc(revenueDoc)).data() || {};
-            currentData[date] = { cash, card };
-            await setDoc(revenueDoc, currentData);
-        }
-
-        async function getAllRevenues() {
-            const user = auth.currentUser;
-            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
-            const revenueDoc = doc(db, "revenues", user.uid);
-            const revenueSnapshot = await getDoc(revenueDoc);
-            return revenueSnapshot.data() || {};
-        }
-
-        async function loadTransactionsTotal(date) {
+        async function fetchTransactions(date) {
             const transactionsRef = ref(database, `transactions/${date}`);
             return new Promise((resolve) => {
                 onValue(transactionsRef, (snapshot) => {
                     const data = snapshot.val();
-                    let totalTransactions = 0;
-                    if (data) {
-                        for (const transaction of Object.values(data)) {
-                            totalTransactions += parseFloat(transaction.amount);
-                        }
-                    }
-                    resolve(totalTransactions);
+                    resolve(data || {});
                 });
             });
         }
 
-        async function updateSummary() {
-            const revenueDate = document.getElementById("report-date").value;
-            if (revenueDate) {
-                const revenues = await getAllRevenues();
-                const revenue = revenues[revenueDate] || { cash: 0, card: 0 };
-                const totalTransactions = await loadTransactionsTotal(revenueDate);
-                const cashBalance = revenue.cash - revenue.card - totalTransactions;
+        function populateTransactionsTable(transactions) {
+            const tableBody = document.getElementById("transactions-body");
+            tableBody.innerHTML = ""; // Καθαρισμός προηγούμενων δεδομένων
 
-                document.getElementById("daily-total").textContent = revenue.cash.toFixed(2);
-                document.getElementById("card-revenue").textContent = revenue.card.toFixed(2);
-                document.getElementById("cash-balance").textContent = cashBalance.toFixed(2);
-                document.getElementById("report-table").style.display = "table";
-            }
+            Object.entries(transactions).forEach(([key, transaction]) => {
+                const row = document.createElement("tr");
+
+                const dateCell = document.createElement("td");
+                dateCell.textContent = transaction.date || "-";
+
+                const supplierCell = document.createElement("td");
+                supplierCell.textContent = transaction.supplier || "-";
+
+                const invoiceCell = document.createElement("td");
+                invoiceCell.textContent = transaction.invoiceNumber || "-";
+
+                const descriptionCell = document.createElement("td");
+                descriptionCell.textContent = transaction.description || "-";
+
+                const amountCell = document.createElement("td");
+                amountCell.textContent = transaction.amount ? transaction.amount.toFixed(2) : "0.00";
+
+                row.appendChild(dateCell);
+                row.appendChild(supplierCell);
+                row.appendChild(invoiceCell);
+                row.appendChild(descriptionCell);
+                row.appendChild(amountCell);
+
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById("transactions-table").style.display = "table";
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("report-date").addEventListener("change", updateSummary);
+            document.getElementById("daily-report-form").addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const date = document.getElementById("report-date").value;
+
+                if (date) {
+                    const transactions = await fetchTransactions(date);
+                    populateTransactionsTable(transactions);
+                }
+            });
 
             onAuthStateChanged(auth, (user) => {
                 if (user) {
