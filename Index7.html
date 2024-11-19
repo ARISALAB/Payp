@@ -20,114 +20,177 @@
             text-align: center;
         }
 
+        h1 {
+            margin-top: 20px;
+            color: #343a40;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
         table {
+            border-collapse: collapse;
             width: 80%;
             margin: 20px 0;
-            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
         }
 
         th, td {
-            border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
         }
 
         th {
+            background-color: #b2dbe7;
+        }
+
+        tr:nth-child(even) {
             background-color: #f2f2f2;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
-<body>
+<body style="display: none;"> <!-- Απόκρυψη περιεχομένου μέχρι να γίνει επιβεβαίωση -->
     <h1>Ημερήσια Αναφορά</h1>
-    <form id="filter-form">
-        <label for="filter-date">Επιλέξτε Ημερομηνία:</label>
-        <input type="date" id="filter-date">
-        <button type="button" id="filter-button">Φιλτράρισμα</button>
+    <form id="daily-report-form">
+        <label for="report-date">Επιλέξτε Ημερομηνία:</label>
+        <input type="date" id="report-date" required>
+        <button type="submit">Προβολή Αναφοράς</button>
     </form>
 
-    <table id="revenue-table">
+    <table id="report-table" style="display: none;">
         <thead>
             <tr>
-                <th>Ημερομηνία</th>
-                <th>Ταμείο Ημέρας (€)</th>
-                <th>Έσοδα από Κάρτες (€)</th>
-                <th>Συνολικό Ποσό Συναλλαγών (€)</th>
-                <th>Υπόλοιπο Μετρητών (€)</th>
+                <th>Κατηγορία</th>
+                <th>Ποσό (€)</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Δεδομένα θα εισαχθούν δυναμικά -->
+            <tr>
+                <td><strong>Ταμείο Ημέρας</strong></td>
+                <td id="daily-total">0.00</td>
+            </tr>
+            <tr>
+                <td>Έσοδα από Κάρτες</td>
+                <td id="card-revenue">0.00</td>
+            </tr>
+            <tr>
+                <td>Μετρητά</td>
+                <td id="cash-revenue">0.00</td>
+            </tr>
+            <tr>
+                <td>Πληρωμές με Μετρητά</td>
+                <td id="cash-payments">0.00</td>
+            </tr>
+            <tr>
+                <td>Υπόλοιπο Μετρητών</td>
+                <td id="cash-balance">0.00</td>
+            </tr>
+            <tr>
+                <td>Πληρωμές μέσω Τράπεζας</td>
+                <td id="bank-payments">0.00</td>
+            </tr>
+            <tr>
+                <td>Πιστωτικά Τιμολόγια</td>
+                <td id="credit-invoices">0.00</td>
+            </tr>
         </tbody>
     </table>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    <footer>&copy; 2024 Ημερήσια Αναφορά</footer>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
-            authDomain: "speedy-bazaar-411110.firebaseapp.com",
-            projectId: "speedy-bazaar-411110",
+    
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAlFCOK49HAzisru-KTTF0ZqP_mtmEyt6Y",
+        authDomain: "speedy-bazaar-411110.firebaseapp.com",
+        databaseURL: "https://speedy-bazaar-411110-default-rtdb.firebaseio.com",
+        projectId: "speedy-bazaar-411110",
+        storageBucket: "speedy-bazaar-411110.appspot.com",
+        messagingSenderId: "752456596300",
+        appId: "1:752456596300:web:f920df7be01ba63d66ede9",
+        measurementId: "G-NGZHWDY6S5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore(app);
+
+    async function fetchDailyRevenues(date) {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
+
+        const revenuesRef = collection(db, "revenues");
+        const dateQuery = query(revenuesRef, where("date", "==", date));
+        const querySnapshot = await getDocs(dateQuery);
+
+        let totalCashRevenue = 0;
+        let totalCardRevenue = 0;
+        let totalCashPayments = 0;
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            totalCashRevenue += data.cashRevenue || 0;
+            totalCardRevenue += data.cardRevenue || 0;
+            totalCashPayments += data.cashPayments || 0;
+        });
+
+        return {
+            totalCashRevenue,
+            totalCardRevenue,
+            totalCashPayments
         };
+    }
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth();
-        const db = getFirestore(app);
+    async function updateReportTable(date) {
+        try {
+            const { totalCashRevenue, totalCardRevenue, totalCashPayments } = await fetchDailyRevenues(date);
 
-        // Φόρτωση δεδομένων από Firestore
-        async function loadRevenues() {
-            const user = auth.currentUser;
-            if (!user) throw new Error("Ο χρήστης δεν είναι συνδεδεμένος!");
-            const revenueDoc = doc(db, "revenues", user.uid);
-            const revenueSnapshot = await getDoc(revenueDoc);
-            return revenueSnapshot.data() || {};
+            const dailyTotal = totalCashRevenue + totalCardRevenue - totalCashPayments;
+
+            document.getElementById("daily-total").textContent = dailyTotal.toFixed(2);
+            document.getElementById("card-revenue").textContent = totalCardRevenue.toFixed(2);
+            document.getElementById("cash-revenue").textContent = totalCashRevenue.toFixed(2);
+            document.getElementById("cash-payments").textContent = totalCashPayments.toFixed(2);
+            document.getElementById("cash-balance").textContent = (totalCashRevenue - totalCashPayments).toFixed(2);
+
+            document.getElementById("report-table").style.display = "table";
+        } catch (error) {
+            console.error("Σφάλμα κατά την ανάκτηση δεδομένων:", error);
+            alert("Αποτυχία φόρτωσης δεδομένων. Δοκιμάστε ξανά.");
         }
+    }
 
-        // Ενημέρωση πίνακα
-        function updateTable(revenues, selectedDate = null) {
-            const tableBody = document.querySelector("#revenue-table tbody");
-            tableBody.innerHTML = ""; // Εκκαθάριση πίνακα
-
-            Object.entries(revenues).forEach(([date, data]) => {
-                if (!selectedDate || date === selectedDate) {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${date}</td>
-                        <td>${data.cash.toFixed(2)}</td>
-                        <td>${data.card.toFixed(2)}</td>
-                        <td>${(data.cash + data.card).toFixed(2)}</td>
-                        <td>${(data.cash - data.card).toFixed(2)}</td>
-                    `;
-                    tableBody.appendChild(row);
-                }
-            });
-
-            // Μήνυμα αν δεν υπάρχουν δεδομένα
-            if (!tableBody.innerHTML) {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td colspan="5">Δεν βρέθηκαν δεδομένα για την επιλεγμένη ημερομηνία.</td>`;
-                tableBody.appendChild(row);
-            }
+    document.getElementById("daily-report-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const date = document.getElementById("report-date").value;
+        if (date) {
+            await updateReportTable(date);
         }
+    });
 
-        // Διαχείριση φιλτραρίσματος
-        document.getElementById("filter-button").addEventListener("click", async () => {
-            const filterDate = document.getElementById("filter-date").value;
-            const revenues = await loadRevenues();
-            updateTable(revenues, filterDate);
-        });
-
-        // Αυτόματη φόρτωση δεδομένων όταν συνδέεται ο χρήστης
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const revenues = await loadRevenues();
-                updateTable(revenues); // Εμφάνιση όλων των δεδομένων αρχικά
-            } else {
-                alert("Παρακαλώ συνδεθείτε!");
-                window.location.href = "index.html";
-            }
-        });
-    </script>
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.body.style.display = "block";
+        } else {
+            document.body.style.display = "none";
+            alert("Παρακαλώ συνδεθείτε!");
+            window.location.href = "index.html";
+        }
+    });
+</script>
+    
 </body>
 </html>
